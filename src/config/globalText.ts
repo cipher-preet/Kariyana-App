@@ -2,7 +2,6 @@ import { Text, TextInput } from 'react-native';
 import Typography from '../styles/typography';
 
 export const applyGlobalTextStyle = () => {
-  // Text
   if (!Text.defaultProps) {
     Text.defaultProps = {};
   }
@@ -10,7 +9,6 @@ export const applyGlobalTextStyle = () => {
   Text.defaultProps.style = Typography.body;
   Text.defaultProps.allowFontScaling = false;
 
-  // TextInput
   if (!TextInput.defaultProps) {
     TextInput.defaultProps = {};
   }
