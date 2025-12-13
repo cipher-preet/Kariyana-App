@@ -1,0 +1,133 @@
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  Image,
+  StyleSheet,
+  StatusBar,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+} from 'react-native';
+
+const { width } = Dimensions.get('window');
+const HERO_HEIGHT = 400;
+
+const IMAGES = [
+  require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
+  require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
+  require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
+];
+
+const ProductImageSection = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const flatRef = useRef<FlatList>(null);
+
+  const onScrollEnd = (e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.x / width);
+    setActiveIndex(index);
+  };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar translucent backgroundColor="transparent" />
+
+      {/* IMAGE CAROUSEL */}
+      <FlatList
+        ref={flatRef}
+        data={IMAGES}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, i) => i.toString()}
+        onMomentumScrollEnd={onScrollEnd}
+        renderItem={({ item }) => (
+          <View style={styles.imageWrap}>
+            <Image source={item} style={styles.image} resizeMode="contain" />
+          </View>
+        )}
+      />
+
+      <View style={styles.dots}>
+        {IMAGES.map((_, index) => (
+          <View
+            key={index}
+            style={[styles.dot, index === activeIndex && styles.activeDot]}
+          />
+        ))}
+      </View>
+
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.iconBtn} />
+        <View style={styles.rightIcons}>
+          <TouchableOpacity style={styles.iconBtn} />
+          <TouchableOpacity style={styles.iconBtn} />
+          <TouchableOpacity style={styles.iconBtn} />
+        </View>
+      </View>
+    </View>
+  );
+};
+
+export default ProductImageSection;
+
+const styles = StyleSheet.create({
+  container: {
+    height: HERO_HEIGHT,
+    backgroundColor: '#ffffff',
+  },
+
+  imageWrap: {
+    width,
+    height: HERO_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  image: {
+    width: '90%',
+    height: '90%',
+  },
+
+  dots: {
+    position: 'absolute',
+    bottom: 12,
+    flexDirection: 'row',
+    alignSelf: 'center',
+  },
+
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#cfcfcf',
+    marginHorizontal: 4,
+  },
+
+  activeDot: {
+    backgroundColor: '#1f1f1f',
+    width: 7,
+    height: 7,
+  },
+
+  topBar: {
+    position: 'absolute',
+    top: 40,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  rightIcons: {
+    flexDirection: 'row',
+  },
+
+  iconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    marginLeft: 10,
+    elevation: 2,
+  },
+});
