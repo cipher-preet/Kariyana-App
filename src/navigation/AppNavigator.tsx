@@ -6,6 +6,8 @@ import HomeStack from './HomeStack';
 import CategoriesStack from './CategoriesStack';
 import AccountStack from './AccountStack';
 import CartStack from './CartStack';
+import AuthStack from './AuthStack';
+import ProductDetailsScreen from '../screens/Product/ProductDetailsScreen';
 
 const Tab = createBottomTabNavigator();
 

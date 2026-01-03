@@ -52,18 +52,18 @@ const SaleCard: React.FC<Props> = ({ item, onAdd }) => {
         )}
 
         {qty === 0 ? (
-          <TouchableOpacity style={styles.addBtn} onPress={increase}>
+          <TouchableOpacity style={styles.addBtn} onPress={increase} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Text style={styles.addText}>ADD</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.stepper}>
-            <TouchableOpacity onPress={decrease} style={styles.stepBtn}>
+            <TouchableOpacity onPress={decrease} style={styles.stepBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Text style={styles.stepTxt}>-</Text>
             </TouchableOpacity>
 
             <Text style={styles.qtyTxt}>{qty}</Text>
 
-            <TouchableOpacity onPress={increase} style={styles.stepBtn}>
+            <TouchableOpacity onPress={increase} style={styles.stepBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Text style={styles.stepTxt}>+</Text>
             </TouchableOpacity>
           </View>
@@ -147,63 +147,58 @@ const styles = StyleSheet.create({
   },
 
 
-  addBtn: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    minWidth: 70,
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: Colors.success,
-    borderRadius: Radius.sm,           
-    paddingVertical: Spacing.xs,       
-    paddingHorizontal: Spacing.sm,    
-    elevation: 3,
-  },
+ addBtn: {
+  position: 'absolute',
+  bottom: 6,
+  right: 6,
+  backgroundColor: Colors.white,
+  borderWidth: 1.8,
+  borderColor: Colors.success,
+  paddingVertical: 7,
+  paddingHorizontal: 22,
+  borderRadius: 6,
+},
 
-  addText: {
-    textAlign: 'center',
-    fontSize: 12,
-    fontWeight: '800',
-    color: Colors.success,
-  },
+ addText: {
+  fontSize: 13,
+  fontWeight: '800',
+  color: Colors.success,
+},
 
   stepper: {
-    position: 'absolute',
-    bottom: -12,
-    right: -10,
-    flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: Colors.success,
-    borderRadius: Radius.lg,           
-    paddingVertical: Spacing.xxs,      
-    paddingHorizontal: Spacing.sm,     
-    elevation: 3,
-    alignItems: 'center',
-    minWidth: 90,
-    justifyContent: 'space-between',
-  },
+  position: 'absolute',
+  bottom: 6,
+  right: 6,
+  flexDirection: 'row',
+  backgroundColor: Colors.white,
+  borderWidth: 1.8,
+  borderColor: Colors.success,
+  borderRadius: 6,
+  alignItems: 'center',
+  justifyContent: 'space-between',
+},
 
-  stepBtn: {
-    width: 28,
-    height: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+ stepBtn: {
+  width: 25,
+  height: 32,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
 
   stepTxt: {
-    color: Colors.success,
-    fontSize: 17,
-    fontWeight: '900',
-  },
+  fontSize: 20,
+  fontWeight: '900',
+  color: Colors.success,
+  lineHeight: 22,
+},
 
-  qtyTxt: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.gray900,
-    paddingHorizontal: Spacing.xs,     
-  },
+ qtyTxt: {
+  fontSize: 15,
+  fontWeight: '800',
+  color: Colors.success,
+  minWidth: 24,
+  textAlign: 'center',
+},
 
   labelRow: {
     flexDirection: 'row',

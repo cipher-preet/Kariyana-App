@@ -1,11 +1,6 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, {
@@ -40,10 +35,7 @@ const getIcon = (routeName: string, focused: boolean) => {
   }
 };
 
-const CustomTabBar: React.FC<BottomTabBarProps> = ({
-  state,
-  navigation,
-}) => {
+const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
   return (
     <View style={styles.tabContainer}>
       <View style={styles.row}>
@@ -57,10 +49,9 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
             }),
             transform: [
               {
-                scale: withTiming(
-                  interpolate(progress, [0, 1], [0.3, 1]),
-                  { duration: 250 }
-                ),
+                scale: withTiming(interpolate(progress, [0, 1], [0.3, 1]), {
+                  duration: 250,
+                }),
               },
             ],
           }));
@@ -68,10 +59,9 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
           const iconAnim = useAnimatedStyle(() => ({
             transform: [
               {
-                scale: withTiming(
-                  interpolate(progress, [0, 1], [1, 1.15]),
-                  { duration: 200 }
-                ),
+                scale: withTiming(interpolate(progress, [0, 1], [1, 1.15]), {
+                  duration: 200,
+                }),
               },
             ],
           }));
@@ -79,30 +69,29 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
           return (
             <TouchableWithoutFeedback
               key={route.key}
-              onPress={() => navigation.navigate(route.name)}
+              onPress={() => {
+                if (route.name === 'categories') {
+                  navigation.navigate('categories', {
+                    screen: 'categoryMain',
+                  });
+                } else {
+                  navigation.navigate(route.name);
+                }
+              }}
             >
               <View style={styles.tabButton}>
-                <Animated.View
-                  style={[styles.simpleGradient, bubbleAnim]}
-                >
+                <Animated.View style={[styles.simpleGradient, bubbleAnim]}>
                   <LinearGradient
                     colors={Colors.gradients.primary}
                     style={styles.gradientFill}
                   />
                 </Animated.View>
 
-                <Animated.View
-                  style={[styles.iconWrapper, iconAnim]}
-                >
+                <Animated.View style={[styles.iconWrapper, iconAnim]}>
                   {getIcon(route.name, isFocused)}
                 </Animated.View>
 
-                <Text
-                  style={[
-                    styles.label,
-                    isFocused && styles.labelActive,
-                  ]}
-                >
+                <Text style={[styles.label, isFocused && styles.labelActive]}>
                   {route.name}
                 </Text>
               </View>
@@ -115,7 +104,6 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
 };
 
 export default CustomTabBar;
-
 
 const styles = StyleSheet.create({
   tabContainer: {

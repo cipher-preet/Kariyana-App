@@ -1,14 +1,19 @@
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import AppNavigator from "./src/navigation/AppNavigator";
-import { applyGlobalTextStyle } from "./src/config/globalText";
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { applyGlobalTextStyle } from './src/config/globalText';
+import RootNavigator from './src/navigation/RootNavigator';
+
+import { Provider } from 'react-redux';
+import { store } from './src/ReduxToolKit/Rtk/store';
 
 applyGlobalTextStyle();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <AppNavigator />
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </Provider>
   );
 }

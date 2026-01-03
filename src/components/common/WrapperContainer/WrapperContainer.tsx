@@ -25,39 +25,44 @@ const getStatusBarHeight = () => {
 interface WrapperProps {
   title?: string;
   children: React.ReactNode;
+  scrollable?: boolean; // Add this prop
 }
 
-const WrapperContainer: React.FC<WrapperProps> = ({ children }) => {
+const WrapperContainer: React.FC<WrapperProps> = ({ 
+  children, 
+  scrollable = true  // Default to true for backward compatibility
+}) => {
   const statusBarHeight = getStatusBarHeight();
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
       <View
         style={[
           styles.header,
           { paddingTop: statusBarHeight + Spacing.md },
         ]}
       />
-
-      {/* SEARCH BAR FLOAT */}
       <View style={styles.searchBar}>
         <SearchBar />
       </View>
 
-      {/* CONTENT */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentScroll}
-      >
-        {children}
-      </ScrollView>
+      {scrollable ? (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.contentScroll}
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={styles.contentView}>
+          {children}
+        </View>
+      )}
     </View>
   );
 };
 
 export default WrapperContainer;
-
 
 const styles = StyleSheet.create({
   container: {
@@ -90,5 +95,11 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,              
     paddingHorizontal: Spacing.lg,       
     paddingBottom: Spacing.xxxl,         
+  },
+
+  contentView: {
+    flex: 1,
+    paddingTop: Spacing.md,              
+    paddingHorizontal: Spacing.lg,       
   },
 });

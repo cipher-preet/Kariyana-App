@@ -11,111 +11,77 @@ import ProductGridSection from '../Home/ProductGridSection';
 import { Product } from '../../types';
 import { Colors } from '../../styles';
 
-const sampleProducts: Product[] = [
-  {
-    id: 's1',
-    title: 'Helios Stain and Waterproof Sneaker Spray',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '39% OFF',
-    rating: '4.3 (24)',
-    time: '16 MINS',
-    price: 603,
-    mrp: 999,
-    labels: ['150 ml'],
-    unitPrice: '₹402/100 ml',
-    stockText: 'Only 1 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's2',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's3',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's4',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's5',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's6',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-];
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { useGetProductByCatagoryQuery } from '../../ReduxToolKit/Api/productApi';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { Text } from 'react-native-svg';
+
+type RouteParams = {
+  product: Product;
+};
 
 const ProductDetailsScreen = () => {
+  const route =
+    useRoute<
+      RouteProp<
+        { ProductDetailsNavigator: RouteParams },
+        'ProductDetailsNavigator'
+      >
+    >();
+
+  const { product } = route.params;
+  const {
+    _id,
+    marketPrice,
+    subcategoryId,
+    mrp,
+    name,
+    quantityPerUnit,
+    rating,
+    reviewCount,
+    unit,
+    sellingPrice,
+    sku,
+  } = product;
+
+  const productId = product._id;
+
+  const { data, isLoading } = useGetProductByCatagoryQuery(
+    subcategoryId ? { childCatId: subcategoryId } : skipToken,
+  );
+
+  // refine isLoading handling if needed
+  if (isLoading) {
+    return <View style={styles.container}><Text>Loading...</Text></View>;
+  }
+
+  const similarProducts = data?.data?.products ?? [];
+
+  console.log('Similar Products: ', similarProducts);
+
   return (
     <View style={styles.container}>
       <ScrollView
+        key={productId}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <ProductImageSection />
 
         <View style={styles.card}>
-          <ProductHeader />
-          <ProductPriceSection />
+          <ProductHeader
+            quantityPerUnit={quantityPerUnit}
+            unit={unit}
+            name={name}
+            sku={sku}
+          />
+          <ProductPriceSection
+            mrp={mrp}
+            marketPrice={marketPrice}
+            sellingPrice={sellingPrice}
+            rating={rating}
+            reviewCount={reviewCount}
+          />
         </View>
 
         <View style={styles.card}>
@@ -126,13 +92,12 @@ const ProductDetailsScreen = () => {
           <ProductHighlights />
         </View>
 
-         <ProductGridSection
+        <ProductGridSection
           title="Similar Products"
-          data={sampleProducts}
-          onAdd={(id, qty) => console.log(id, qty)}
+          data={similarProducts}
+          onAdd={(_id, qty) => console.log(_id, qty)}
           bg={Colors.gray50}
         />
-
       </ScrollView>
 
       <StickyAddToCart />

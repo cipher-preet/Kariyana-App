@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 
-import { Colors, Spacing, Typography } from '../../styles';
+import { Colors, Spacing } from '../../styles';
 
 import ProductCardMinimal from './ProductCardMinimal';
 import type { Product } from '../../types';
@@ -16,18 +16,17 @@ type Props = {
 const ProductGridSection: React.FC<Props> = ({ title, data, onAdd, bg }) => {
   return (
     <View style={[styles.wrap, bg && { backgroundColor: bg }]}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-
-      <FlatList
-        data={data}
-        keyExtractor={it => it.id}
-        numColumns={3}
-        columnWrapperStyle={styles.columnWrap}
-        renderItem={({ item }) => (
-          <ProductCardMinimal item={item} onAdd={onAdd} />
-        )}
-        showsVerticalScrollIndicator={false}
-      />
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <FlatList
+          data={data}
+          keyExtractor={it => it._id}
+          numColumns={3}
+          columnWrapperStyle={styles.columnWrap}
+          renderItem={({ item }) => (
+            <ProductCardMinimal item={item} onAdd={onAdd} />
+          )}
+          showsVerticalScrollIndicator={false}
+        />
     </View>
   );
 };

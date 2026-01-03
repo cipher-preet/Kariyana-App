@@ -9,10 +9,10 @@ const HomeStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="HomeMain" component={HomeScreen} />
     <Stack.Screen
-  name="ProductDetails"
-  component={ProductDetailsScreen}
-  options={{ headerShown: false }}
-/>
+      name="ProductDetails"
+      component={ProductDetailsScreen}
+      options={{ headerShown: false }}
+    />
   </Stack.Navigator>
 );
 

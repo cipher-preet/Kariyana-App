@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  StatusBar,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -139,6 +140,12 @@ const CartScreen = () => {
       title="Checkout"
       onBackPress={() => navigation.goBack()}
     >
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={Colors.white}
+        translucent={false}
+      />
+
       <View style={styles.root}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -182,7 +189,6 @@ const CartScreen = () => {
             ))}
           </View>
 
-          {/* SUGGESTED PRODUCTS */}
           <Text style={styles.sectionTitle}>You might also like</Text>
 
           <ProductGridSection

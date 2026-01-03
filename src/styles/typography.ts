@@ -1,4 +1,4 @@
-import Colors from './color';
+import Colors from './Color';
 import { textScale } from './responsiveStyles';
 import { TextStyle } from 'react-native';
 import { Fonts } from './fonts';

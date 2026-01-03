@@ -9,7 +9,7 @@ import {
 import {
   Colors,
   Spacing,
-  Radius,
+  Radius
 } from '../../styles';
 
 const ProfileCard = () => {

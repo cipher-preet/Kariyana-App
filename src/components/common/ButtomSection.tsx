@@ -19,9 +19,6 @@ const BottomBrandSection = () => {
 
 export default BottomBrandSection;
 
-/* ───────────────────────────── */
-/* STYLES (SAME VISUAL OUTPUT)   */
-/* ───────────────────────────── */
 
 const styles = StyleSheet.create({
   container: {

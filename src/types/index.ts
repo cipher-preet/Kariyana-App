@@ -1,6 +1,3 @@
-// src/types/index.ts
-import { ImageSourcePropType } from 'react-native';
-
 export type Category = {
   id: string;
   title: string;
@@ -8,19 +5,20 @@ export type Category = {
 };
 
 export type Product = {
-  id: string;
-  title: string;
-  image: any;
-  saving?: string;
-  labels?: string[];
-  rating?: string;
-  time?: string;
-  stockText?: string;
+  _id: string;
+  name: string;
+  images: string;
+  quantityPerUnit: number;
+  rating?: number;
+  reviewCount?: number;
+  unit?: string;
   price: number;
   mrp: number;
-  unitPrice?: string;
-  discount?: number;
-  quantity?: string;
+  marketPrice: number;
+  sellingPrice: number;
+  sku: number;
+  stockStatus?: 'IN_STOCK' | 'LIMITED' | 'OUT';
+  subcategoryId: string;
 };
 
 export type Product2 = {
@@ -28,16 +26,15 @@ export type Product2 = {
   title: string;
   image: any;
 
-  // BLINKIT STYLE PROPERTIES
-  weight?: string; // "150 ml"
-  ratingValue?: number; // 4.3
-  ratingCount?: number; // 3223
-  deliveryTime?: string; // "16 MINS"
-  stockAlert?: string; // "Only 1 left"
-  offerPercent?: string; // "39% OFF"
+  weight?: string;
+  ratingValue?: number;
+  ratingCount?: number;
+  deliveryTime?: string;
+  stockAlert?: string;
+  offerPercent?: string;
 
-  price: number; // selling price
-  mrp: number; // original price
+  price: number;
+  mrp: number;
   saving?: string;
 
   unitPrice?: string;

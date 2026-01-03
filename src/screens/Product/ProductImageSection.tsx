@@ -8,6 +8,7 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
+import { Colors } from '../../styles';
 
 const { width } = Dimensions.get('window');
 const HERO_HEIGHT = 400;
@@ -29,7 +30,11 @@ const ProductImageSection = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" />
+         <StatusBar
+        barStyle="dark-content"
+        backgroundColor={Colors.white}
+        translucent={false}
+      />
 
       {/* IMAGE CAROUSEL */}
       <FlatList
@@ -54,15 +59,6 @@ const ProductImageSection = () => {
             style={[styles.dot, index === activeIndex && styles.activeDot]}
           />
         ))}
-      </View>
-
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.iconBtn} />
-        <View style={styles.rightIcons}>
-          <TouchableOpacity style={styles.iconBtn} />
-          <TouchableOpacity style={styles.iconBtn} />
-          <TouchableOpacity style={styles.iconBtn} />
-        </View>
       </View>
     </View>
   );
@@ -108,26 +104,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
   },
-
-  topBar: {
-    position: 'absolute',
-    top: 40,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
   rightIcons: {
     flexDirection: 'row',
-  },
-
-  iconBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    marginLeft: 10,
-    elevation: 2,
   },
 });

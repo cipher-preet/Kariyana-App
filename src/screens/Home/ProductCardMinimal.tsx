@@ -20,15 +20,20 @@ type Props = {
 };
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_WIDTH = (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.md * 2) / 3; // SAME math
+const CARD_WIDTH = (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.md * 2) / 3;
 
 const ProductCardMinimal: React.FC<Props> = ({ item, onAdd }) => {
   const navigation = useNavigation<any>();
 
+  const isOutOfStock = item.sku === 0;
+  console.log('Product Card Item: %%%%%%%%% ', isOutOfStock);
+  console.log('Product Card Item: %%%%%%%%% ', item);
+
   const [qty, setQty] = useState(0);
 
   const handleNavigate = () => {
-    navigation.navigate('ProductDetails', {
+    console.log('--------------- reach inside navigation ----------');
+    navigation.navigate('ProductDetailsNavigator', {
       product: item,
     });
   };
@@ -36,47 +41,63 @@ const ProductCardMinimal: React.FC<Props> = ({ item, onAdd }) => {
   const increase = () => {
     const n = qty + 1;
     setQty(n);
-    onAdd?.(item.id, n);
+    onAdd?.(item._id, n);
   };
 
   const decrease = () => {
     if (qty <= 1) {
       setQty(0);
-      onAdd?.(item.id, 0);
+      onAdd?.(item._id, 0);
       return;
     }
     const n = qty - 1;
     setQty(n);
-    onAdd?.(item.id, n);
+    onAdd?.(item._id, n);
   };
 
   return (
     <TouchableOpacity
       activeOpacity={0.9}
-      style={styles.card}
-      onPress={handleNavigate}
+      style={[styles.card, isOutOfStock && styles.outOfStockCard]}
+      onPress={!isOutOfStock ? handleNavigate : undefined}
     >
       <View style={[styles.card, { width: CARD_WIDTH }]}>
         <View style={styles.imageBox}>
           <Image
-            source={item.image}
+            source={{ uri: item.images }}
             style={styles.image}
             resizeMode="contain"
           />
 
-          {qty === 0 ? (
-            <TouchableOpacity style={styles.addInside} onPress={increase}>
+          {isOutOfStock ? (
+            <View style={styles.outOfStockBadge}>
+              <Text style={styles.outOfStockText}>OUT OF STOCK</Text>
+            </View>
+          ) : qty === 0 ? (
+            <TouchableOpacity
+              style={styles.addInside}
+              onPress={increase}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Text style={styles.addTxt}>ADD</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.stepperInside}>
-              <TouchableOpacity onPress={decrease} style={styles.stepBtnInside}>
+              <TouchableOpacity
+                onPress={decrease}
+                style={styles.stepBtnInside}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Text style={styles.stepSign}>−</Text>
               </TouchableOpacity>
 
               <Text style={styles.qtyInside}>{qty}</Text>
 
-              <TouchableOpacity onPress={increase} style={styles.stepBtnInside}>
+              <TouchableOpacity
+                onPress={increase}
+                style={styles.stepBtnInside}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Text style={styles.stepSign}>+</Text>
               </TouchableOpacity>
             </View>
@@ -84,30 +105,39 @@ const ProductCardMinimal: React.FC<Props> = ({ item, onAdd }) => {
         </View>
 
         {/* QUANTITY */}
-        {item.quantity && <Text style={styles.quantity}>{item.quantity}</Text>}
+        {item.quantityPerUnit && (
+          <Text style={styles.quantity}>
+            {item.quantityPerUnit} {item.unit}
+          </Text>
+        )}
 
         {/* TITLE */}
         <Text style={styles.title} numberOfLines={3}>
-          {item.title}
+          {item.name}
         </Text>
 
         {/* RATING */}
         <View style={styles.ratingRow}>
           <Text style={styles.ratingStar}>⭐</Text>
-          <Text style={styles.ratingText}>{item.rating}</Text>
-          <Text style={styles.ratingCount}>({item.rating})</Text>
+          <Text style={styles.ratingCount}>
+            {item.rating} ({item.reviewCount})
+          </Text>
         </View>
 
         {/* TIME */}
-        <Text style={styles.time}>{item.time}</Text>
+        <Text style={styles.time}>24-48 hrs</Text>
 
         {/* PRICE */}
         <View style={styles.priceRow}>
           <View>
-            <Text style={styles.price}>₹{item.price}</Text>
+            <Text style={styles.price}>₹{item.mrp}</Text>
             <View style={styles.mrpRow}>
-              <Text style={styles.mrp}>₹{item.mrp}</Text>
-              <Text style={styles.discount}>{item.discount}% OFF</Text>
+              <Text style={styles.mrp}>Market Price</Text>
+              <Text style={styles.discount}>{item.marketPrice}</Text>
+            </View>
+            <View style={styles.mrpRow}>
+              <Text style={styles.mrp}>Selling Price</Text>
+              <Text style={styles.discount}>{item.sellingPrice}</Text>
             </View>
           </View>
         </View>
@@ -126,9 +156,31 @@ const styles = StyleSheet.create({
   },
 
   stepSign: {
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '900',
     color: Colors.success,
+    lineHeight: 22,
+  },
+
+  outOfStockCard: {
+    opacity: 0.45,
+  },
+
+  outOfStockBadge: {
+    position: 'absolute',
+    top: '45%',
+    left: '50%',
+    transform: [{ translateX: -50 }, { translateY: 50 }],
+    backgroundColor: Colors.gray900,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 4,
+  },
+
+  outOfStockText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.white,
   },
 
   imageBox: {
@@ -143,61 +195,61 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: '80%',
-    height: '80%',
+    width: '100%',
+    height: '100%',
   },
 
   addInside: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    bottom: 6,
+    right: 6,
     backgroundColor: Colors.white,
-    borderWidth: 1,
+    borderWidth: 1.8,
     borderColor: Colors.success,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: Radius.sm,
+    paddingVertical: 7,
+    paddingHorizontal: 22,
+    borderRadius: 6,
   },
 
   addTxt: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.success,
   },
 
   stepperInside: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    bottom: 6,
+    right: 6,
     flexDirection: 'row',
     backgroundColor: Colors.white,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
+    borderWidth: 1.8,
     borderColor: Colors.success,
-    paddingVertical: Spacing.xxs,
-    paddingHorizontal: Spacing.sm,
+    borderRadius: 6,
     alignItems: 'center',
-    elevation: 3,
-    minWidth: 80,
+
     justifyContent: 'space-between',
   },
 
   stepBtnInside: {
-    paddingHorizontal: Spacing.xs,
-    width: 18,
-    height: 18,
+    width: 25,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   qtyInside: {
-    marginHorizontal: Spacing.xs,
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.gray900,
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.success,
+    minWidth: 24,
+    textAlign: 'center',
   },
 
   quantity: {
     ...Typography.caption,
     marginBottom: Spacing.xxs,
+    fontSize: 12,
   },
 
   title: {
@@ -251,13 +303,13 @@ const styles = StyleSheet.create({
   },
 
   mrpRow: {
+    marginTop: Spacing.xs,
     flexDirection: 'row',
     alignItems: 'center',
   },
 
   mrp: {
     fontSize: 10,
-    textDecorationLine: 'line-through',
     color: Colors.gray500,
     marginRight: Spacing.xs,
   },
