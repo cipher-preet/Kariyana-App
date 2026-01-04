@@ -4,20 +4,16 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import WrapperContainer from '../../components/common/WrapperContainer/WrapperContainer';
 import CategoryGrid from './CategoryGrid';
 
-import { Colors, Spacing, Typography } from '../../styles';
+import { Colors, Spacing } from '../../styles';
 import { useGetCategoriesQuery } from '../../ReduxToolKit/Api';
 import { ApiResponse } from '../../types/categoryType';
 import CategorySkeleton from './CategorySkeleton';
 
-
 const CategoriesScreen = () => {
-
   const { data, isLoading, error } = useGetCategoriesQuery<ApiResponse>();
 
-  console.log('Categories Screen Data: ', data);
-
   if (error || !data) {
-    return <Text>Something went wrong</Text>;   // need to be chnage like (adjust hr ui)
+    return <Text>Something went wrong</Text>; // need to be chnage like (adjust hr ui)
   }
 
   const categories = Object.entries(data?.data);

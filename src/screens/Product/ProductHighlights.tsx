@@ -22,7 +22,7 @@ const DATA = [
   { label: 'Dimensions', value: '81 x 38 x 22 cm' },
 ];
 
-const ProductHighlights = () => {
+const ProductHighlights: React.FC<{ highlights: any[] }> = ({ highlights }) => {
   const [open, setOpen] = useState(true);
 
   const toggle = () => {
@@ -44,13 +44,16 @@ const ProductHighlights = () => {
 
       {open && (
         <View style={styles.content}>
-          {DATA.map((item, index) => (
+          {highlights.map((item, index) => (
             <View
               key={index}
-              style={[styles.row, index !== DATA.length - 1 && styles.divider]}
+              style={[
+                styles.row,
+                index !== highlights.length - 1 && styles.divider,
+              ]}
             >
-              <Text style={styles.label}>{item.label}</Text>
-              <Text style={styles.value}>{item.value}</Text>
+              <Text style={styles.label}>{item.heading}</Text>
+              <Text style={styles.value}>{item.description}</Text>
             </View>
           ))}
         </View>

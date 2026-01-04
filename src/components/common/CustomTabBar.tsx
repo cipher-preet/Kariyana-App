@@ -16,6 +16,9 @@ import CartIcon from '../../assest/cart';
 import CategoryIcon from '../../assest/category';
 import HomeIcon from '../../assest/home';
 
+import { useSelector } from 'react-redux';
+import { RootState } from '../../ReduxToolKit/Rtk/store';
+
 const { scale, moderateScale, textScale } = Responsive;
 
 const getIcon = (routeName: string, focused: boolean) => {
@@ -36,6 +39,7 @@ const getIcon = (routeName: string, focused: boolean) => {
 };
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
+  const totalItems = useSelector((state: RootState) => state.cart.totalItems);
   return (
     <View style={styles.tabContainer}>
       <View style={styles.row}>
@@ -89,6 +93,14 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
 
                 <Animated.View style={[styles.iconWrapper, iconAnim]}>
                   {getIcon(route.name, isFocused)}
+
+                  {route.name === 'Cart' && totalItems > 0 && (
+                    <View style={styles.cartBadge}>
+                      <Text style={styles.cartBadgeText}>
+                        {totalItems > 99 ? '99+' : totalItems}
+                      </Text>
+                    </View>
+                  )}
                 </Animated.View>
 
                 <Text style={[styles.label, isFocused && styles.labelActive]}>
@@ -154,5 +166,24 @@ const styles = StyleSheet.create({
   labelActive: {
     color: Colors.primaryDark,
     fontWeight: '600',
+  },
+
+  cartBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -10,
+    minWidth: scale(18),
+    height: scale(18),
+    borderRadius: scale(9),
+    backgroundColor: Colors.error || '#ff3b30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+
+  cartBadgeText: {
+    color: Colors.white,
+    fontSize: textScale(9),
+    fontWeight: '700',
   },
 });

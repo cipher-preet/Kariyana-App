@@ -29,7 +29,7 @@ const SaleGrid: React.FC<Props> = ({ data, onAdd }) => {
       <FlatList
         data={data}
         horizontal
-        keyExtractor={(it) => it.id}
+        keyExtractor={(it) => it._id}
         showsHorizontalScrollIndicator={false}
         renderItem={({ item }) => (
           <SaleCard item={item} onAdd={onAdd} />

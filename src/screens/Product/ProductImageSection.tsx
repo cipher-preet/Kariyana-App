@@ -4,7 +4,6 @@ import {
   Image,
   StyleSheet,
   StatusBar,
-  TouchableOpacity,
   FlatList,
   Dimensions,
 } from 'react-native';
@@ -13,13 +12,13 @@ import { Colors } from '../../styles';
 const { width } = Dimensions.get('window');
 const HERO_HEIGHT = 400;
 
-const IMAGES = [
-  require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-  require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-  require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-];
+type ProductImageSectionProps = {
+  images: string[];
+};
 
-const ProductImageSection = () => {
+const ProductImageSection: React.FC<ProductImageSectionProps> = ({
+  images,
+}) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatRef = useRef<FlatList>(null);
 
@@ -30,7 +29,7 @@ const ProductImageSection = () => {
 
   return (
     <View style={styles.container}>
-         <StatusBar
+      <StatusBar
         barStyle="dark-content"
         backgroundColor={Colors.white}
         translucent={false}
@@ -39,7 +38,7 @@ const ProductImageSection = () => {
       {/* IMAGE CAROUSEL */}
       <FlatList
         ref={flatRef}
-        data={IMAGES}
+        data={images}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -47,13 +46,17 @@ const ProductImageSection = () => {
         onMomentumScrollEnd={onScrollEnd}
         renderItem={({ item }) => (
           <View style={styles.imageWrap}>
-            <Image source={item} style={styles.image} resizeMode="contain" />
+            <Image
+              source={{ uri: item }}
+              style={styles.image}
+              resizeMode="contain"
+            />
           </View>
         )}
       />
 
       <View style={styles.dots}>
-        {IMAGES.map((_, index) => (
+        {images.map((_, index) => (
           <View
             key={index}
             style={[styles.dot, index === activeIndex && styles.activeDot]}

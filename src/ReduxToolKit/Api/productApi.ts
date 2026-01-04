@@ -20,5 +20,19 @@ const productApi = baseApi.injectEndpoints({
   }),
 });
 
+const productImagesHighlights = baseApi.injectEndpoints({
+  endpoints: builder => ({
+    getProductImagesAndHighlights: builder.query<any, { productId: string }>({
+      query: ({ productId }) => ({
+        url: `/dashboard/getProductImagesAndHighlights?productId=${productId}`,
+      }),
+    }),
+  }),
+});
 
-export const { useLazyGetProductByCatagoryQuery,useGetProductByCatagoryQuery } = productApi;
+export const {
+  useLazyGetProductByCatagoryQuery,
+  useGetProductByCatagoryQuery,
+} = productApi;
+export const { useGetProductImagesAndHighlightsQuery } =
+  productImagesHighlights;

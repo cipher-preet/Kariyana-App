@@ -12,7 +12,10 @@ import { Product } from '../../types';
 import { Colors } from '../../styles';
 
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { useGetProductByCatagoryQuery } from '../../ReduxToolKit/Api/productApi';
+import {
+  useGetProductByCatagoryQuery,
+  useGetProductImagesAndHighlightsQuery,
+} from '../../ReduxToolKit/Api/productApi';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { Text } from 'react-native-svg';
 
@@ -50,14 +53,23 @@ const ProductDetailsScreen = () => {
     subcategoryId ? { childCatId: subcategoryId } : skipToken,
   );
 
-  // refine isLoading handling if needed
-  if (isLoading) {
-    return <View style={styles.container}><Text>Loading...</Text></View>;
+  const {
+    data: productImagesData,
+    isLoading: isProductImagesLoading,
+    error,
+  } = useGetProductImagesAndHighlightsQuery({ productId });
+
+  if (isLoading && isProductImagesLoading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
   }
 
   const similarProducts = data?.data?.products ?? [];
-
-  console.log('Similar Products: ', similarProducts);
+  const images = productImagesData?.data?.data?.images || [];
+  const highlights = productImagesData?.data?.data?.heighlights || [];
 
   return (
     <View style={styles.container}>
@@ -66,7 +78,7 @@ const ProductDetailsScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <ProductImageSection />
+        <ProductImageSection images={images} />
 
         <View style={styles.card}>
           <ProductHeader
@@ -89,7 +101,7 @@ const ProductDetailsScreen = () => {
         </View>
 
         <View style={styles.card}>
-          <ProductHighlights />
+          <ProductHighlights highlights={highlights} />
         </View>
 
         <ProductGridSection

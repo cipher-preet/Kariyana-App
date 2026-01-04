@@ -14,6 +14,13 @@ import { Colors, Spacing, Radius, Typography } from '../../styles';
 
 import type { Product } from '../../types';
 
+import {
+  addItemOptimistic,
+  removeItemOptimistic,
+} from '../../ReduxToolKit/Slices/cartSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { triggerCartSync } from '../../ReduxToolKit/Slices/cartSync';
+
 type Props = {
   item: Product;
   onAdd?: (id: string, qty: number) => void;
@@ -24,35 +31,35 @@ const CARD_WIDTH = (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.md * 2) / 3;
 
 const ProductCardMinimal: React.FC<Props> = ({ item, onAdd }) => {
   const navigation = useNavigation<any>();
+  const dispatch = useDispatch();
+  const cartItem = useSelector((state: any) => state.cart.items[item._id]);
+
+  const qty = cartItem?.quantity ?? 0;
 
   const isOutOfStock = item.sku === 0;
-  console.log('Product Card Item: %%%%%%%%% ', isOutOfStock);
-  console.log('Product Card Item: %%%%%%%%% ', item);
-
-  const [qty, setQty] = useState(0);
 
   const handleNavigate = () => {
-    console.log('--------------- reach inside navigation ----------');
     navigation.navigate('ProductDetailsNavigator', {
       product: item,
     });
   };
 
   const increase = () => {
-    const n = qty + 1;
-    setQty(n);
-    onAdd?.(item._id, n);
+    dispatch(
+      addItemOptimistic({
+        product: {
+          productId: item._id,
+          price: item.mrp,
+        },
+        userId: '694fc82c88c809473e4455c3',
+      }),
+    );
+    triggerCartSync();
   };
 
   const decrease = () => {
-    if (qty <= 1) {
-      setQty(0);
-      onAdd?.(item._id, 0);
-      return;
-    }
-    const n = qty - 1;
-    setQty(n);
-    onAdd?.(item._id, n);
+    dispatch(removeItemOptimistic(item._id));
+    triggerCartSync();
   };
 
   return (
