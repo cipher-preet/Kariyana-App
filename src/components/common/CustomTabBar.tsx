@@ -15,9 +15,7 @@ import AccountIcon from '../../assest/account';
 import CartIcon from '../../assest/cart';
 import CategoryIcon from '../../assest/category';
 import HomeIcon from '../../assest/home';
-
-import { useSelector } from 'react-redux';
-import { RootState } from '../../ReduxToolKit/Rtk/store';
+import { useGetCartByUserIdQuery } from '../../ReduxToolKit/Api/cartApi';
 
 const { scale, moderateScale, textScale } = Responsive;
 
@@ -39,7 +37,17 @@ const getIcon = (routeName: string, focused: boolean) => {
 };
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
-  const totalItems = useSelector((state: RootState) => state.cart.totalItems);
+  const userId = '694fc82c88c809473e4455c3';
+
+  const { data } = useGetCartByUserIdQuery(
+    { userId },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
+  const totalItems = data?.data?.totalItems ?? 0;
   return (
     <View style={styles.tabContainer}>
       <View style={styles.row}>

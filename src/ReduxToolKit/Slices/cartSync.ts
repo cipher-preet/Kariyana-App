@@ -26,7 +26,7 @@ const debouncedSync = debounce(async () => {
   } catch (e) {
     console.log('Cart sync failed silently');
   }
-}, 2000);
+}, 1000);
 
 export const triggerCartSync = () => {
   debouncedSync();

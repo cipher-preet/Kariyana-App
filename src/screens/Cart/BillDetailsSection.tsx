@@ -2,42 +2,50 @@ import React from 'react';
 import { View, Text, StyleSheet, TextStyle } from 'react-native';
 import { Colors } from '../../styles';
 
-const BillDetailsSection = () => {
+interface billedItems {
+  subtotal: number;
+  totalItems: number;
+}
+
+const BillDetailsSection: React.FC<billedItems> = ({
+  subtotal,
+  totalItems,
+}) => {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Bill details</Text>
 
       <Row
         label="Items total"
-        value="₹663"
-        strike="₹652"
-        badge="Saved ₹11"
+        value={subtotal}
+        // strike="₹652"
+        // badge="Saved ₹11"
       />
 
       <Row
         label="Delivery charge"
         value="FREE"
-        strike="₹30"
+        strike="₹100"
         valueStyle={{ color: Colors.success }}
       />
 
-      <Row label="Handling charge" value="₹4" />
-      <Row label="Tip for your delivery partner" value="₹1,000" />
+      {/* <Row label="Handling charge" value="₹4" /> */}
+      {/* <Row label="Tip for your delivery partner" value="₹1,000" /> */}
 
       <View style={styles.divider} />
 
       <View style={styles.grandRow}>
         <Text style={styles.grandText}>Grand total</Text>
-        <Text style={styles.grandAmount}>₹1,656</Text>
+        <Text style={styles.grandAmount}>{subtotal}</Text>
       </View>
 
       <View style={styles.savingBox}>
-        <Text style={styles.savingText}>
+        {/* <Text style={styles.savingText}>
           Your total savings{' '}
           <Text style={styles.savingStrong}>₹41</Text>
-        </Text>
+        </Text> */}
         <Text style={styles.savingSub}>
-          Includes ₹30 savings through free delivery
+          Includes ₹100 savings through free delivery
         </Text>
       </View>
     </View>
@@ -56,7 +64,7 @@ const Row = ({
   valueStyle = {},
 }: {
   label: string;
-  value: string;
+  value: number | string;
   strike?: string;
   badge?: string;
   valueStyle?: TextStyle;
@@ -71,8 +79,6 @@ const Row = ({
     </View>
   </View>
 );
-
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   card: {

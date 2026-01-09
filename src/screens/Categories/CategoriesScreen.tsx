@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: Colors.gray900,
-    marginHorizontal: Spacing.lg,
-    marginVertical: Spacing.lg,
+    marginHorizontal: Spacing.md,
+    marginVertical: Spacing.md,
   },
 });

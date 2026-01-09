@@ -10,41 +10,21 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+import { useIsFocused } from '@react-navigation/native';
+
 import ProductGridSection from '../Home/ProductGridSection';
 import CartCheckoutWrapper from './CartCheckoutWrapper';
 import BillDetailsSection from './BillDetailsSection';
 import DeliveryInstructionsSection from './DeliveryInstructionsSection';
+import {
+  useGetCartByUserIdQuery,
+  useUpdateCartMutation,
+} from '../../ReduxToolKit/Api/cartApi';
+import { ActivityIndicator } from 'react-native';
 
 import { Colors, Spacing, Radius } from '../../styles';
 
 import type { Product } from '../../types';
-
-const cartItems = [
-  {
-    id: '1',
-    title: 'Baskin Robbins Mississippi Mud Ice Cream Tub',
-    size: '450 ml',
-    price: 378,
-    qty: 1,
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-  },
-  {
-    id: '2',
-    title: 'Vaseline Petroleum Jelly',
-    size: '40 g',
-    price: 285,
-    qty: 3,
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-  },
-  {
-    id: '3',
-    title: 'Vaseline Petroleum Jelly',
-    size: '40 g',
-    price: 285,
-    qty: 3,
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-  },
-];
 
 const sampleProducts: Product[] = [
   {
@@ -131,9 +111,66 @@ const sampleProducts: Product[] = [
   },
 ];
 
+export interface UpdateCartQuantityRequest {
+  userId: string;
+  productId: string;
+  delta: 1 | -1;
+}
+
+export interface UpdateCartQuantityResponse {
+  success: boolean;
+  data: {
+    status: number;
+    message: string;
+  };
+}
+
 const CartScreen = () => {
+  const isFocused = useIsFocused();
+
   const navigation = useNavigation();
-  const totalAmount = 1667;
+  const [updateCart] = useUpdateCartMutation();
+  const [updatingAction, setUpdatingAction] = React.useState<{
+    productId: string;
+    delta: 1 | -1;
+  } | null>(null);
+
+  const handleQuantityChange = async (productId: string, delta: 1 | -1) => {
+    try {
+      setUpdatingAction({ productId, delta });
+      await updateCart({
+        userId: '694fc82c88c809473e4455c3', // to be dynanmic
+        productId,
+        delta,
+      }).unwrap();
+      refetch();
+    } catch (err) {
+      console.error('Quantity update failed', err);
+    } finally {
+      setUpdatingAction(null);
+    }
+  };
+
+  const userId = '694fc82c88c809473e4455c3';
+
+  const { data, isLoading, error, refetch } = useGetCartByUserIdQuery(
+    { userId },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
+
+  const itemPresent = data?.data?.items?.length || 0;
+  const subtotal = data?.data?.subtotal;
+  const totalItems = data?.data?.totalItems;
+
+  React.useEffect(() => {
+    if (isFocused) {
+      refetch();
+    }
+  }, [isFocused, refetch]);
 
   return (
     <CartCheckoutWrapper
@@ -153,41 +190,88 @@ const CartScreen = () => {
         >
           {/* DELIVERY BANNER */}
           <View style={styles.deliveryBox}>
-            <Text style={styles.deliveryText}>Free delivery in 11 minutes</Text>
-            <Text style={styles.subText}>Shipment of 4 items</Text>
+            <Text style={styles.deliveryText}>
+              Free delivery in 24-48 Hours
+            </Text>
+            <Text style={styles.subText}>Shipment of {itemPresent} items</Text>
           </View>
 
           {/* CART ITEMS */}
-          <View style={styles.cartContainer}>
-            {cartItems.map(item => (
-              <View key={item.id} style={styles.cartItem}>
-                <Image source={item.image} style={styles.cartImg} />
+          {itemPresent === 0 ? (
+            <View style={styles.emptyCartContainer}>
+              <Text style={styles.emptyTitle}>Your cart is empty</Text>
+              <Text style={styles.emptySubtitle}>
+                Looks like you haven’t added anything yet.
+              </Text>
 
-                <View style={styles.itemInfo}>
-                  <Text style={styles.itemTitle} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.itemSize}>{item.size}</Text>
-                </View>
+              <TouchableOpacity
+                style={styles.emptyBtn}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={styles.emptyBtnText}>Continue Shopping</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.cartContainer}>
+              {data?.data.items.map((item: any) => (
+                <View key={item.id} style={styles.cartItem}>
+                  <Image source={{ uri: item.image }} style={styles.cartImg} />
 
-                <View style={styles.qtyPriceWrap}>
-                  <View style={styles.qtyBox}>
-                    <TouchableOpacity style={styles.qtyBtn}>
-                      <Text style={styles.qtyText}>−</Text>
-                    </TouchableOpacity>
-
-                    <Text style={styles.qtyNumber}>{item.qty}</Text>
-
-                    <TouchableOpacity style={styles.qtyBtn}>
-                      <Text style={styles.qtyText}>+</Text>
-                    </TouchableOpacity>
+                  <View style={styles.itemInfo}>
+                    <Text style={styles.itemTitle} numberOfLines={2}>
+                      {item.name}
+                    </Text>
+                    <Text style={styles.itemSize}>
+                      {item.quantityPerUnit} {item.unit}
+                    </Text>
                   </View>
 
-                  <Text style={styles.itemPrice}>₹{item.price}</Text>
+                  <View style={styles.qtyPriceWrap}>
+                    <View style={styles.qtyBox}>
+                      <TouchableOpacity
+                        style={styles.qtyBtn}
+                        disabled={updatingAction?.productId === item.productId}
+                        onPress={() => handleQuantityChange(item.productId, -1)}
+                        activeOpacity={0.7}
+                      >
+                        {updatingAction?.productId === item.productId &&
+                        updatingAction?.delta === -1 ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={Colors.success}
+                          />
+                        ) : (
+                          <Text style={styles.qtyText}>−</Text>
+                        )}
+                      </TouchableOpacity>
+
+                      <Text style={styles.qtyNumber}>{item.quantity}</Text>
+
+                      <TouchableOpacity
+                        style={styles.qtyBtn}
+                        disabled={updatingAction?.productId === item.productId}
+                        onPress={() => handleQuantityChange(item.productId, +1)}
+                        activeOpacity={0.7}
+                      >
+                        {updatingAction?.productId === item.productId &&
+                        updatingAction?.delta === 1 ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={Colors.success}
+                          />
+                        ) : (
+                          <Text style={styles.qtyText}>+</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Price */}
+                    <Text style={styles.itemPrice}>₹{item.price}</Text>
+                  </View>
                 </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          )}
 
           <Text style={styles.sectionTitle}>You might also like</Text>
 
@@ -197,7 +281,8 @@ const CartScreen = () => {
             onAdd={(id, qty) => console.log(id, qty)}
           />
 
-          <BillDetailsSection />
+          <BillDetailsSection subtotal={subtotal} totalItems={totalItems} />
+
           <DeliveryInstructionsSection />
 
           <ProductGridSection
@@ -211,7 +296,7 @@ const CartScreen = () => {
         <View style={styles.orderBar}>
           <View>
             <Text style={styles.totalLabel}>TOTAL</Text>
-            <Text style={styles.totalAmount}>₹{totalAmount}</Text>
+            <Text style={styles.totalAmount}>₹{subtotal}</Text>
           </View>
 
           <TouchableOpacity style={styles.orderBtn}>
@@ -301,7 +386,11 @@ const styles = StyleSheet.create({
   },
 
   qtyBtn: {
-    paddingHorizontal: Spacing.xs,
+    width: 22,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
   },
 
   qtyText: {
@@ -366,6 +455,47 @@ const styles = StyleSheet.create({
   orderBtnText: {
     color: Colors.white,
     fontSize: 16,
+    fontWeight: '700',
+  },
+  qtyLoader: {
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  emptyCartContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.xl * 2,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.gray900,
+  },
+
+  emptySubtitle: {
+    fontSize: 14,
+    color: Colors.gray500,
+    marginTop: Spacing.sm,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+
+  emptyBtn: {
+    marginTop: Spacing.lg,
+    backgroundColor: Colors.success,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.md,
+  },
+
+  emptyBtnText: {
+    color: Colors.white,
+    fontSize: 14,
     fontWeight: '700',
   },
 });
