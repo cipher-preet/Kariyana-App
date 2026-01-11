@@ -15,8 +15,6 @@ const CategorySkeleton = () => {
         LinearGradient={LinearGradient}
         style={styles.title}
       />
-
-      {/* Cards Skeleton */}
       <View style={styles.row}>
         {[...Array(NUM_COLUMNS)].map((_, index) => (
           <View key={index} style={styles.card}>

@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-
+import { ActivityIndicator } from 'react-native';
 import WrapperContainer from '../../components/common/WrapperContainer/WrapperContainer';
 import CategoryGrid from './CategoryGrid';
 
@@ -13,7 +13,13 @@ const CategoriesScreen = () => {
   const { data, isLoading, error } = useGetCategoriesQuery<ApiResponse>();
 
   if (error || !data) {
-    return <Text>Something went wrong</Text>; // need to be chnage like (adjust hr ui)
+    return (
+      <>
+        <WrapperContainer title="Categories">
+          <ActivityIndicator size="small" color={Colors.success} />
+        </WrapperContainer>
+      </>
+    );
   }
 
   const categories = Object.entries(data?.data);
