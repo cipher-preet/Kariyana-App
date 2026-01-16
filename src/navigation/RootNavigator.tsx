@@ -7,7 +7,7 @@ import AppNavigator from './AppNavigator';
 const Stack = createNativeStackNavigator();
 
 const RootNavigator = () => {
-  const isLoggedIn = true;
+  const isLoggedIn = false;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

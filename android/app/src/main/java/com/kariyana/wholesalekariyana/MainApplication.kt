@@ -1,4 +1,4 @@
-package com.kariyana
+package com.kariyana.wholesalekariyana
 
 import android.app.Application
 import com.facebook.react.PackageList

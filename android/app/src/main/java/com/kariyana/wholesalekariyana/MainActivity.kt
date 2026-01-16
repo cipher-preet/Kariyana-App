@@ -1,4 +1,4 @@
-package com.kariyana
+package com.kariyana.wholesalekariyana
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

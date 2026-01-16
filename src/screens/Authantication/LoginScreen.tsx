@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+// import { useAuth } from '../../context/AuthContext';
+import auth from '@react-native-firebase/auth';
+
 import {
   View,
   Text,
@@ -14,7 +17,33 @@ import { Colors, Spacing, Radius } from '../../styles';
 import { moderateScaleVertical } from '../../styles/responsiveStyles';
 
 const LoginScreen = ({ navigation }: any) => {
-  const [phone, setPhone] = useState('');
+
+  // console.log('Firebase app:', auth().app.name);
+
+  // const { phone, setPhone, setConfirmation } = useAuth();
+
+
+
+useEffect(() => {
+  try {
+    console.log('Firebase app name:', auth().app.name);
+  } catch (e) {
+    console.log('Firebase not linked:', e);
+  }
+}, []);
+
+
+//   const sendOtp = async () => {
+//   if (phone.length !== 10) return;
+
+//   try {
+//     // const confirmationResult = await auth().signInWithPhoneNumber(`+91${phone}`);
+//     setConfirmation(confirmationResult);
+//     navigation.navigate('OtpVerify');
+//   } catch (error) {
+//     console.log('OTP error:', error);
+//   }
+// };
 
   return (
     <KeyboardAvoidingView
@@ -22,7 +51,7 @@ const LoginScreen = ({ navigation }: any) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar
-        barStyle="dark-content"
+        barStyle="dark-content" 
         backgroundColor={Colors.white}
         translucent={false}
       />
@@ -52,8 +81,8 @@ const LoginScreen = ({ navigation }: any) => {
               placeholderTextColor={Colors.gray400}
               keyboardType="number-pad"
               maxLength={10}
-              value={phone}
-              onChangeText={setPhone}
+              // value={phone}
+              // onChangeText={setPhone}
               style={styles.input}
             />
           </View>
@@ -61,20 +90,19 @@ const LoginScreen = ({ navigation }: any) => {
           <TouchableOpacity
             style={styles.button}
             activeOpacity={0.9}
-            onPress={() => navigation.navigate('OtpVerify')}
+            // onPress={sendOtp}
           >
             <Text style={styles.buttonText}>Continue</Text>
           </TouchableOpacity>
 
-<TouchableOpacity
-          style={styles.registerBtn}
-          onPress={() => navigation.navigate('RegisterStep1')}
-        >
-          <Text style={styles.registerText}>
-            New here? <Text style={styles.registerBold}>Register</Text>
-          </Text>
-        </TouchableOpacity>
-
+          <TouchableOpacity
+            style={styles.registerBtn}
+            onPress={() => navigation.navigate('RegisterStep1')}
+          >
+            <Text style={styles.registerText}>
+              New here? <Text style={styles.registerBold}>Register</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -168,18 +196,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   registerBtn: {
-  marginTop: Spacing.lg,
-  alignItems: 'center',
-},
+    marginTop: Spacing.lg,
+    alignItems: 'center',
+  },
 
-registerText: {
-  fontSize: 14,
-  color: Colors.gray600,
-},
+  registerText: {
+    fontSize: 14,
+    color: Colors.gray600,
+  },
 
-registerBold: {
-  color: Colors.primary,
-  fontWeight: '600',
-},
-
+  registerBold: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
 });
