@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-// import { useAuth } from '../../context/AuthContext';
-import auth from '@react-native-firebase/auth';
+import { useAuth } from '../../context/AuthContext';
+
+// import auth from '@react-native-firebase/auth';
+import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
 
 import {
   View,
@@ -12,38 +14,36 @@ import {
   Platform,
   Image,
   StatusBar,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Colors, Spacing, Radius } from '../../styles';
 import { moderateScaleVertical } from '../../styles/responsiveStyles';
 
 const LoginScreen = ({ navigation }: any) => {
+  const { phone, setPhone, setConfirmation } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  // console.log('Firebase app:', auth().app.name);
+  const sendOtp = async () => {
+    if (phone.length !== 10) return;
 
-  // const { phone, setPhone, setConfirmation } = useAuth();
+    try {
+      setLoading(true);
+      const authInstance = getAuth();
+      const confirmationResult = await signInWithPhoneNumber(
+        authInstance,
+        `+91${phone}`,
+      );
 
-
-
-useEffect(() => {
-  try {
-    console.log('Firebase app name:', auth().app.name);
-  } catch (e) {
-    console.log('Firebase not linked:', e);
-  }
-}, []);
-
-
-//   const sendOtp = async () => {
-//   if (phone.length !== 10) return;
-
-//   try {
-//     // const confirmationResult = await auth().signInWithPhoneNumber(`+91${phone}`);
-//     setConfirmation(confirmationResult);
-//     navigation.navigate('OtpVerify');
-//   } catch (error) {
-//     console.log('OTP error:', error);
-//   }
-// };
+      setConfirmation(confirmationResult);
+      navigation.navigate('OtpVerify');
+    } catch (error) {
+      console.log('OTP error:', error);
+      Alert.alert('OTP Failed', 'Unable to send OTP. Try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -51,7 +51,7 @@ useEffect(() => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar
-        barStyle="dark-content" 
+        barStyle="dark-content"
         backgroundColor={Colors.white}
         translucent={false}
       />
@@ -81,18 +81,22 @@ useEffect(() => {
               placeholderTextColor={Colors.gray400}
               keyboardType="number-pad"
               maxLength={10}
-              // value={phone}
-              // onChangeText={setPhone}
+              value={phone}
+              onChangeText={setPhone}
               style={styles.input}
             />
           </View>
 
           <TouchableOpacity
-            style={styles.button}
-            activeOpacity={0.9}
-            // onPress={sendOtp}
+            style={[styles.button, loading && { opacity: 0.6 }]}
+            disabled={loading}
+            onPress={sendOtp}
           >
-            <Text style={styles.buttonText}>Continue</Text>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Continue</Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity

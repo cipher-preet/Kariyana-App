@@ -1,16 +1,27 @@
-// import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
-// const AuthContext = createContext<any>(null);
+type AuthContextType = {
+  phone: string;
+  setPhone: (v: string) => void;
+  confirmation: any;
+  setConfirmation: (v: any) => void;
+};
 
-// export const AuthProvider = ({ children }: any) => {
-//   const [confirmation, setConfirmation] = useState<any>(null);
-//   const [phone, setPhone] = useState('');
+const AuthContext = createContext<AuthContextType  | null>(null);
 
-//   return (
-//     <AuthContext.Provider value={{ confirmation, setConfirmation, phone, setPhone }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
+export const AuthProvider = ({ children }: any) => {
+  const [confirmation, setConfirmation] = useState<any>(null);
+  const [phone, setPhone] = useState('');
 
-// export const useAuth = () => useContext(AuthContext);
+  return (
+    <AuthContext.Provider value={{ phone, setPhone, confirmation, setConfirmation }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  return ctx;
+};
