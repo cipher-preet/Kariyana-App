@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-
-// import auth from '@react-native-firebase/auth';
 import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
 
 import {
@@ -71,8 +69,10 @@ const LoginScreen = ({ navigation }: any) => {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>Login using your mobile number</Text>
+          <Text style={styles.title}>Welcome To Kariyana</Text>
+          <Text style={styles.subtitle}>
+            Login OR Register using your mobile number
+          </Text>
 
           <View style={styles.inputWrapper}>
             <Text style={styles.prefix}>+91</Text>
@@ -102,11 +102,7 @@ const LoginScreen = ({ navigation }: any) => {
           <TouchableOpacity
             style={styles.registerBtn}
             onPress={() => navigation.navigate('RegisterStep1')}
-          >
-            <Text style={styles.registerText}>
-              New here? <Text style={styles.registerBold}>Register</Text>
-            </Text>
-          </TouchableOpacity>
+          ></TouchableOpacity>
         </View>
       </View>
     </KeyboardAvoidingView>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,29 +6,95 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import AuthContainer from '../../../components/common/AuthWrapper';
+import StepIndicator from '../../Authantication/Register/StepIndicator';
 import { Colors, Spacing, Radius } from '../../../styles';
 
 const RegisterStep1 = ({ navigation }: any) => {
-  return (
-    <AuthContainer scrollable contentPadding={Spacing.xl}>
-      <Text style={styles.title}>Personal Details</Text>
-      <Text style={styles.subtitle}>Tell us a bit about yourself</Text>
+  const [focused, setFocused] = useState<string | null>(null);
+  const [dob, setDob] = useState<Date | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
-      <TextInput placeholder="Full Name" style={styles.input} />
-      <TextInput placeholder="Date of Birth" style={styles.input} />
-      <TextInput
-        placeholder="Address"
-        style={[styles.input, styles.multiline]}
-        multiline
-      />
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('RegisterStep2')}
+  const renderInput = (label: string, field: string, multiline = false) => (
+    <View
+      style={[styles.inputCard, focused === field && styles.inputCardFocused]}
+    >
+      <Text
+        style={[
+          styles.inputLabel,
+          focused === field && styles.inputLabelFocused,
+        ]}
       >
-        <Text style={styles.buttonText}>Next</Text>
-      </TouchableOpacity>
+        {label}
+      </Text>
+
+      <TextInput
+        style={[styles.textInput, multiline && styles.multiline]}
+        onFocus={() => setFocused(field)}
+        onBlur={() => setFocused(null)}
+        multiline={multiline}
+      />
+    </View>
+  );
+
+  return (
+    <AuthContainer scrollable contentPadding={0}>
+      <View style={styles.header}>
+        <StepIndicator step={1} total={3} />
+      </View>
+
+      <View style={styles.body}>
+        <Text style={styles.title}>Personal Information</Text>
+        <Text style={styles.subtitle}>
+          Tell us a little about yourself to get started
+        </Text>
+
+        <View style={styles.formCard}>
+          {renderInput('Full Name', 'name')}
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setShowPicker(true)}
+          >
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Date of Birth</Text>
+              <Text style={styles.textValue}>
+                {dob ? formatDate(dob) : 'Select date'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {showPicker && (
+            <DateTimePicker
+              value={dob || new Date(2000, 0, 1)}
+              mode="date"
+              maximumDate={new Date()}
+              display="calendar"
+              onChange={(_, selectedDate) => {
+                setShowPicker(false);
+                if (selectedDate) setDob(selectedDate);
+              }}
+            />
+          )}
+
+          {renderInput('Address', 'address', true)}
+        </View>
+
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate('RegisterStep2')}
+        >
+          <Text style={styles.primaryButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
     </AuthContainer>
   );
 };
@@ -36,68 +102,88 @@ const RegisterStep1 = ({ navigation }: any) => {
 export default RegisterStep1;
 
 const styles = StyleSheet.create({
+  header: { alignItems: 'center' },
+
+  body: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xl,
+  },
+
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '800',
     color: Colors.gray900,
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.gray600,
     marginBottom: Spacing.xl,
   },
 
-  input: {
-    height: 52,
+  formCard: {
+    backgroundColor: Colors.white,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+    elevation: 6,
+  },
+
+  inputCard: {
     borderWidth: 1,
-    borderColor: Colors.gray300,
+    borderColor: Colors.gray200,
     borderRadius: Radius.lg,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 10,
+    backgroundColor: Colors.gray50,
     marginBottom: Spacing.lg,
+  },
+
+  inputCardFocused: {
+    borderColor: Colors.primary,
     backgroundColor: Colors.white,
   },
 
+  inputLabel: {
+    fontSize: 14,
+    color: Colors.gray500,
+    marginBottom: 6,
+  },
+
+  inputLabelFocused: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+
+  textInput: {
+    fontSize: 16,
+    color: Colors.gray900,
+  },
+
+  textValue: {
+    fontSize: 16,
+    color: Colors.gray900,
+  },
+
   multiline: {
-    height: 80,
+    height: 90,
     textAlignVertical: 'top',
   },
 
-  uploadBox: {
-    height: 52,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: Colors.gray400,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-
-  uploadText: {
-    color: Colors.gray600,
-  },
-
-  button: {
-    height: 52,
-    borderRadius: Radius.lg,
+  primaryButton: {
+    height: 58,
+    borderRadius: Radius.xl,
     backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Spacing.md,
   },
 
-  buttonText: {
-    fontSize: 15,
-    fontWeight: '600',
+  primaryButtonText: {
+    fontSize: 17,
+    fontWeight: '700',
     color: Colors.white,
-  },
-
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
   },
 });

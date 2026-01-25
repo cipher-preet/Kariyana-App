@@ -1,22 +1,28 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { applyGlobalTextStyle } from './src/config/globalText';
-import RootNavigator from './src/navigation/RootNavigator';
-
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Provider } from 'react-redux';
+
 import { store } from './src/ReduxToolKit/Rtk/store';
+import RootNavigator from './src/navigation/RootNavigator';
+import AuthStack from './src/navigation/AuthStack';
+import AppNavigator from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/context/AuthContext';
 
-applyGlobalTextStyle();
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <Provider store={store}>
-      <AuthProvider>
       <NavigationContainer>
-        <RootNavigator />
+        <AuthProvider>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Root" component={RootNavigator} />
+            <Stack.Screen name="Auth" component={AuthStack} />
+            <Stack.Screen name="App" component={AppNavigator} />
+          </Stack.Navigator>
+        </AuthProvider>
       </NavigationContainer>
-    </AuthProvider>
     </Provider>
   );
 }

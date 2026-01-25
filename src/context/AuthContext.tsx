@@ -7,14 +7,16 @@ type AuthContextType = {
   setConfirmation: (v: any) => void;
 };
 
-const AuthContext = createContext<AuthContextType  | null>(null);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: any) => {
   const [confirmation, setConfirmation] = useState<any>(null);
   const [phone, setPhone] = useState('');
 
   return (
-    <AuthContext.Provider value={{ phone, setPhone, confirmation, setConfirmation }}>
+    <AuthContext.Provider
+      value={{ phone, setPhone, confirmation, setConfirmation }}
+    >
       {children}
     </AuthContext.Provider>
   );

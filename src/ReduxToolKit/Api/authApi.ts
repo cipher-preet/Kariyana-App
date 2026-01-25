@@ -1,19 +1,32 @@
-// import { baseApi } from './baseApi'
+import { baseApi } from './baseApi';
 
-// export const authApi = baseApi.injectEndpoints({
-//   endpoints: (builder) => ({
-//     login: builder.mutation<
-//       { token: string },
-//       { phone: string; otp: string }
-//     >({
-//       query: (body) => ({
-//         url: '/auth/login',
-//         method: 'POST',
-//         body,
-//       }),
-//       invalidatesTags: ['Auth'],
-//     }),
-//   }),
-// })
+export interface LoginResponse {
+  nextScreen: 'HOME' | 'REGISTER' | 'PENDING' | 'REJECTED';
+  userId: string;
+  role?: 'BUYER' | 'ADMIN';
+}
 
-// export const { useLoginMutation } = authApi
+export const authApi = baseApi.injectEndpoints({
+  endpoints: builder => ({
+    loginUser: builder.mutation<any, { token: string }>({
+      query: ({ token }) => ({
+        url: '/auth/loginUser',
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }),
+    }),
+
+    getMe: builder.query<any, void>({
+      query: () => ({
+        url: '/auth/verifyme',
+        method: 'GET',
+        withCredentials: true,
+      }),
+    }),
+  }),
+});
+
+export const { useLoginUserMutation, useGetMeQuery } = authApi;

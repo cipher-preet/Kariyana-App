@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -13,10 +14,14 @@ import {
 import { Colors, Spacing, Radius } from '../../styles';
 import auth from '@react-native-firebase/auth';
 import { useAuth } from '../../context/AuthContext';
+import { useLoginUserMutation } from '../../ReduxToolKit/Api/authApi';
 
 const OTP_LENGTH = 6;
 
 const OtpVerifyScreen = () => {
+  const navigation = useNavigation<any>();
+  const [loginUser] = useLoginUserMutation();
+
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -26,24 +31,28 @@ const OtpVerifyScreen = () => {
 
   //--------------------------------------------------------------------------------
   const verifyOtp = async () => {
-    if (otp.length !== OTP_LENGTH) {
+    if (otp.length !== 6 || !confirmation) {
       Alert.alert('Invalid OTP');
       return;
     }
 
-    if (!confirmation) {
-      Alert.alert('Session expired. Please resend OTP.');
-      return;
-    }
     try {
       setLoading(true);
       await confirmation.confirm(otp);
+
+      const token = await auth().currentUser?.getIdToken();
+      if (!token) throw new Error('Token not found');
+
+      await loginUser({ token });
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'RegisterStep1' }],
+      });
+    } catch (err: any) {
+      Alert.alert('Login failed', err?.message || 'Try again');
+    } finally {
       setLoading(false);
-      Alert.alert('Login successful');
-      // navigation.replace('Home'); // navigate to app
-    } catch (error) {
-      setLoading(false);
-      Alert.alert('Invalid OTP');
     }
   };
 
@@ -158,26 +167,24 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
- otpRow: {
-  flexDirection: 'row',
-  justifyContent: 'center',
-  alignItems: 'center',
-  marginBottom: Spacing.lg,
-},
+  otpRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
 
-
-otpBox: {
-  width: 52,
-  height: 56,
-  borderRadius: Radius.lg,
-  borderWidth: 1.5,
-  borderColor: Colors.gray300,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: Colors.white,
-  marginHorizontal: 6, 
-},
-
+  otpBox: {
+    width: 52,
+    height: 56,
+    borderRadius: Radius.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.gray300,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    marginHorizontal: 6,
+  },
 
   activeBox: {
     borderColor: Colors.primary,

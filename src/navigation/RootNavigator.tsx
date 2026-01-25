@@ -1,22 +1,53 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import AuthStack from './AuthStack';
-import AppNavigator from './AppNavigator';
-
-const Stack = createNativeStackNavigator();
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useGetMeQuery } from '../ReduxToolKit/Api/authApi';
 
 const RootNavigator = () => {
-  const isLoggedIn = false;
+  const navigation = useNavigation<any>();
+  const { data, isLoading, isError } = useGetMeQuery();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (isError || data?.data?.status === 'REGISTER') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Auth' }],
+      });
+      return;
+    }
+
+    if (isError || data?.data?.status === 'PENDING') {
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: 'Auth',
+            params: { screen: 'RegisterSuccess' },
+          },
+        ],
+      });
+      return;
+    }
+
+    if (data?.data?.status === 'APPROVED') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'App' }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Auth' }],
+      });
+    }
+  }, [data, isLoading, isError]);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isLoggedIn ? (
-        <Stack.Screen name="App" component={AppNavigator} />
-      ) : (
-        <Stack.Screen name="Auth" component={AuthStack} />
-      )}
-    </Stack.Navigator>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" />
+    </View>
   );
 };
 
