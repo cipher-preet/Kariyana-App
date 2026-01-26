@@ -9,14 +9,40 @@ import {
 import AuthContainer from '../../../components/common/AuthWrapper';
 import StepIndicator from '../../Authantication/Register/StepIndicator';
 import { Colors, Spacing, Radius } from '../../../styles';
+import { ActivityIndicator } from 'react-native';
+
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../../../ReduxToolKit/Rtk/store';
+import {
+  updateDraft,
+  clearDraft,
+} from '../../../ReduxToolKit/Slices/registerDraftSlice';
+import { useRegisterShopMutation } from '../../../ReduxToolKit/Api/authApi';
 
 const RegisterStep3 = ({ navigation }: any) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const registerDraft = useSelector((state: RootState) => state.registerDraft);
+
+  const [registerShop, { isLoading }] = useRegisterShopMutation();
+
   const [focused, setFocused] = useState<string | null>(null);
   const [shopAge, setShopAge] = useState<string | null>(null);
   const [dailySales, setDailySales] = useState<string | null>(null);
   const [monthlySales, setMonthlySales] = useState<string | null>(null);
+  const [gst, setGst] = useState('');
 
-  const renderInput = (label: string, field: string) => (
+  console.log(shopAge);
+  console.log(dailySales);
+  console.log(monthlySales);
+  console.log(gst);
+
+  const renderInput = (
+    label: string,
+    field: string,
+    value: string,
+    onChangeText: (text: string) => void,
+  ) => (
     <View
       style={[styles.inputCard, focused === field && styles.inputCardFocused]}
     >
@@ -31,6 +57,8 @@ const RegisterStep3 = ({ navigation }: any) => {
 
       <TextInput
         style={styles.textInput}
+        value={value}
+        onChangeText={onChangeText}
         onFocus={() => setFocused(field)}
         onBlur={() => setFocused(null)}
       />
@@ -70,6 +98,43 @@ const RegisterStep3 = ({ navigation }: any) => {
     </View>
   );
 
+  const handleFinish = async () => {
+    try {
+      const formData = new FormData();
+
+      formData.append('name', registerDraft.name);
+      formData.append('dateofbirth', registerDraft.dateofbirth);
+      formData.append('address', registerDraft.address);
+
+      formData.append('shopName', registerDraft.shopName);
+      formData.append('Type', registerDraft.Type);
+
+      if (registerDraft.shopPhotos) {
+        formData.append('shopPhotos', {
+          uri: registerDraft.shopPhotos,
+          name: 'shop.jpg',
+          type: 'image/jpeg',
+        } as any);
+      }
+
+      if (gst) formData.append('gstNumber', gst);
+      if (shopAge) formData.append('tenureOfShop', shopAge);
+      if (dailySales) formData.append('Dsale', dailySales);
+      if (monthlySales) formData.append('Msales', monthlySales);
+
+      const response = await registerShop(formData).unwrap();
+
+      console.log(response);
+
+      dispatch(clearDraft());
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'RegisterSuccess' }],
+      });
+    } catch (error) {
+      console.error('Registration failed:', error);
+    }
+  };
   return (
     <AuthContainer scrollable contentPadding={0}>
       <View style={styles.header}>
@@ -83,8 +148,7 @@ const RegisterStep3 = ({ navigation }: any) => {
         </Text>
 
         <View style={styles.formCard}>
-          {renderInput('GST Number (optional)', 'gst')}
-          {/* {renderInput('FSSAI Number (optional)', 'fssai')} */}
+          {renderInput('GST Number (optional)', 'gst', gst, setGst)}
 
           {renderOptions(
             'How long have you been running this shop?',
@@ -119,10 +183,20 @@ const RegisterStep3 = ({ navigation }: any) => {
         </View>
 
         <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => navigation.replace('RegisterSuccess')}
+          style={[styles.primaryButton, isLoading && { opacity: 0.7 }]}
+          disabled={isLoading}
+          onPress={handleFinish}
         >
-          <Text style={styles.primaryButtonText}>Finish Registration</Text>
+          {isLoading ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <ActivityIndicator color="#fff" size="small" />
+              <Text style={[styles.primaryButtonText, { marginLeft: 8 }]}>
+                Registering…
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.primaryButtonText}>Finish Registration</Text>
+          )}
         </TouchableOpacity>
       </View>
     </AuthContainer>
@@ -130,8 +204,6 @@ const RegisterStep3 = ({ navigation }: any) => {
 };
 
 export default RegisterStep3;
-
-/* ===================== STYLES ===================== */
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center' },
@@ -199,7 +271,6 @@ const styles = StyleSheet.create({
     color: Colors.gray900,
   },
 
-  /* RANGE OPTIONS */
   optionGroup: {
     marginBottom: Spacing.xl,
   },

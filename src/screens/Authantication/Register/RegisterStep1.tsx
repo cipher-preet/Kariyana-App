@@ -11,9 +11,23 @@ import AuthContainer from '../../../components/common/AuthWrapper';
 import StepIndicator from '../../Authantication/Register/StepIndicator';
 import { Colors, Spacing, Radius } from '../../../styles';
 
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../../ReduxToolKit/Rtk/store';
+import { updateDraft } from '../../../ReduxToolKit/Slices/registerDraftSlice';
+
 const RegisterStep1 = ({ navigation }: any) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+
   const [focused, setFocused] = useState<string | null>(null);
   const [dob, setDob] = useState<Date | null>(null);
+
+  console.log('date of birth ', dob?.toISOString());
+  console.log('name ', name);
+  console.log('address ', address);
+
   const [showPicker, setShowPicker] = useState(false);
 
   const formatDate = (date: Date) =>
@@ -23,7 +37,13 @@ const RegisterStep1 = ({ navigation }: any) => {
       year: 'numeric',
     });
 
-  const renderInput = (label: string, field: string, multiline = false) => (
+  const renderInput = (
+    label: string,
+    field: string,
+    value: string,
+    onChangeText: (text: string) => void,
+    multiline = false,
+  ) => (
     <View
       style={[styles.inputCard, focused === field && styles.inputCardFocused]}
     >
@@ -38,6 +58,8 @@ const RegisterStep1 = ({ navigation }: any) => {
 
       <TextInput
         style={[styles.textInput, multiline && styles.multiline]}
+        value={value}
+        onChangeText={onChangeText}
         onFocus={() => setFocused(field)}
         onBlur={() => setFocused(null)}
         multiline={multiline}
@@ -45,6 +67,17 @@ const RegisterStep1 = ({ navigation }: any) => {
     </View>
   );
 
+  const handleContinue = () => {
+    dispatch(
+      updateDraft({
+        name,
+        address,
+        dateofbirth: dob ? dob.toISOString() : '',
+      }),
+    );
+
+    navigation.navigate('RegisterStep2');
+  };
   return (
     <AuthContainer scrollable contentPadding={0}>
       <View style={styles.header}>
@@ -58,7 +91,7 @@ const RegisterStep1 = ({ navigation }: any) => {
         </Text>
 
         <View style={styles.formCard}>
-          {renderInput('Full Name', 'name')}
+          {renderInput('Full Name', 'name', name, setName)}
 
           <TouchableOpacity
             activeOpacity={0.8}
@@ -78,20 +111,26 @@ const RegisterStep1 = ({ navigation }: any) => {
               mode="date"
               maximumDate={new Date()}
               display="calendar"
-              onChange={(_, selectedDate) => {
+              onChange={(event: any, selectedDate?: Date) => {
                 setShowPicker(false);
-                if (selectedDate) setDob(selectedDate);
+
+                if (event?.type === 'set' && selectedDate) {
+                  const normalizedDate = new Date(
+                    selectedDate.getFullYear(),
+                    selectedDate.getMonth(),
+                    selectedDate.getDate(),
+                  );
+
+                  setDob(normalizedDate);
+                }
               }}
             />
           )}
 
-          {renderInput('Address', 'address', true)}
+          {renderInput('Address', 'address', address, setAddress, true)}
         </View>
 
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('RegisterStep2')}
-        >
+        <TouchableOpacity style={styles.primaryButton} onPress={handleContinue}>
           <Text style={styles.primaryButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>

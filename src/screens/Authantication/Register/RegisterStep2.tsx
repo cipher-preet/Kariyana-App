@@ -14,6 +14,10 @@ import AuthContainer from '../../../components/common/AuthWrapper';
 import StepIndicator from '../../Authantication/Register/StepIndicator';
 import { Colors, Spacing, Radius } from '../../../styles';
 
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../../ReduxToolKit/Rtk/store';
+import { updateDraft } from '../../../ReduxToolKit/Slices/registerDraftSlice';
+
 const SHOP_TYPES = [
   'Grocery',
   'Medical',
@@ -26,11 +30,24 @@ const SHOP_TYPES = [
 ];
 
 const RegisterStep2 = ({ navigation }: any) => {
+  const dispatch = useDispatch<AppDispatch>();
+
   const [focused, setFocused] = useState<string | null>(null);
   const [shopType, setShopType] = useState<string | null>(null);
   const [shopImage, setShopImage] = useState<string | null>(null);
+  const [shopName, setShopName] = useState<string | ''>('');
 
-  const renderInput = (label: string, field: string) => (
+  console.log('this is shop type ', shopType);
+  console.log('this is shop image ', shopImage);
+  console.log('this is shop image ', shopName);
+
+  const renderInput = (
+    label: string,
+    field: string,
+    value: string,
+    onChangeText: (text: string) => void,
+    multiline = false,
+  ) => (
     <View
       style={[styles.inputCard, focused === field && styles.inputCardFocused]}
     >
@@ -47,54 +64,67 @@ const RegisterStep2 = ({ navigation }: any) => {
         style={styles.textInput}
         onFocus={() => setFocused(field)}
         onBlur={() => setFocused(null)}
+        value={value}
+        onChangeText={onChangeText}
       />
     </View>
   );
 
-const openCamera = async () => {
-  if (Platform.OS === 'android') {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-      {
-        title: 'Camera Permission',
-        message:
-          'We need camera access to take a photo of your shop for verification',
-        buttonPositive: 'Allow',
-        buttonNegative: 'Cancel',
-      }
-    );
-
-    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-      Alert.alert(
-        'Permission Required',
-        'Please allow camera access from app settings'
+  const openCamera = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message:
+            'We need camera access to take a photo of your shop for verification',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Cancel',
+        },
       );
-      return;
-    }
-  }
 
-  launchCamera(
-    {
-      mediaType: 'photo',
-      cameraType: 'back',
-      quality: 0.7,
-      saveToPhotos: false,
-    },
-    response => {
-      if (response.didCancel) return;
-
-      if (response.errorCode) {
-        console.log('Camera error:', response.errorMessage);
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert(
+          'Permission Required',
+          'Please allow camera access from app settings',
+        );
         return;
       }
-
-      if (response.assets?.length) {
-        setShopImage(response.assets[0].uri || null);
-      }
     }
-  );
-};
 
+    launchCamera(
+      {
+        mediaType: 'photo',
+        cameraType: 'back',
+        quality: 0.7,
+        saveToPhotos: false,
+      },
+      response => {
+        if (response.didCancel) return;
+
+        if (response.errorCode) {
+          console.log('Camera error:', response.errorMessage);
+          return;
+        }
+
+        if (response.assets?.length) {
+          setShopImage(response.assets[0].uri || null);
+        }
+      },
+    );
+  };
+
+  const handleContinue = () => {
+  dispatch(
+    updateDraft({
+      shopName,
+      Type: shopType || '',
+      shopPhotos: shopImage,
+    })
+  );
+
+  navigation.navigate('RegisterStep3');
+};
 
   return (
     <AuthContainer scrollable contentPadding={0}>
@@ -109,7 +139,7 @@ const openCamera = async () => {
         </Text>
 
         <View style={styles.formCard}>
-          {renderInput('Shop Name', 'shopName')}
+          {renderInput('Shop Name', 'shopName', shopName, setShopName)}
 
           {/* SHOP TYPE */}
           <Text style={styles.sectionTitle}>Type of Shop</Text>
@@ -117,10 +147,7 @@ const openCamera = async () => {
             {SHOP_TYPES.map(type => (
               <TouchableOpacity
                 key={type}
-                style={[
-                  styles.chip,
-                  shopType === type && styles.chipActive,
-                ]}
+                style={[styles.chip, shopType === type && styles.chipActive]}
                 onPress={() => setShopType(type)}
               >
                 <Text
@@ -135,7 +162,6 @@ const openCamera = async () => {
             ))}
           </View>
 
-          {/* SHOP PHOTO */}
           <TouchableOpacity
             style={styles.uploadCard}
             activeOpacity={0.85}
@@ -156,7 +182,7 @@ const openCamera = async () => {
 
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => navigation.navigate('RegisterStep3')}
+          onPress={handleContinue}
         >
           <Text style={styles.primaryButtonText}>Continue</Text>
         </TouchableOpacity>
@@ -167,7 +193,6 @@ const openCamera = async () => {
 
 export default RegisterStep2;
 
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   header: { alignItems: 'center' },

@@ -43,6 +43,8 @@ const OtpVerifyScreen = () => {
       const token = await auth().currentUser?.getIdToken();
       if (!token) throw new Error('Token not found');
 
+      console.log("this is token ", token)
+
       await loginUser({ token });
 
       navigation.reset({

@@ -26,7 +26,17 @@ export const authApi = baseApi.injectEndpoints({
         withCredentials: true,
       }),
     }),
+
+    registerShop: builder.mutation<any, any>({
+      query: formData => ({
+        url: '/auth/registerUser',
+        method: 'POST',
+        body:formData,
+        withCredentials: true,
+      }),
+    }),
   }),
 });
 
-export const { useLoginUserMutation, useGetMeQuery } = authApi;
+export const { useLoginUserMutation, useGetMeQuery, useRegisterShopMutation } =
+  authApi;
