@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StatusBar,
   ScrollView,
   StyleSheet,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Colors, Radius, Shadows, Spacing } from '../../styles';
 import SearchBar from './SearchBar';
@@ -17,13 +18,32 @@ import ProductGridSection from './ProductGridSection';
 import SeeAllSection from './SeeAllSection';
 import EventsSection from './EventsSection';
 import BottomBrandSection from '../../components/common/ButtomSection';
+import {
+  useGetHomePageDataQuery,
+  useLazyGetHomePageDataQuery,
+} from '../../ReduxToolKit/Api/productApi';
 
-// Get status bar height manually
+interface ApiProduct {
+  _id: string;
+  name: string;
+  images: string;
+  mrp: number;
+  sellingPrice: number;
+  reviewCount: number;
+  rating: number;
+  unit: string;
+  quantityPerUnit: number;
+}
+interface ApiCategorySection {
+  _id: string;
+  categoryName: string;
+  products: ApiProduct[];
+}
+
 const getStatusBarHeight = () => {
   if (Platform.OS === 'ios') {
     return 44;
   }
-  // For Android
   return StatusBar.currentHeight || 24;
 };
 
@@ -173,144 +193,89 @@ const productsSample: Product[] = [
   },
 ];
 
-export const bannerSample = [
-  {
-    id: 'b1',
-    image: require('../../assest/dummy/image.png'),
-  },
-  {
-    id: 'b2',
-    image: require('../../assest/dummy/image.png'),
-  },
-  {
-    id: 'b3',
-    image: require('../../assest/dummy/image.png'),
-  },
-  {
-    id: 'b4',
-    image: require('../../assest/dummy/image.png'),
-  },
-];
-
-const sampleProducts: Product[] = [
-  {
-    id: 's1',
-    title: 'Helios Stain and Waterproof Sneaker Spray',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '39% OFF',
-    rating: '4.3 (24)',
-    time: '16 MINS',
-    price: 603,
-    mrp: 999,
-    labels: ['150 ml'],
-    unitPrice: '₹402/100 ml',
-    stockText: 'Only 1 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's2',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's3',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's4',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's5',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-  {
-    id: 's6',
-    title: 'Sneakare RPL Shoe Water-repellent',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '57% OFF',
-    rating: '4.5 (75)',
-    time: '20 MINS',
-    price: 509,
-    mrp: 1199,
-    labels: ['100 ml'],
-    unitPrice: '₹509/100 ml',
-    stockText: 'Only 2 left',
-    discount: 20,
-    quantity: '4kg',
-  },
-];
-
-export const eventData = [
-  {
-    id: '1',
-    title: 'Premium & Organic',
-    image: require('../../assest/dummy/image.png'),
-  },
-  {
-    id: '2',
-    title: 'Cheese Mania',
-    image: require('../../assest/dummy/image.png'),
-  },
-  {
-    id: '3',
-    title: 'Cheese Mania',
-    image: require('../../assest/dummy/image.png'),
-  },
-  {
-    id: '4',
-    title: 'Cheese Mania',
-    image: require('../../assest/dummy/image.png'),
-  },
-];
-
 const HomeScreen = () => {
+  const [trigger, { isFetching }] = useLazyGetHomePageDataQuery();
+
+  const [sections, setSections] = useState<any[]>([]);
+  const [banners, setBanners] = useState<string[]>([]);
+  const [carousels, setCarousels] = useState<string[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasNext, setHasNext] = useState(true);
+  const [initialLoaded, setInitialLoaded] = useState(false);
   const [selectedCat, setSelectedCat] = React.useState('all');
   const statusBarHeight = getStatusBarHeight();
+
+  useEffect(() => {
+    loadHomeData(null);
+  }, []);
+
+  const loadHomeData = async (nextCursor: string | null) => {
+    if (!hasNext && nextCursor !== null) return;
+    if (isFetching) return;
+
+    try {
+      const response = await trigger({
+        cursor: nextCursor ?? undefined,
+        limit: 2,
+      }).unwrap();
+
+      const apiData = response.data;
+
+      if (!initialLoaded) {
+        setBanners(apiData.banners || []);
+        setCarousels(apiData.carosels || []);
+        setInitialLoaded(true);
+      }
+
+      setSections(prev => {
+        const existingIds = new Set(prev.map(item => item._id));
+
+        const filteredNew = apiData.data.filter(
+          (item: any) => !existingIds.has(item._id),
+        );
+
+        return [...prev, ...filteredNew];
+      });
+
+      setCursor(apiData.nextCursor);
+      setHasNext(apiData.hasNextPage);
+    } catch (error) {
+      console.log('Pagination error:', error);
+    }
+  };
+
+  const handleScroll = ({ nativeEvent }: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+
+    const isNearBottom =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+
+    if (isNearBottom && hasNext && !isFetching) {
+      loadHomeData(cursor);
+    }
+  };
+
+  const mapProduct = (item: any) => ({
+    _id: item._id,
+    title: item.name,
+    images: item.images,
+    price: item.sellingPrice,
+    mrp: item.mrp,
+    rating: item.rating,
+    reviewCount: item.reviewCount,
+    sellingPrice: item.sellingPrice,
+    unit: item.unit,
+    quantityPerUnit: item.quantityPerUnit,
+    marketPrice: item.marketPrice,
+    sku: item.sku,
+  });
+
+  const mappedEvents = banners.slice(0, 3).map((url, index) => ({
+    id: index.toString(),
+    title: `Offer ${index + 1}`,
+    image: { uri: url },
+    onPress: () => console.log('Banner clicked', url),
+  }));
 
   return (
     <View style={styles.container}>
@@ -325,48 +290,53 @@ const HomeScreen = () => {
       </View>
 
       <ScrollView
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        onContentSizeChange={(w, h) => {
+          if (h < 800 && hasNext && !isFetching) {
+            loadHomeData(cursor);
+          }
+        }}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <SaleGrid data={productsSample} onAdd={id => console.log('add', id)} />
 
-        <BannerCarousel data={bannerSample} onPress={id => console.log(id)} />
+        {carousels.length > 0 && (
+          <BannerCarousel
+            data={carousels.map((url, index) => ({
+              id: index.toString(),
+              image: { uri: url },
+            }))}
+            onPress={() => {}}
+          />
+        )}
 
-        <ProductGridSection
-          title="Step up your shoe care game"
-          data={sampleProducts}
-          onAdd={(id, qty) => console.log(id, qty)}
-        />
+        {sections.map(section => (
+          <React.Fragment key={section._id}>
+            <ProductGridSection
+              title={section.categoryName}
+              data={section.products.map(mapProduct)}
+            />
+            <SeeAllSection
+              title={`See all ${section.categoryName}`}
+              onPress={() => {}}
+            />
+          </React.Fragment>
+        ))}
 
-        <SeeAllSection title="See all products" onPress={() => {}} />
+        {mappedEvents.length >= 3 && (
+          <EventsSection title="Events this week" data={mappedEvents} />
+        )}
 
-        <ProductGridSection
-          title="Trending section"
-          data={sampleProducts}
-          onAdd={(id, qty) => console.log(id, qty)}
-          bg={Colors.gray50}
-        />
-
-        <SeeAllSection title="See all products" onPress={() => {}} />
-
-        <ProductGridSection
-          title="Explore the world of electronics"
-          data={sampleProducts}
-          onAdd={(id, qty) => console.log(id, qty)}
-        />
-
-        <SeeAllSection title="See all products" onPress={() => {}} />
-
-        <EventsSection title="Events this week" data={eventData} />
-
-        <ProductGridSection
-          title="More for you"
-          data={sampleProducts}
-          onAdd={(id, qty) => console.log(id, qty)}
-        />
-
-        <SeeAllSection title="See all products" onPress={() => {}} />
+        {isFetching && (
+          <ActivityIndicator
+            size="large"
+            color={Colors.primary}
+            style={{ marginVertical: 20 }}
+          />
+        )}
 
         <BottomBrandSection />
       </ScrollView>

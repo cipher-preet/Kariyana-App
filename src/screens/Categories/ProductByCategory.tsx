@@ -73,7 +73,6 @@ const ProductByCategory = ({ route }: any) => {
   };
 
   const handleEndReached = () => {
-    console.log('End reached - triggering load more');
     loadMoreProducts();
   };
 
@@ -86,6 +85,8 @@ const ProductByCategory = ({ route }: any) => {
       </WrapperContainer>
     );
   }
+
+  console.log('this is product in cat section --->> ', products);
 
   return (
     <WrapperContainer scrollable={false}>

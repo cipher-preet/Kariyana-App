@@ -11,7 +11,6 @@ import {
   Colors,
   Spacing,
   Radius,
-  Typography,
 } from '../../styles';
 
 type Props = {
@@ -30,7 +29,6 @@ const SeeAllSection: React.FC<Props> = ({
       onPress={onPress}
     >
       <View style={styles.inner}>
-        {/* LEFT ICON */}
         <Image
           source={{
             uri: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png',
@@ -38,10 +36,8 @@ const SeeAllSection: React.FC<Props> = ({
           style={styles.icon}
         />
 
-        {/* TEXT */}
         <Text style={styles.text}>{title}</Text>
 
-        {/* RIGHT ARROW */}
         <Text style={styles.arrow}>›</Text>
       </View>
     </TouchableOpacity>

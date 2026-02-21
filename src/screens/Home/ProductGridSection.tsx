@@ -13,20 +13,18 @@ type Props = {
   bg?: string;
 };
 
-const ProductGridSection: React.FC<Props> = ({ title, data, onAdd, bg }) => {
+const ProductGridSection: React.FC<Props> = ({ title, data, bg }) => {
   return (
     <View style={[styles.wrap, bg && { backgroundColor: bg }]}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <FlatList
-          data={data}
-          keyExtractor={it => it._id}
-          numColumns={3}
-          columnWrapperStyle={styles.columnWrap}
-          renderItem={({ item }) => (
-            <ProductCardMinimal item={item} onAdd={onAdd} />
-          )}
-          showsVerticalScrollIndicator={false}
-        />
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <FlatList
+        data={data}
+        keyExtractor={it => it._id}
+        numColumns={3}
+        columnWrapperStyle={styles.columnWrap}
+        renderItem={({ item }) => <ProductCardMinimal item={item} />}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 };

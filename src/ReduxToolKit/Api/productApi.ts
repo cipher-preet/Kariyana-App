@@ -17,6 +17,16 @@ const productApi = baseApi.injectEndpoints({
         },
       }),
     }),
+
+    getHomePageData: builder.query<any, any>({
+      query: ({ cursor, limit = 10 }) => ({
+        url: `/app/getHomePageBannerAndProduct`,
+        params: {
+          cursor,
+          limit,
+        },
+      }),
+    }),
   }),
 });
 
@@ -33,6 +43,8 @@ const productImagesHighlights = baseApi.injectEndpoints({
 export const {
   useLazyGetProductByCatagoryQuery,
   useGetProductByCatagoryQuery,
+  useGetHomePageDataQuery,
+  useLazyGetHomePageDataQuery,
 } = productApi;
 export const { useGetProductImagesAndHighlightsQuery } =
   productImagesHighlights;

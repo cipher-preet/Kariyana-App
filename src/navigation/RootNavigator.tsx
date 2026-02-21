@@ -7,6 +7,9 @@ const RootNavigator = () => {
   const navigation = useNavigation<any>();
   const { data, isLoading, isError } = useGetMeQuery();
 
+  console.log(data)
+  console.log(isError)
+
   useEffect(() => {
     if (isLoading) return;
 

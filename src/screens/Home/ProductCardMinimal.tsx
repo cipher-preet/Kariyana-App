@@ -29,7 +29,7 @@ type Props = {
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.md * 2) / 3;
 
-const ProductCardMinimal: React.FC<Props> = ({ item, onAdd }) => {
+const ProductCardMinimal: React.FC<Props> = ({ item }) => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch();
   const cartItem = useSelector((state: any) => state.cart.items[item._id]);
@@ -111,19 +111,16 @@ const ProductCardMinimal: React.FC<Props> = ({ item, onAdd }) => {
           )}
         </View>
 
-        {/* QUANTITY */}
         {item.quantityPerUnit && (
           <Text style={styles.quantity}>
             {item.quantityPerUnit} {item.unit}
           </Text>
         )}
 
-        {/* TITLE */}
         <Text style={styles.title} numberOfLines={3}>
           {item.name}
         </Text>
 
-        {/* RATING */}
         <View style={styles.ratingRow}>
           <Text style={styles.ratingStar}>⭐</Text>
           <Text style={styles.ratingCount}>
@@ -131,10 +128,8 @@ const ProductCardMinimal: React.FC<Props> = ({ item, onAdd }) => {
           </Text>
         </View>
 
-        {/* TIME */}
         <Text style={styles.time}>24-48 hrs</Text>
 
-        {/* PRICE */}
         <View style={styles.priceRow}>
           <View>
             <Text style={styles.price}>₹{item.mrp}</Text>
