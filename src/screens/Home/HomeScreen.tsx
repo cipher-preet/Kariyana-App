@@ -22,6 +22,7 @@ import {
   useGetHomePageDataQuery,
   useLazyGetHomePageDataQuery,
 } from '../../ReduxToolKit/Api/productApi';
+import { useNavigation } from '@react-navigation/native';
 
 interface ApiProduct {
   _id: string;
@@ -194,6 +195,7 @@ const productsSample: Product[] = [
 ];
 
 const HomeScreen = () => {
+  const navigation = useNavigation<any>();
   const [trigger, { isFetching }] = useLazyGetHomePageDataQuery();
 
   const [sections, setSections] = useState<any[]>([]);
@@ -321,7 +323,15 @@ const HomeScreen = () => {
             />
             <SeeAllSection
               title={`See all ${section.categoryName}`}
-              onPress={() => {}}
+              onPress={() =>
+                navigation.navigate('categories', {
+                  screen: 'productgrid',
+                  params: {
+                    categoryId: section.categoryId,
+                    categoryName: section.categoryName,
+                  },
+                })
+              }
             />
           </React.Fragment>
         ))}

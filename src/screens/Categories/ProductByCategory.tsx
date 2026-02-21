@@ -26,7 +26,7 @@ const ProductByCategory = ({ route }: any) => {
 
   useEffect(() => {
     loadInitialProducts();
-  }, []);
+  }, [categoryId]);
 
   const loadInitialProducts = async () => {
     try {
@@ -86,7 +86,6 @@ const ProductByCategory = ({ route }: any) => {
     );
   }
 
-  console.log('this is product in cat section --->> ', products);
 
   return (
     <WrapperContainer scrollable={false}>
