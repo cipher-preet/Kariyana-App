@@ -39,8 +39,11 @@ const ProductCardMinimal: React.FC<Props> = ({ item }) => {
   const isOutOfStock = item.sku === 0;
 
   const handleNavigate = () => {
-    navigation.navigate('ProductDetailsNavigator', {
-      product: item,
+    navigation.navigate('categories', {
+      screen: 'ProductDetailsNavigator',
+      params: {
+        product: item,
+      },
     });
   };
 

@@ -21,6 +21,7 @@ import BottomBrandSection from '../../components/common/ButtomSection';
 import {
   useGetHomePageDataQuery,
   useLazyGetHomePageDataQuery,
+  useLazyGetTrendSectionDataForHomePageQuery,
 } from '../../ReduxToolKit/Api/productApi';
 import { useNavigation } from '@react-navigation/native';
 
@@ -35,11 +36,12 @@ interface ApiProduct {
   unit: string;
   quantityPerUnit: number;
 }
-interface ApiCategorySection {
+
+export type TrendSection = {
   _id: string;
-  categoryName: string;
-  products: ApiProduct[];
-}
+  TrendName: string;
+  products: Product[];
+};
 
 const getStatusBarHeight = () => {
   if (Platform.OS === 'ios') {
@@ -96,108 +98,12 @@ const categoriesSample: Category[] = [
   },
 ];
 
-const productsSample: Product[] = [
-  {
-    id: 'p1',
-    title: 'Lifelong Electric Kettle (1.5 Ltr, 1500W, ISI Certified)',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: 'Save ₹1,200',
-    labels: ['1500 W', 'Silver'],
-    rating: '4.5 (8,570)',
-    time: '12 MINS',
-    stockText: 'Only 2 left',
-    price: 399,
-    mrp: 1599,
-    unitPrice: '₹7.45/100 ml',
-  },
-
-  {
-    id: 'p2',
-    title: 'SaveMore Lemon Dishwash Gel',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: 'Save ₹151',
-    labels: ['2 L', 'Lemon'],
-    rating: '4.4 (4,046)',
-    time: '12 MINS',
-    stockText: 'Only 3 left',
-    price: 149,
-    mrp: 300,
-    unitPrice: '₹7.45/100 ml',
-  },
-
-  {
-    id: 'p3',
-    title: "HUFt Sara's Wholesome Classic Chicken Food",
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '19% OFF',
-    labels: ['3 × 100 g'],
-    rating: '4.3 (1,379)',
-    time: '12 MINS',
-    stockText: 'In stock',
-    price: 238,
-    mrp: 297,
-    unitPrice: '₹79.3/100 g',
-  },
-
-  {
-    id: 'p4',
-    title: 'McCain Garlic Potato Bites',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '40% OFF',
-    labels: ['7 Kg'],
-    rating: '4.7 (5,210)',
-    time: '13 MINS',
-    stockText: 'Only 1 left',
-    price: 159,
-    mrp: 265,
-    unitPrice: '₹7.45/100 ml',
-  },
-
-  {
-    id: 'p5',
-    title: 'Organic Brown Rice – Sonamasuri',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '15% OFF',
-    labels: ['1 Kg'],
-    rating: '4.1 (920)',
-    time: '11 MINS',
-    stockText: 'In stock',
-    price: 109,
-    mrp: 129,
-    unitPrice: '₹10.9/100 g',
-  },
-  {
-    id: 'p6',
-    title: 'Organic Brown Rice – Sonamasuri',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '15% OFF',
-    labels: ['1 Kg'],
-    rating: '4.1 (920)',
-    time: '11 MINS',
-    stockText: 'In stock',
-    price: 109,
-    mrp: 129,
-    unitPrice: '₹10.9/100 g',
-  },
-  {
-    id: 'p7',
-    title: 'Organic Brown Rice – Sonamasuri',
-    image: require('../../assest/dummy/pngtree-3d-beauty-cosmetics-product-design-png-image_3350323-removebg-preview.png'),
-    saving: '15% OFF',
-    labels: ['1 Kg'],
-    rating: '4.1 (920)',
-    time: '11 MINS',
-    stockText: 'In stock',
-    price: 109,
-    mrp: 129,
-    unitPrice: '₹10.9/100 g',
-  },
-];
-
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
   const [trigger, { isFetching }] = useLazyGetHomePageDataQuery();
+  const [triggerTrend] = useLazyGetTrendSectionDataForHomePageQuery();
 
+  const [trendProducts, setTrendProducts] = useState<TrendSection[]>([]);
   const [sections, setSections] = useState<any[]>([]);
   const [banners, setBanners] = useState<string[]>([]);
   const [carousels, setCarousels] = useState<string[]>([]);
@@ -259,7 +165,7 @@ const HomeScreen = () => {
 
   const mapProduct = (item: any) => ({
     _id: item._id,
-    title: item.name,
+    name: item.name,
     images: item.images,
     price: item.sellingPrice,
     mrp: item.mrp,
@@ -278,6 +184,23 @@ const HomeScreen = () => {
     image: { uri: url },
     onPress: () => console.log('Banner clicked', url),
   }));
+
+  const loadTrendProducts = async () => {
+    try {
+      const response = await triggerTrend().unwrap();
+
+      const trends = response.data.products;
+
+      setTrendProducts(trends);
+    } catch (err) {
+      console.log('Trend API error', err);
+    }
+  };
+
+  useEffect(() => {
+    loadHomeData(null);
+    loadTrendProducts();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -303,7 +226,14 @@ const HomeScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <SaleGrid data={productsSample} onAdd={id => console.log('add', id)} />
+        {trendProducts.map(trend => (
+          <SaleGrid
+            key={trend._id}
+            title={trend.TrendName}
+            data={trend.products.map(mapProduct)}
+            onAdd={id => console.log('add', id)}
+          />
+        ))}
 
         {carousels.length > 0 && (
           <BannerCarousel

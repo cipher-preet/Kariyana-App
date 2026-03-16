@@ -68,7 +68,7 @@ const ProductDetailsScreen = () => {
   }
 
   const similarProducts = data?.data?.products ?? [];
-  const images = productImagesData?.data?.data?.images || [];
+  const images = productImagesData?.data?.data?.url || [];
   const highlights = productImagesData?.data?.data?.heighlights || [];
 
   return (

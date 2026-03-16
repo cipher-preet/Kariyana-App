@@ -27,6 +27,12 @@ const productApi = baseApi.injectEndpoints({
         },
       }),
     }),
+
+    getTrendSectionDataForHomePage: builder.query<any, void>({
+      query: () => ({
+        url: `/app/getTrendSectionDataForHomePage`,
+      }),
+    }),
   }),
 });
 
@@ -45,6 +51,7 @@ export const {
   useGetProductByCatagoryQuery,
   useGetHomePageDataQuery,
   useLazyGetHomePageDataQuery,
+  useLazyGetTrendSectionDataForHomePageQuery,
 } = productApi;
 export const { useGetProductImagesAndHighlightsQuery } =
   productImagesHighlights;

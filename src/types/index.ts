@@ -18,7 +18,8 @@ export type Product = {
   sellingPrice: number;
   sku: number;
   stockStatus?: 'IN_STOCK' | 'LIMITED' | 'OUT';
-  subcategoryId: string;
+  subcategoryId?: string;
+  
 };
 
 export type Product2 = {
