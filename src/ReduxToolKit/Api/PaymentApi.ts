@@ -16,6 +16,10 @@ export const PaymentApi = baseApi.injectEndpoints({
       providesTags: ['Address'],
     }),
 
+    getOrderStatus: builder.query<any, any>({
+      query: ({ orderId }) => `/app/getOrderStatus?orderId=${orderId}`,
+    }),
+
     createOrder: builder.mutation<any, any>({
       query: body => ({
         url: '/app/createOrder',
@@ -30,4 +34,5 @@ export const {
   useAddDeliveryAddressMutation,
   useGetUserDileveryAddressQuery,
   useCreateOrderMutation,
+  useGetOrderStatusQuery
 } = PaymentApi;

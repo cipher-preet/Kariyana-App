@@ -1,17 +1,12 @@
 // PaymentScreen.tsx
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import RazorpayCheckout from 'react-native-razorpay';
 import { Colors } from '../../styles';
 
 import { useCreateOrderMutation } from '../../ReduxToolKit/Api/PaymentApi';
-import { RazorpayOptions } from '../../types/react-native-razorpay';
 import CartCheckoutWrapper from '../Cart/CartCheckoutWrapper';
+import { RazorpayOptions } from '../../types/razorpay';
 
 type Method = 'upi' | 'card';
 
@@ -23,8 +18,7 @@ interface RouteParams {
 }
 
 const PaymentScreen = ({ route, navigation }: any) => {
-  const { items, userId, addressId, totalAmount } =
-    route.params as RouteParams;
+  const { items, userId, addressId, totalAmount } = route.params as RouteParams;
 
   const [method, setMethod] = useState<Method>('upi');
   const [loading, setLoading] = useState(false);
@@ -32,7 +26,7 @@ const PaymentScreen = ({ route, navigation }: any) => {
   const [createOrder] = useCreateOrderMutation();
 
   const handlePayment = async () => {
-    if (loading) return; 
+    if (loading) return;
 
     try {
       setLoading(true);
@@ -94,8 +88,7 @@ const PaymentScreen = ({ route, navigation }: any) => {
           });
         });
 
-        console.log("Razorpay:", RazorpayCheckout);
-
+      console.log('Razorpay:', RazorpayCheckout);
     } catch (err: any) {
       console.log('Create Order Error:', err);
 

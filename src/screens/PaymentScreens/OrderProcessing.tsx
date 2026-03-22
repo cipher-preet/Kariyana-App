@@ -1,40 +1,46 @@
-// OrderProcessing.tsx
-import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  StyleSheet,
-} from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Colors } from '../../styles';
+import { useGetOrderStatusQuery } from '../../ReduxToolKit/Api/PaymentApi';
 
 const OrderProcessing = ({ route, navigation }: any) => {
   const { orderId } = route.params;
 
+  const hasNavigated = useRef(false);
+  const attempts = useRef(0);
+
+  const { data, isLoading, error } = useGetOrderStatusQuery(
+    { orderId },
+    {
+      pollingInterval: 2500,
+    },
+  );
+
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`YOUR_API/order/${orderId}`);
-        const data = await res.json();
+    if (!data || hasNavigated.current) return;
 
-        const status = data?.order?.status;
+    const status = data?.data?.status;
 
-        if (status === 'paid') {
-          clearInterval(interval);
-          navigation.replace('OrderSuccess', { order: data.order });
-        }
+    console.log('Order status:', status);
 
-        if (status === 'failed') {
-          clearInterval(interval);
-          navigation.replace('PaymentFailed', { orderId });
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    }, 2500);
+    if (status === 'paid') {
+      hasNavigated.current = true;
+      navigation.replace('OrderSuccess', { order: data.data });
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    if (status === 'failed') {
+      hasNavigated.current = true;
+      navigation.replace('PaymentFailed', { orderId });
+      return;
+    }
+
+    attempts.current += 1;
+    if (attempts.current > 10) {
+      hasNavigated.current = true;
+      navigation.replace('PaymentFailed', { orderId });
+    }
+  }, [data]);
 
   return (
     <View style={styles.container}>
@@ -47,9 +53,13 @@ const OrderProcessing = ({ route, navigation }: any) => {
           Please wait while we confirm your payment...
         </Text>
 
-        <Text style={styles.subtle}>
-          Do not press back or close the app
-        </Text>
+        <Text style={styles.subtle}>Do not press back or close the app</Text>
+
+        {error && (
+          <Text style={{ color: 'red', marginTop: 10 }}>
+            Something went wrong...
+          </Text>
+        )}
       </View>
     </View>
   );

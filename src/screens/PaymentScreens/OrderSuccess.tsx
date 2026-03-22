@@ -1,12 +1,8 @@
 // OrderSuccess.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors } from '../../styles';
+import { CommonActions } from '@react-navigation/native';
 
 const OrderSuccess = ({ route, navigation }: any) => {
   const { order } = route.params;
@@ -19,9 +15,7 @@ const OrderSuccess = ({ route, navigation }: any) => {
 
       <Text style={styles.title}>Order Placed Successfully</Text>
 
-      <Text style={styles.subtitle}>
-        Your order has been confirmed
-      </Text>
+      <Text style={styles.subtitle}>Your order has been confirmed</Text>
 
       <View style={styles.card}>
         <Text style={styles.label}>Order ID</Text>
@@ -33,15 +27,27 @@ const OrderSuccess = ({ route, navigation }: any) => {
 
       <TouchableOpacity
         style={styles.primaryBtn}
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Home' }],
+            }),
+          );
+        }}
       >
         <Text style={styles.primaryText}>Go to Home</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() =>
-          navigation.navigate('OrderDetails', { orderId: order._id })
-        }
+        onPress={() => {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'orderpage' }],
+            }),
+          );
+        }}
       >
         <Text style={styles.secondary}>View Order Details</Text>
       </TouchableOpacity>

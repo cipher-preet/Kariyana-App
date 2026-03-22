@@ -1,12 +1,8 @@
 // PaymentFailed.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors } from '../../styles';
+import { CommonActions } from '@react-navigation/native';
 
 const PaymentFailed = ({ route, navigation }: any) => {
   const { orderId, message } = route.params || {};
@@ -34,7 +30,16 @@ const PaymentFailed = ({ route, navigation }: any) => {
         <Text style={styles.primaryText}>Retry Payment</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Home' }],
+            }),
+          );
+        }}
+      >
         <Text style={styles.secondary}>Go to Home</Text>
       </TouchableOpacity>
     </View>
