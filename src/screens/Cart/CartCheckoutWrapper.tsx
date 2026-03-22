@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Props {
@@ -21,7 +16,6 @@ const CartCheckoutWrapper: React.FC<Props> = ({
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={onBackPress}
@@ -33,11 +27,9 @@ const CartCheckoutWrapper: React.FC<Props> = ({
 
           <Text style={styles.title}>{title}</Text>
 
-          {/* Right spacer to keep title centered */}
           <View style={styles.rightSpacer} />
         </View>
 
-        {/* Content */}
         <View style={styles.content}>{children}</View>
       </View>
     </SafeAreaView>
@@ -45,8 +37,6 @@ const CartCheckoutWrapper: React.FC<Props> = ({
 };
 
 export default CartCheckoutWrapper;
-
-/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   safe: {

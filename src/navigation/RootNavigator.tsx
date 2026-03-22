@@ -7,6 +7,8 @@ const RootNavigator = () => {
   const navigation = useNavigation<any>();
   const { data, isLoading, isError } = useGetMeQuery();
 
+  console.log("this is the datda ---->>> ",data)
+
   console.log(data)
   console.log(isError)
 

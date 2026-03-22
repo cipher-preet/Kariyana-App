@@ -25,6 +25,8 @@ import { ActivityIndicator } from 'react-native';
 import { Colors, Spacing, Radius } from '../../styles';
 
 import type { Product } from '../../types';
+import { CartStackParamList } from '../../navigation/CartStack';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const sampleProducts: Product[] = [
   {
@@ -111,6 +113,10 @@ const sampleProducts: Product[] = [
   },
 ];
 
+type NavigationProp = NativeStackNavigationProp<
+  CartStackParamList,
+  'categoryMain'
+>;
 export interface UpdateCartQuantityRequest {
   userId: string;
   productId: string;
@@ -128,7 +134,7 @@ export interface UpdateCartQuantityResponse {
 const CartScreen = () => {
   const isFocused = useIsFocused();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const [updateCart] = useUpdateCartMutation();
   const [updatingAction, setUpdatingAction] = React.useState<{
     productId: string;
@@ -188,7 +194,6 @@ const CartScreen = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* DELIVERY BANNER */}
           <View style={styles.deliveryBox}>
             <Text style={styles.deliveryText}>
               Free delivery in 24-48 Hours
@@ -196,7 +201,6 @@ const CartScreen = () => {
             <Text style={styles.subText}>Shipment of {itemPresent} items</Text>
           </View>
 
-          {/* CART ITEMS */}
           {itemPresent === 0 ? (
             <View style={styles.emptyCartContainer}>
               <Text style={styles.emptyTitle}>Your cart is empty</Text>
@@ -265,7 +269,6 @@ const CartScreen = () => {
                       </TouchableOpacity>
                     </View>
 
-                    {/* Price */}
                     <Text style={styles.itemPrice}>₹{item.price}</Text>
                   </View>
                 </View>
@@ -284,22 +287,24 @@ const CartScreen = () => {
           <BillDetailsSection subtotal={subtotal} totalItems={totalItems} />
 
           <DeliveryInstructionsSection />
-
-          <ProductGridSection
-            title="More products"
-            data={sampleProducts}
-            onAdd={(id, qty) => console.log(id, qty)}
-          />
         </ScrollView>
 
-        {/* STICKY ORDER BAR */}
         <View style={styles.orderBar}>
           <View>
             <Text style={styles.totalLabel}>TOTAL</Text>
             <Text style={styles.totalAmount}>₹{subtotal}</Text>
           </View>
 
-          <TouchableOpacity style={styles.orderBtn}>
+          <TouchableOpacity
+            style={styles.orderBtn}
+            onPress={() =>
+              navigation.navigate('addressScreen', {
+                cartItems: data?.data?.items,
+                totalAmount: subtotal,
+                userId,
+              })
+            }
+          >
             <Text style={styles.orderBtnText}>Place Order</Text>
           </TouchableOpacity>
         </View>
