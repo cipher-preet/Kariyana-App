@@ -7,7 +7,6 @@ const AwaitingApproval = () => {
   return (
     <AuthContainer>
       <View style={styles.container}>
-        {/* Illustration */}
         <Image
           source={{
             uri: 'https://www.shutterstock.com/image-vector/shopping-food-basket-icon-isolated-260nw-2370040877.jpg',
@@ -16,10 +15,8 @@ const AwaitingApproval = () => {
           resizeMode="contain"
         />
 
-        {/* Title */}
         <Text style={styles.title}>Approval Pending</Text>
 
-        {/* Description */}
         <Text style={styles.description}>
           Your shop registration has been submitted successfully.
         </Text>
@@ -28,12 +25,10 @@ const AwaitingApproval = () => {
           Our team is reviewing your details. This usually takes a few hours.
         </Text>
 
-        {/* CTA */}
         <TouchableOpacity style={styles.cta}>
           <Text style={styles.ctaText}>Okay, I understand</Text>
         </TouchableOpacity>
 
-        {/* Footer Hint */}
         <Text style={styles.footerText}>
           We’ll notify you once your account is approved.
         </Text>
@@ -43,7 +38,6 @@ const AwaitingApproval = () => {
 };
 
 export default AwaitingApproval;
-
 
 const styles = StyleSheet.create({
   container: {

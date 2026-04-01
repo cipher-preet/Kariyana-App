@@ -27,7 +27,6 @@ const AccountRow: React.FC<Props> = ({
       activeOpacity={disabled ? 1 : 0.7}
       style={[styles.row, noBorder && styles.noBorder]}
     >
-      {/* LEFT TITLE */}
       <Text
         style={[
           styles.title,
@@ -39,7 +38,6 @@ const AccountRow: React.FC<Props> = ({
         {title}
       </Text>
 
-      {/* RIGHT SIDE */}
       {!disabled && (
         <View style={styles.right}>
           {rightText && <Text style={styles.value}>{rightText}</Text>}

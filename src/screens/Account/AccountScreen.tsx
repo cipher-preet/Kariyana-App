@@ -1,14 +1,7 @@
 import React from 'react';
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
 
-import {
-  Colors,
-  Spacing,
-} from '../../styles';
+import { Colors, Spacing } from '../../styles';
 
 import ProfileCard from './ProfileCard';
 import QuickActions from './QuickActions';
@@ -18,34 +11,26 @@ import SectionTitle from './SectionTitle';
 const AccountScreen = () => {
   return (
     <View style={styles.root}>
+      <View style={styles.fixedHeader}>
+        <SectionTitle title="My Account" large />
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* HEADER */}
-        <View style={styles.header}>
-          <SectionTitle title="My Account" large />
-        </View>
-
-        {/* BODY */}
         <ProfileCard />
         <QuickActions />
 
-        <AccountRow title="fnpCash" rightText="₹0" badge="New" />
         <AccountRow title="Personal Information" />
         <AccountRow title="FAQ's" />
-        <AccountRow title="Delete FNP Account" />
-        <AccountRow title="Notification Settings" />
+        <AccountRow title="Delete AmbeMart Account" />
 
         <SectionTitle title="Enquiries" />
 
-        <AccountRow title="Birthday/ Wedding Decor" />
-        <AccountRow title="Corporate Gifts/ Bulk Orders" />
         <AccountRow title="Become A Partner" />
-        <AccountRow title="Start An FNP Franchise" />
         <AccountRow title="Share App Feedback" />
 
-        {/* FOOTER */}
         <View style={styles.footer}>
           <AccountRow title="Privacy Policy" noBorder />
           <AccountRow title="Log Out" highlight />
@@ -55,28 +40,24 @@ const AccountScreen = () => {
     </View>
   );
 };
-
 export default AccountScreen;
-
-
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    width: '100%',                  
-    backgroundColor: Colors.gray50, 
+    backgroundColor: Colors.gray50,
+  },
+
+  fixedHeader: {
+    paddingTop: 46,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    backgroundColor: '#EEF1E5',
+    zIndex: 10,
   },
 
   content: {
-    width: '100%',                  
     paddingBottom: Spacing.xxxl,
-  },
-
-  header: {
-    paddingTop: Spacing.xxxl,     
-    paddingHorizontal: Spacing.lg,  
-    paddingBottom: Spacing.lg,
-    backgroundColor: '#EEF1E5',    
   },
 
   footer: {

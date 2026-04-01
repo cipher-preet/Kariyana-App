@@ -1,21 +1,52 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import { Colors, Spacing, Radius } from '../../styles';
 
 const QuickActions = () => {
+  const navigation = useNavigation<any>();
+
+  const actions = [
+    {
+      title: 'My Orders',
+      onPress: () => navigation.navigate('MyOrdersScreen'),
+    },
+    {
+      title: 'Analytics',
+      onPress: () => {},
+    },
+    {
+      title: 'Saved Addresses',
+      onPress: () => {},
+    },
+    {
+      title: 'Help center',
+      onPress: () => {},
+    },
+  ];
+
   return (
     <View style={styles.grid}>
-      <QuickItem title="My Orders" />
-      <QuickItem title="Reminders" />
-      <QuickItem title="Chat With Us" />
-      <QuickItem title="Saved Addresses" />
+      {actions.map((item, index) => (
+        <QuickItem key={index} title={item.title} onPress={item.onPress} />
+      ))}
     </View>
   );
 };
 
-const QuickItem = ({ title }: { title: string }) => (
-  <TouchableOpacity style={styles.item} activeOpacity={0.8}>
+const QuickItem = ({
+  title,
+  onPress,
+}: {
+  title: string;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity
+    style={styles.item}
+    activeOpacity={0.8}
+    onPress={onPress} // 👈 IMPORTANT
+  >
     <View style={styles.icon} />
     <Text style={styles.text} numberOfLines={1}>
       {title}

@@ -5,17 +5,14 @@ import { useGetMeQuery } from '../ReduxToolKit/Api/authApi';
 
 const RootNavigator = () => {
   const navigation = useNavigation<any>();
-  const { data, isLoading, isError } = useGetMeQuery();
-
-  console.log('this is the datda ---->>> ', data);
-
-  console.log(data);
-  console.log(isError);
+  const { data, isLoading, isError, isSuccess } = useGetMeQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
   useEffect(() => {
     if (isLoading) return;
 
-    if (isError || data?.data?.status === 'REGISTER') {
+    if (isError) {
       navigation.reset({
         index: 0,
         routes: [{ name: 'Auth' }],
@@ -23,31 +20,44 @@ const RootNavigator = () => {
       return;
     }
 
-    if (isError || data?.data?.status === 'PENDING') {
-      navigation.reset({
-        index: 0,
-        routes: [
-          {
-            name: 'Auth',
-            params: { screen: 'RegisterSuccess' },
-          },
-        ],
-      });
-      return;
-    }
+    if (isSuccess) {
+      const status = data?.data?.status;
 
-    if (data?.data?.status === 'APPROVED') {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'App' }],
-      });
-    } else {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Auth' }],
-      });
+      switch (status) {
+        case 'REGISTER':
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Auth' }],
+          });
+          break;
+
+        case 'PENDING':
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: 'Auth',
+                params: { screen: 'RegisterSuccess' },
+              },
+            ],
+          });
+          break;
+
+        case 'APPROVED':
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'App' }],
+          });
+          break;
+
+        default:
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Auth' }],
+          });
+      }
     }
-  }, [data, isLoading, isError]);
+  }, [data, isLoading, isError, isSuccess]);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

@@ -14,12 +14,16 @@ import {
 import { Colors, Spacing, Radius } from '../../styles';
 import auth from '@react-native-firebase/auth';
 import { useAuth } from '../../context/AuthContext';
-import { useLoginUserMutation } from '../../ReduxToolKit/Api/authApi';
+import {
+  useGetMeQuery,
+  useLoginUserMutation,
+} from '../../ReduxToolKit/Api/authApi';
 
 const OTP_LENGTH = 6;
 
 const OtpVerifyScreen = () => {
   const navigation = useNavigation<any>();
+
   const [loginUser] = useLoginUserMutation();
 
   const [otp, setOtp] = useState('');
@@ -43,14 +47,32 @@ const OtpVerifyScreen = () => {
       const token = await auth().currentUser?.getIdToken();
       if (!token) throw new Error('Token not found');
 
-      console.log("this is token ", token)
+      console.log('this is token ', token);
 
-      await loginUser({ token });
+      const res = await loginUser({ token }).unwrap();
 
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'RegisterStep1' }],
-      });
+      console.log('this is response --->> ', res);
+
+      switch (res.data.nextScreen) {
+        case 'APPROVED':
+          navigation.reset({ routes: [{ name: 'App' }] });
+          break;
+
+        case 'REGISTER':
+          navigation.reset({ routes: [{ name: 'Auth' }] });
+          break;
+
+        case 'PENDING':
+          navigation.reset({
+            routes: [{ name: 'Auth', params: { screen: 'RegisterSuccess' } }],
+          });
+          break;
+        default:
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Auth' }],
+          });
+      }
     } catch (err: any) {
       Alert.alert('Login failed', err?.message || 'Try again');
     } finally {

@@ -1,4 +1,4 @@
-import { moderateScale } from "./responsiveStyles";
+import { moderateScale } from './responsiveStyles';
 
 const Spacing = {
   xxs: moderateScale(2),

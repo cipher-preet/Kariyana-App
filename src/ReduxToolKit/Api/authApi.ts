@@ -17,6 +17,7 @@ export const authApi = baseApi.injectEndpoints({
         },
         withCredentials: true,
       }),
+      invalidatesTags: ['User'],
     }),
 
     getMe: builder.query<any, void>({
@@ -24,6 +25,7 @@ export const authApi = baseApi.injectEndpoints({
         url: '/auth/verifyme',
         method: 'GET',
         withCredentials: true,
+        providesTags: ['User'],
       }),
     }),
 
@@ -31,7 +33,7 @@ export const authApi = baseApi.injectEndpoints({
       query: formData => ({
         url: '/auth/registerUser',
         method: 'POST',
-        body:formData,
+        body: formData,
         withCredentials: true,
       }),
     }),

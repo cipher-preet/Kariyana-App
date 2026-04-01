@@ -245,6 +245,10 @@ const HomeScreen = () => {
           />
         )}
 
+         {mappedEvents.length >= 3 && (
+          <EventsSection title="Events this week" data={mappedEvents} />
+        )}
+
         {sections.map(section => (
           <React.Fragment key={section._id}>
             <ProductGridSection
@@ -266,9 +270,7 @@ const HomeScreen = () => {
           </React.Fragment>
         ))}
 
-        {mappedEvents.length >= 3 && (
-          <EventsSection title="Events this week" data={mappedEvents} />
-        )}
+       
 
         {isFetching && (
           <ActivityIndicator
