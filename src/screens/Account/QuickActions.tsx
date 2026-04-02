@@ -21,15 +21,33 @@ const QuickActions = () => {
     },
     {
       title: 'Analytics',
-      onPress: () => {},
+      onPress: () =>
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'AccountMain' }, { name: 'AnalyticsScreen' }],
+          }),
+        ),
     },
     {
       title: 'Saved Addresses',
-      onPress: () => {},
+      onPress: () =>
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'AccountMain' }, { name: 'SavedAddressScreen' }],
+          }),
+        ),
     },
     {
       title: 'Help center',
-      onPress: () => {},
+      onPress: () =>
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'AccountMain' }, { name: 'HelpcenterScreen' }],
+          }),
+        ),
     },
   ];
 

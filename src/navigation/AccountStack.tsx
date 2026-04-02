@@ -11,6 +11,7 @@ import DeleteAccountScreen from '../screens/DeleteAccountScreen/DeleteAccountScr
 import BecameAPartnerScreen from '../screens/BecameAPartnerScreen/BecameAPartnerScreen';
 import ShareFeedBackScreen from '../screens/ShareFeedBackScreen/ShareFeedBackScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen/PrivacyPolicyScreen';
+import SavedAddressScreen from '../screens/SavedAddressScreen/SavedAddressScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,7 +26,7 @@ const AccountStack = () => (
     <Stack.Screen name="OrderDetailsScreen" component={OrderDetailsScreen} />
 
     <Stack.Screen name="AnalyticsScreen" component={AnalyticsScreen} />
-    {/* <Stack.Screen name="SavedAddressScreen" component={OrderDetailsScreen} /> // same screen in payment gateway logic */}
+    <Stack.Screen name="SavedAddressScreen" component={SavedAddressScreen} /> 
     <Stack.Screen name="HelpcenterScreen" component={HelpCenterScreen} />
     <Stack.Screen name="PersonalInfoScreen" component={PersonalInfoScreen} />
     <Stack.Screen name="FaqsScreen" component={FaqsScreen} />

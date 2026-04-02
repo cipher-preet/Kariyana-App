@@ -1,11 +1,11 @@
-import { Text } from "react-native-svg"
+import ComingSoonScreen from '../../components/common/ComingSoonScreen';
 
 const AnalyticsScreen = () => {
   return (
-    <div>
-      <Text>This is analytics AnalyticsScreen</Text>
-    </div>
-  )
-}
+    <>
+      <ComingSoonScreen title="Analytics" />
+    </>
+  );
+};
 
-export default AnalyticsScreen
+export default AnalyticsScreen;

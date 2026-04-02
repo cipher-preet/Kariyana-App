@@ -1,11 +1,10 @@
 import React from 'react'
 import { Text } from 'react-native-svg'
+import ComingSoonScreen from '../../components/common/ComingSoonScreen'
 
 const BecameAPartnerScreen = () => {
   return (
-     <div>
-      <Text>This is analytics BecameAPartnerScreen</Text>
-    </div>
+    <ComingSoonScreen title="Became a Partner" />
   )
 }
 

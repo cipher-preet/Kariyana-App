@@ -1,11 +1,9 @@
 import React from 'react';
-import { Text } from 'react-native-svg';
+import ComingSoonScreen from '../../components/common/ComingSoonScreen';
 
 const HelpCenterScreen = () => {
   return (
-    <div>
-      <Text>This is analytics HelpCenterScreen</Text>
-    </div>
+    <ComingSoonScreen title="Help Center" />
   );
 };
 
