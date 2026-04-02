@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Header = ({ title, backgroundColor = '#fff' }: any) => {
+  const insets = useSafeAreaInsets();
+
   const isLight = backgroundColor === '#fff';
 
   return (
@@ -18,26 +20,42 @@ const Header = ({ title, backgroundColor = '#fff' }: any) => {
         barStyle={isLight ? 'dark-content' : 'light-content'}
       />
 
-      <SafeAreaView style={{ backgroundColor }}>
+      <View
+        style={{
+          backgroundColor,
+          paddingTop: Math.max(insets.top - 32, 0),
+        }}
+      >
         <View style={[styles.container, { backgroundColor }]}>
-          <TouchableOpacity>
+          <TouchableOpacity style={styles.backBtn}>
             <Text style={styles.back}>←</Text>
           </TouchableOpacity>
 
           <Text style={styles.title}>{title}</Text>
         </View>
-      </SafeAreaView>
+      </View>
     </>
   );
 };
-
 export default Header;
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: 56,
     paddingHorizontal: 16,
+    backgroundColor: '#fff',
+
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(0,0,0,0.08)',
+  },
+
+  backBtn: {
+    width: 40, // ✅ fixed touch area
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
 
   back: {
@@ -47,6 +65,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    marginLeft: 12,
+    marginLeft: 8,
+
+    flex: 1, // ✅ takes remaining space
   },
 });

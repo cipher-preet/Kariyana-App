@@ -82,7 +82,11 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
             <TouchableWithoutFeedback
               key={route.key}
               onPress={() => {
-                if (route.name === 'categories') {
+                if (route.name === 'Account') {
+                  navigation.navigate('Account', {
+                    screen: 'AccountMain',
+                  });
+                } else if (route.name === 'categories') {
                   navigation.navigate('categories', {
                     screen: 'categoryMain',
                   });

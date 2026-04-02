@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
 
 import { Colors, Spacing, Radius } from '../../styles';
 
@@ -10,7 +11,13 @@ const QuickActions = () => {
   const actions = [
     {
       title: 'My Orders',
-      onPress: () => navigation.navigate('MyOrdersScreen'),
+      onPress: () =>
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'AccountMain' }, { name: 'MyOrdersScreen' }],
+          }),
+        ),
     },
     {
       title: 'Analytics',

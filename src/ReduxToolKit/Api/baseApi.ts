@@ -4,7 +4,7 @@ export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl:
-      'https://3989-2401-4900-1c70-82d7-99dd-66f7-e9ea-39ad.ngrok-free.app/api/v1',
+      'https://4875-2401-4900-1c70-d60b-60f6-b89c-ca4d-f980.ngrok-free.app/api/v1',
     credentials: 'include',
   }),
   tagTypes: ['Cart', 'Address','User'],
