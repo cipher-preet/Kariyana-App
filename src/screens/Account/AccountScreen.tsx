@@ -7,8 +7,11 @@ import ProfileCard from './ProfileCard';
 import QuickActions from './QuickActions';
 import AccountRow from './AccountRow';
 import SectionTitle from './SectionTitle';
+import { useNavigation } from '@react-navigation/native';
 
 const AccountScreen = () => {
+  const navigation = useNavigation<any>();
+
   return (
     <View style={styles.root}>
       <View style={styles.fixedHeader}>
@@ -23,16 +26,34 @@ const AccountScreen = () => {
         <QuickActions />
 
         <AccountRow title="Personal Information" />
-        <AccountRow title="FAQ's" />
-        <AccountRow title="Delete AmbeMart Account" />
+
+        <AccountRow
+          title="FAQ's"
+          onPress={() => navigation.navigate('FaqsScreen')}
+        />
+
+        <AccountRow
+          title="Delete AmbeMart Account"
+          onPress={() => navigation.navigate('DeleteAccountScreen')}
+        />
 
         <SectionTitle title="Enquiries" />
 
-        <AccountRow title="Become A Partner" />
-        <AccountRow title="Share App Feedback" />
+        <AccountRow
+          title="Become A Partner"
+          onPress={() => navigation.navigate('BecameAPartnerScreen')}
+        />
+        <AccountRow
+          title="Share App Feedback"
+          onPress={() => navigation.navigate('ShareFeedBackScreen')}
+        />
 
         <View style={styles.footer}>
-          <AccountRow title="Privacy Policy" noBorder />
+          <AccountRow
+            title="Privacy Policy"
+            noBorder
+            onPress={() => navigation.navigate('PrivacyPolicyScreen')}
+          />
           <AccountRow title="Log Out" highlight />
           <AccountRow title="App Version 5.1.9" disabled noArrow />
         </View>
@@ -52,7 +73,7 @@ const styles = StyleSheet.create({
     paddingTop: 46,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
-    backgroundColor: '#EEF1E5',
+    backgroundColor: '#ffffffc4',
     zIndex: 10,
   },
 

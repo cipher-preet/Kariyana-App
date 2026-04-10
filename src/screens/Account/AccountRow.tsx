@@ -5,6 +5,7 @@ import { Colors, Spacing, Radius } from '../../styles';
 
 interface Props {
   title: string;
+  onPress?: () => void;
   rightText?: string;
   badge?: string;
   highlight?: boolean;
@@ -15,6 +16,7 @@ interface Props {
 
 const AccountRow: React.FC<Props> = ({
   title,
+  onPress,
   rightText,
   badge,
   highlight,
@@ -25,6 +27,7 @@ const AccountRow: React.FC<Props> = ({
   return (
     <TouchableOpacity
       activeOpacity={disabled ? 1 : 0.7}
+      onPress={onPress}
       style={[styles.row, noBorder && styles.noBorder]}
     >
       <Text

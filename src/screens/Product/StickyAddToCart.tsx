@@ -1,16 +1,60 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
+import { useDispatch } from 'react-redux';
 
-const StickyAddToCart = () => {
+import { addItemOptimistic } from '../../ReduxToolKit/Slices/cartSlice';
+import { triggerCartSync } from '../../ReduxToolKit/Slices/cartSync';
+
+const StickyAddToCart = ({ product }: any) => {
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+
+  const handleAddToCart = async () => {
+    if (loading) return;
+
+    setLoading(true);
+
+    dispatch(
+      addItemOptimistic({
+        product: {
+          productId: product._id,
+          price: product.mrp,
+        },
+        userId: '694fc82c88c809473e4455c3', // to be static in future when we have auth implemented
+      }),
+    );
+
+    setTimeout(() => {
+      triggerCartSync();
+      setLoading(false);
+    }, 600);
+  };
+
   return (
     <View style={styles.container}>
       <View>
-        <Text style={styles.price}>₹989</Text>
-        <Text style={styles.unit}>1 unit</Text>
+        <Text style={styles.price}>₹{product.mrp}</Text>
+        <Text style={styles.unit}>
+          {product.quantityPerUnit} {product.unit}
+        </Text>
       </View>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.text}>Add to cart</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleAddToCart}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <Text style={styles.text}>Add to cart</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

@@ -18,6 +18,25 @@ const productApi = baseApi.injectEndpoints({
       }),
     }),
 
+    getRandomProductsForCartPage: builder.query<any, void>({
+      query: () => ({
+        url: `/app/getRandomProductsForCartPage`,
+      }),
+    }),
+
+    getProductsbyParentcategoryid: builder.query<
+      any,
+      GetProductsByCategoryArgs
+    >({
+      query: ({ childCatId, cursor, limit = 10 }) => ({
+        url: `/app/getProductsbycategoryid/${childCatId}`,
+        params: {
+          cursor,
+          limit,
+        },
+      }),
+    }),
+
     getHomePageData: builder.query<any, any>({
       query: ({ cursor, limit = 10 }) => ({
         url: `/app/getHomePageBannerAndProduct`,
@@ -48,6 +67,8 @@ const productImagesHighlights = baseApi.injectEndpoints({
 
 export const {
   useLazyGetProductByCatagoryQuery,
+  useLazyGetRandomProductsForCartPageQuery,
+  useLazyGetProductsbyParentcategoryidQuery,
   useGetProductByCatagoryQuery,
   useGetHomePageDataQuery,
   useLazyGetHomePageDataQuery,

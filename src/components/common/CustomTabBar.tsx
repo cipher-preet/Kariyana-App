@@ -1,7 +1,7 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, {
   interpolate,
@@ -37,6 +37,8 @@ const getIcon = (routeName: string, focused: boolean) => {
 };
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
+  const insets = useSafeAreaInsets();
+
   const userId = '694fc82c88c809473e4455c3';
 
   const { data } = useGetCartByUserIdQuery(
@@ -49,7 +51,8 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
   );
   const totalItems = data?.data?.totalItems ?? 0;
   return (
-    <View style={styles.tabContainer}>
+    <View style={[styles.tabContainer, { paddingBottom: insets.bottom + 10 }]}>
+      {' '}
       <View style={styles.row}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
@@ -131,7 +134,7 @@ export default CustomTabBar;
 
 const styles = StyleSheet.create({
   tabContainer: {
-    paddingBottom: moderateScale(12),
+    paddingBottom: moderateScale(12) + 10,
     ...Shadows.card,
   },
 

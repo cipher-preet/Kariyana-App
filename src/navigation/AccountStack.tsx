@@ -21,12 +21,10 @@ const AccountStack = () => (
     initialRouteName="AccountMain"
   >
     <Stack.Screen name="AccountMain" component={AccountScreen} />
-
     <Stack.Screen name="MyOrdersScreen" component={MyOrdersScreen} />
     <Stack.Screen name="OrderDetailsScreen" component={OrderDetailsScreen} />
-
     <Stack.Screen name="AnalyticsScreen" component={AnalyticsScreen} />
-    <Stack.Screen name="SavedAddressScreen" component={SavedAddressScreen} /> 
+    <Stack.Screen name="SavedAddressScreen" component={SavedAddressScreen} />
     <Stack.Screen name="HelpcenterScreen" component={HelpCenterScreen} />
     <Stack.Screen name="PersonalInfoScreen" component={PersonalInfoScreen} />
     <Stack.Screen name="FaqsScreen" component={FaqsScreen} />

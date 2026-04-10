@@ -40,6 +40,7 @@ const CategoryGrid: React.FC<any> = ({ data }) => {
             navigation.navigate('productgrid', {
               categoryId: item._id,
               categoryName: item.name,
+              type: 'Childcategory',
             })
           }
         >

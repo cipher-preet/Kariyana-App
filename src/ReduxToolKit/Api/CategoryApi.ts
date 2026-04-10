@@ -5,7 +5,12 @@ export const categoryApi = baseApi.injectEndpoints({
     getCategories: builder.query<any[], void>({
       query: () => '/app/getAllChildCategories',
     }),
+
+    getParentcatandTagData: builder.query<any, void>({
+      query: () => '/app/getParentcatandTagData',
+    }),
   }),
 });
 
-export const { useGetCategoriesQuery } = categoryApi;
+export const { useGetCategoriesQuery, useGetParentcatandTagDataQuery } =
+  categoryApi;

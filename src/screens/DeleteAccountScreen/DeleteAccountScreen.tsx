@@ -1,12 +1,8 @@
-import React from 'react'
-import { Text } from 'react-native-svg'
+import React from 'react';
+import ComingSoonScreen from '../../components/common/ComingSoonScreen';
 
 const DeleteAccountScreen = () => {
-  return (
-     <div>
-      <Text>This is analytics DeleteAccountScreen</Text>
-    </div>
-  )
-}
+  return <ComingSoonScreen title="Delete Account" />;
+};
 
-export default DeleteAccountScreen
+export default DeleteAccountScreen;

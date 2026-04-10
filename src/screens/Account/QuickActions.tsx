@@ -70,7 +70,7 @@ const QuickItem = ({
   <TouchableOpacity
     style={styles.item}
     activeOpacity={0.8}
-    onPress={onPress} // 👈 IMPORTANT
+    onPress={onPress}
   >
     <View style={styles.icon} />
     <Text style={styles.text} numberOfLines={1}>

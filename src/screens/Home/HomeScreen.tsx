@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Image } from 'react-native';
 import {
   View,
   StatusBar,
@@ -19,11 +20,12 @@ import SeeAllSection from './SeeAllSection';
 import EventsSection from './EventsSection';
 import BottomBrandSection from '../../components/common/ButtomSection';
 import {
-  useGetHomePageDataQuery,
   useLazyGetHomePageDataQuery,
   useLazyGetTrendSectionDataForHomePageQuery,
 } from '../../ReduxToolKit/Api/productApi';
+
 import { useNavigation } from '@react-navigation/native';
+import { useGetParentcatandTagDataQuery } from '../../ReduxToolKit/Api';
 
 interface ApiProduct {
   _id: string;
@@ -50,58 +52,50 @@ const getStatusBarHeight = () => {
   return StatusBar.currentHeight || 24;
 };
 
-const categoriesSample: Category[] = [
-  {
-    id: 'all',
-    title: 'All',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: 'wedding',
-    title: 'Wedding',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: 'winter',
-    title: 'Winter',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: 'electronics',
-    title: 'Electronics',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: '1',
-    title: 'Beauty',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: '2',
-    title: 'Beauty',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: '3',
-    title: 'Beauty',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: '4',
-    title: 'Beauty',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-  {
-    id: '5',
-    title: 'Beauty',
-    icon: <HomeIcon width={18} height={18} color="white" />,
-  },
-];
-
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
   const [trigger, { isFetching }] = useLazyGetHomePageDataQuery();
   const [triggerTrend] = useLazyGetTrendSectionDataForHomePageQuery();
+  const { data: catData, isLoading: catLoading } =
+    useGetParentcatandTagDataQuery();
+
+  const [selectedCat, setSelectedCat] = useState('all');
+
+  const categories = useMemo(() => {
+    if (!catData?.data) return [];
+
+    const apiCats = catData.data.map((item: any) => ({
+      id: item._id,
+      title: item.name,
+      icon: item.image ? (
+        <Image
+          source={{ uri: item.image }}   // ---- change this part and add icons when Parent category is defined -----
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: 4,
+          }}
+        />
+      ) : (
+        <HomeIcon width={18} height={18} color="white" />
+      ),
+    }));
+
+    return [
+      {
+        id: 'all',
+        title: 'All',
+        icon: <HomeIcon width={18} height={18} color="white" />,
+      },
+      ...apiCats,
+    ];
+  }, [catData]);
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      setSelectedCat(categories[0].id);
+    }
+  }, [categories]);
 
   const [trendProducts, setTrendProducts] = useState<TrendSection[]>([]);
   const [sections, setSections] = useState<any[]>([]);
@@ -110,7 +104,6 @@ const HomeScreen = () => {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasNext, setHasNext] = useState(true);
   const [initialLoaded, setInitialLoaded] = useState(false);
-  const [selectedCat, setSelectedCat] = React.useState('all');
   const statusBarHeight = getStatusBarHeight();
 
   useEffect(() => {
@@ -208,9 +201,20 @@ const HomeScreen = () => {
         <SearchBar />
         <View style={{ height: Spacing.md }} />
         <CategoryTabBar
-          categories={categoriesSample}
+          categories={categories}
           selectedId={selectedCat}
-          onSelect={setSelectedCat}
+          onSelect={item => {
+            setSelectedCat(item.id);
+
+            navigation.navigate('categories', {
+              screen: 'productgrid',
+              params: {
+                categoryId: item.id,
+                categoryName: item.title,
+                type: 'Parentcategory',
+              },
+            });
+          }}
         />
       </View>
 
@@ -245,7 +249,7 @@ const HomeScreen = () => {
           />
         )}
 
-         {mappedEvents.length >= 3 && (
+        {mappedEvents.length >= 3 && (
           <EventsSection title="Events this week" data={mappedEvents} />
         )}
 
@@ -269,8 +273,6 @@ const HomeScreen = () => {
             />
           </React.Fragment>
         ))}
-
-       
 
         {isFetching && (
           <ActivityIndicator

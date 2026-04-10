@@ -112,8 +112,7 @@ const ProductDetailsScreen = () => {
         />
       </ScrollView>
 
-      <StickyAddToCart />
-    </View>
+    <StickyAddToCart product={product} />    </View>
   );
 };
 

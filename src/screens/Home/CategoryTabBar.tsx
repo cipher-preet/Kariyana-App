@@ -8,19 +8,14 @@ import {
   Animated,
 } from 'react-native';
 
-import {
-  Colors,
-  Spacing,
-  Radius,
-  Typography,
-} from '../../styles';
+import { Colors, Spacing, Radius } from '../../styles';
 
 import type { Category } from '../../types';
 
 type Props = {
   categories: Category[];
   selectedId?: string;
-  onSelect?: (id: string) => void;
+  onSelect?: (item: Category) => void;
 };
 
 const CategoryTabBar: React.FC<Props> = ({
@@ -30,8 +25,9 @@ const CategoryTabBar: React.FC<Props> = ({
 }) => {
   const flatRef = useRef<FlatList>(null);
 
-  const handleSelect = (id: string, index: number) => {
-    onSelect?.(id);
+  const handleSelect = (item: Category, index: number) => {
+    console.log('Selected Category:', item);
+    onSelect?.(item);
 
     flatRef.current?.scrollToIndex({
       index,
@@ -47,7 +43,7 @@ const CategoryTabBar: React.FC<Props> = ({
         horizontal
         data={categories}
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(it) => it.id}
+        keyExtractor={it => it.id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item, index }) => {
           const selected = item.id === selectedId;
@@ -55,15 +51,11 @@ const CategoryTabBar: React.FC<Props> = ({
           return (
             <TouchableOpacity
               activeOpacity={0.75}
-              onPress={() => handleSelect(item.id, index)}
+              onPress={() => handleSelect(item, index)}
               style={styles.itemWrapper}
             >
-              {/* ICON BOX */}
               <Animated.View
-                style={[
-                  styles.iconBox,
-                  selected && styles.iconBoxSelected,
-                ]}
+                style={[styles.iconBox, selected && styles.iconBoxSelected]}
               >
                 {item.icon ? (
                   <View
@@ -75,24 +67,15 @@ const CategoryTabBar: React.FC<Props> = ({
                     {item.icon}
                   </View>
                 ) : (
-                  <Text
-                    style={[
-                      styles.icon,
-                      selected && styles.iconSelected,
-                    ]}
-                  >
+                  <Text style={[styles.icon, selected && styles.iconSelected]}>
                     🏷️
                   </Text>
                 )}
               </Animated.View>
 
-              {/* TITLE */}
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.title,
-                  selected && styles.titleSelected,
-                ]}
+                style={[styles.title, selected && styles.titleSelected]}
               >
                 {item.title}
               </Text>
@@ -108,31 +91,30 @@ const CategoryTabBar: React.FC<Props> = ({
 
 export default CategoryTabBar;
 
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
-    paddingTop: Spacing.sm,          
+    paddingTop: Spacing.sm,
     paddingBottom: 0,
   },
 
   listContent: {
-    paddingHorizontal: Spacing.xs,  
+    paddingHorizontal: Spacing.xs,
   },
 
   itemWrapper: {
     alignItems: 'center',
-    marginRight: Spacing.xxxl,      
+    marginRight: Spacing.xxxl,
   },
 
   iconBox: {
     width: 28,
     height: 28,
-    borderRadius: Radius.sm,        
+    borderRadius: Radius.sm,
     backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.xxs,      
+    marginBottom: Spacing.xxs,
   },
 
   iconBoxSelected: {
@@ -173,7 +155,7 @@ const styles = StyleSheet.create({
   },
 
   underline: {
-    marginTop: Spacing.xxs,        
+    marginTop: Spacing.xxs,
     width: 20,
     height: 2,
     backgroundColor: Colors.white,

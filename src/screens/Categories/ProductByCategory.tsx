@@ -10,10 +10,17 @@ import {
 import WrapperContainer from '../../components/common/WrapperContainer/WrapperContainer';
 import { Colors, Spacing } from '../../styles';
 import ProductCardMinimal from '../Home/ProductCardMinimal';
-import { useLazyGetProductByCatagoryQuery } from '../../ReduxToolKit/Api/productApi';
+import {
+  useLazyGetProductByCatagoryQuery,
+  useLazyGetProductsbyParentcategoryidQuery,
+} from '../../ReduxToolKit/Api/productApi';
 
 const ProductByCategory = ({ route }: any) => {
-  const { categoryId, categoryName } = route.params;
+  const { categoryId, categoryName, type } = route.params;
+
+  console.log('Category ID:', categoryId);
+  console.log('Category Name:', categoryName);
+  console.log('Type:', type);
 
   const [products, setProducts] = useState<any[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -22,7 +29,8 @@ const ProductByCategory = ({ route }: any) => {
 
   const isLoadingMore = useRef(false);
 
-  const [getProducts, { isLoading }] = useLazyGetProductByCatagoryQuery();
+  const [getChildProducts, { isLoading }] = useLazyGetProductByCatagoryQuery();
+  const [getParentProducts] = useLazyGetProductsbyParentcategoryidQuery();
 
   useEffect(() => {
     loadInitialProducts();
@@ -31,10 +39,20 @@ const ProductByCategory = ({ route }: any) => {
   const loadInitialProducts = async () => {
     try {
       setIsInitialLoading(true);
-      const response = await getProducts({
-        childCatId: categoryId,
-        cursor: undefined,
-      }).unwrap();
+
+      let response;
+
+      if (type === 'Parentcategory') {
+        response = await getParentProducts({
+          childCatId: categoryId,
+          cursor: undefined,
+        }).unwrap();
+      } else {
+        response = await getChildProducts({
+          childCatId: categoryId,
+          cursor: undefined,
+        }).unwrap();
+      }
 
       if (response?.data?.products) {
         setProducts(response.data.products);
@@ -55,10 +73,20 @@ const ProductByCategory = ({ route }: any) => {
 
     try {
       isLoadingMore.current = true;
-      const response = await getProducts({
-        childCatId: categoryId,
-        cursor: nextCursor,
-      }).unwrap();
+
+      let response;
+
+      if (type === 'Parentcategory') {
+        response = await getParentProducts({
+          childCatId: categoryId,
+          cursor: nextCursor,
+        }).unwrap();
+      } else {
+        response = await getChildProducts({
+          childCatId: categoryId,
+          cursor: nextCursor,
+        }).unwrap();
+      }
 
       if (response?.data?.products) {
         setProducts(prev => [...prev, ...response.data.products]);
@@ -85,7 +113,6 @@ const ProductByCategory = ({ route }: any) => {
       </WrapperContainer>
     );
   }
-
 
   return (
     <WrapperContainer scrollable={false}>
