@@ -1,0 +1,218 @@
+import React, { useState, useCallback, useMemo } from 'react';
+import {
+  View,
+  TextInput,
+  FlatList,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import debounce from 'lodash.debounce';
+
+import { Colors, Spacing } from '../../styles';
+import Header from '../MyOrdersScreen/Header';
+import SearchIcon from '../../assest/search';
+
+import { useLazySearchProductQuery } from '../../ReduxToolKit/Api/productApi';
+
+const SearchScreen = () => {
+  const [query, setQuery] = useState('');
+
+  const [triggerSearch, { data, isFetching, isError }] =
+    useLazySearchProductQuery();
+
+  const results = data?.data || [];
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((text: string) => {
+        if (text.length >= 2) {
+          triggerSearch({ q: text });
+        }
+      }, 400),
+    [triggerSearch],
+  );
+
+  const handleSearch = useCallback(
+    (text: string) => {
+      setQuery(text);
+
+      if (text.length < 2) return;
+
+      debouncedSearch(text);
+    },
+    [debouncedSearch],
+  );
+
+  const clearSearch = () => {
+    setQuery('');
+  };
+
+  const renderItem = ({ item }: any) => {
+    const imageUrl = item?.images || 'https://via.placeholder.com/100';
+
+    return (
+      <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+        <View style={styles.imageBox}>
+          <Image source={{ uri: imageUrl }} style={styles.image} />
+        </View>
+
+        <Text numberOfLines={2} style={styles.productName}>
+          {item.name}
+        </Text>
+
+        <Text style={styles.price}>₹{item.sellingPrice}</Text>
+      </TouchableOpacity>
+    );
+  };
+  return (
+    <SafeAreaView style={styles.safe}>
+      <Header title="Search Products" />
+
+      <View style={styles.container}>
+        <View style={styles.searchBar}>
+          <SearchIcon width={18} height={18} color={Colors.gray500} />
+
+          <TextInput
+            placeholder="Search for atta, dal, oil..."
+            placeholderTextColor={Colors.gray500}
+            value={query}
+            onChangeText={handleSearch}
+            autoFocus
+            style={styles.input}
+          />
+
+          {query.length > 0 && (
+            <TouchableOpacity onPress={clearSearch}>
+              <Text style={styles.clear}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {isFetching && (
+          <ActivityIndicator
+            size="small"
+            color={Colors.primary}
+            style={{ marginTop: 10 }}
+          />
+        )}
+
+        {isError && <Text style={styles.error}>Something went wrong</Text>}
+
+        <FlatList
+          data={results}
+          keyExtractor={(item: any) => item._id}
+          numColumns={3}
+          showsVerticalScrollIndicator={false}
+          renderItem={renderItem}
+          columnWrapperStyle={{
+            justifyContent: 'space-between',
+            marginBottom: 12,
+          }}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          ListEmptyComponent={
+            !isFetching ? (
+              <Text style={styles.empty}>
+                {query ? 'No results found' : 'Start typing to search'}
+              </Text>
+            ) : null
+          }
+        />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+export default SearchScreen;
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+
+  container: {
+    flex: 1,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+  },
+
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    height: 45,
+    marginBottom: 15,
+  },
+
+  input: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 15,
+    color: Colors.gray900,
+  },
+
+  clear: {
+    fontSize: 16,
+    color: Colors.gray500,
+    paddingHorizontal: 5,
+  },
+
+  imageBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  card: {
+    width: '31%',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  image: {
+    width: '85%',
+    height: '85%',
+    borderRadius: 10,
+  },
+  productName: {
+    marginTop: 8,
+    fontSize: 12.5,
+    textAlign: 'center',
+    color: Colors.gray900,
+    fontWeight: '500',
+  },
+  price: {
+    marginTop: 4,
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  empty: {
+    textAlign: 'center',
+    marginTop: 50,
+    color: Colors.gray500,
+    fontSize: 14,
+  },
+
+  error: {
+    textAlign: 'center',
+    color: 'red',
+    marginTop: 10,
+  },
+});

@@ -24,6 +24,15 @@ const productApi = baseApi.injectEndpoints({
       }),
     }),
 
+    searchProduct: builder.query<any, { q: string }>({
+      query: ({ q }) => ({
+        url: `/app/searchProduct`,
+        params: {
+          q,
+        },
+      }),
+    }),
+
     getProductsbyParentcategoryid: builder.query<
       any,
       GetProductsByCategoryArgs
@@ -69,6 +78,7 @@ export const {
   useLazyGetProductByCatagoryQuery,
   useLazyGetRandomProductsForCartPageQuery,
   useLazyGetProductsbyParentcategoryidQuery,
+  useLazySearchProductQuery,
   useGetProductByCatagoryQuery,
   useGetHomePageDataQuery,
   useLazyGetHomePageDataQuery,

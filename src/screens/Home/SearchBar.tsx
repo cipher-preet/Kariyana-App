@@ -1,18 +1,8 @@
-// src/components/SearchBar.tsx
 import React from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-import {
-  Colors,
-  Spacing,
-  Radius,
-  Shadows,
-} from '../../styles';
+import { Colors, Spacing, Radius, Shadows } from '../../styles';
 
 import SearchIcon from '../../assest/search';
 import MicIcon from '../../assest/mic';
@@ -26,34 +16,38 @@ const SearchBar: React.FC<Props> = ({
   placeholder = 'Search products...',
   onSearch,
 }) => {
+  const navigation = useNavigation();
   const [q, setQ] = React.useState('');
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.searchContainer}>
-        <SearchIcon width={20} height={20} color={Colors.gray500} />
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => navigation.navigate('SearchScreen' as never)}
+    >
+      <View style={styles.wrapper}>
+        <View style={styles.searchContainer}>
+          <SearchIcon width={20} height={20} color={Colors.gray500} />
 
-        <TextInput
-          style={styles.input}
-          placeholder={placeholder}
-          placeholderTextColor={Colors.gray500}
-          value={q}
-          onChangeText={setQ}
-          returnKeyType="search"
-          onSubmitEditing={() => onSearch?.(q)}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder={placeholder}
+            placeholderTextColor={Colors.gray500}
+            value={q}
+            onChangeText={setQ}
+            editable={false}
+            pointerEvents="none"
+          />
 
-        <TouchableOpacity onPress={() => onSearch?.(q)}>
-          <MicIcon width={20} height={20} color={Colors.gray500} />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => onSearch?.(q)}>
+            <MicIcon width={20} height={20} color={Colors.gray500} />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 export default SearchBar;
-
-
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -66,19 +60,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
 
     backgroundColor: Colors.white,
-    borderRadius: Radius.md,          
+    borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: Colors.gray200,
 
-    paddingHorizontal: Spacing.lg,    
-    height: 48,                       
+    paddingHorizontal: Spacing.lg,
+    height: 48,
     ...Shadows.soft,
   },
 
   input: {
     flex: 1,
-    marginLeft: Spacing.md,          
+    marginLeft: Spacing.md,
     color: Colors.gray900,
-    fontSize: 15,                    
+    fontSize: 15,
   },
 });
