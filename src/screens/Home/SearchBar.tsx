@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
 import { Colors, Spacing, Radius, Shadows } from '../../styles';
 
@@ -16,15 +18,26 @@ const SearchBar: React.FC<Props> = ({
   placeholder = 'Search products...',
   onSearch,
 }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const route = useRoute();
+
+  console.log(navigation.getState());
+
   const [q, setQ] = React.useState('');
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={() => navigation.navigate('SearchScreen' as never)}
-    >
-      <View style={styles.wrapper}>
+    <View style={styles.wrapper}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'HomeMain' }, { name: 'SearchScreen' }],
+            }),
+          );
+        }}
+      >
         <View style={styles.searchContainer}>
           <SearchIcon width={20} height={20} color={Colors.gray500} />
 
@@ -42,8 +55,8 @@ const SearchBar: React.FC<Props> = ({
             <MicIcon width={20} height={20} color={Colors.gray500} />
           </TouchableOpacity>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 

@@ -71,6 +71,12 @@ const productImagesHighlights = baseApi.injectEndpoints({
         url: `/dashboard/getProductImagesAndHighlights?productId=${productId}`,
       }),
     }),
+
+    getProductDetalsById: builder.query<any, { productId: string }>({
+      query: ({ productId }) => ({
+        url: `/app/getProductsbyProductId/${productId}`,
+      }),
+    }),
   }),
 });
 
@@ -84,5 +90,7 @@ export const {
   useLazyGetHomePageDataQuery,
   useLazyGetTrendSectionDataForHomePageQuery,
 } = productApi;
-export const { useGetProductImagesAndHighlightsQuery } =
-  productImagesHighlights;
+export const {
+  useGetProductImagesAndHighlightsQuery,
+  useLazyGetProductDetalsByIdQuery,
+} = productImagesHighlights;

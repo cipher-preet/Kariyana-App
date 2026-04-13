@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import debounce from 'lodash.debounce';
 
@@ -16,13 +18,20 @@ import { Colors, Spacing } from '../../styles';
 import Header from '../MyOrdersScreen/Header';
 import SearchIcon from '../../assest/search';
 
-import { useLazySearchProductQuery } from '../../ReduxToolKit/Api/productApi';
+import {
+  useLazyGetProductDetalsByIdQuery,
+  useLazySearchProductQuery,
+} from '../../ReduxToolKit/Api/productApi';
 
 const SearchScreen = () => {
+  const navigation = useNavigation<any>();
   const [query, setQuery] = useState('');
 
   const [triggerSearch, { data, isFetching, isError }] =
     useLazySearchProductQuery();
+
+  const [getProductById, { isFetching: isDetailLoading }] =
+    useLazyGetProductDetalsByIdQuery();
 
   const results = data?.data || [];
 
@@ -51,11 +60,30 @@ const SearchScreen = () => {
     setQuery('');
   };
 
+  const handleProductPress = async (id: string) => {
+    try {
+      const res = await getProductById({ productId: id }).unwrap();
+      const product = res?.data;
+
+      if (product) {
+        navigation.navigate('ProductDetails', {
+          product,
+        });
+      }
+    } catch (error) {
+      console.log('Error fetching product details', error);
+    }
+  };
+
   const renderItem = ({ item }: any) => {
     const imageUrl = item?.images || 'https://via.placeholder.com/100';
 
     return (
-      <TouchableOpacity activeOpacity={0.9} style={styles.card}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        style={styles.card}
+        onPress={() => handleProductPress(item._id)}
+      >
         <View style={styles.imageBox}>
           <Image source={{ uri: imageUrl }} style={styles.image} />
         </View>
@@ -64,7 +92,7 @@ const SearchScreen = () => {
           {item.name}
         </Text>
 
-        <Text style={styles.price}>₹{item.sellingPrice}</Text>
+        <Text style={styles.price}>₹{item.mrp}</Text>
       </TouchableOpacity>
     );
   };
@@ -109,18 +137,16 @@ const SearchScreen = () => {
           showsVerticalScrollIndicator={false}
           renderItem={renderItem}
           columnWrapperStyle={{
-            justifyContent: 'space-between',
+            justifyContent: 'flex-start',
             marginBottom: 12,
           }}
           contentContainerStyle={{ paddingBottom: 20 }}
-          ListEmptyComponent={
-            !isFetching ? (
-              <Text style={styles.empty}>
-                {query ? 'No results found' : 'Start typing to search'}
-              </Text>
-            ) : null
-          }
         />
+        {isDetailLoading && (
+          <View style={styles.loaderOverlay}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -174,6 +200,8 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '31%',
+    marginRight: 10,
+    marginBottom: 12,
     backgroundColor: '#fff',
     borderRadius: 14,
     paddingVertical: 10,
@@ -214,5 +242,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'red',
     marginTop: 10,
+  },
+  loaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

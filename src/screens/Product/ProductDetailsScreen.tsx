@@ -111,8 +111,8 @@ const ProductDetailsScreen = () => {
           bg={Colors.gray50}
         />
       </ScrollView>
-
-    <StickyAddToCart product={product} />    </View>
+      <StickyAddToCart product={product} />{' '}
+    </View>
   );
 };
 

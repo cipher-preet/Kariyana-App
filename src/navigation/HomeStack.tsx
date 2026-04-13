@@ -14,11 +14,7 @@ const HomeStack = () => (
       component={ProductDetailsScreen}
       options={{ headerShown: false }}
     />
-    <Stack.Screen
-      name="SearchScreen"
-      component={SearchScreen}
-      options={{ headerShown: false }}
-    />
+    <Stack.Screen name="SearchScreen" component={SearchScreen} />
   </Stack.Navigator>
 );
 
