@@ -12,66 +12,104 @@ export const PrivacyPolicyScreen = () => {
         <View style={styles.hero}>
           <Text style={styles.title}>Privacy Policy</Text>
           <Text style={styles.subtitle}>
-            Your privacy matters to us. This policy explains how we collect,
-            use, and protect your information.
+            We are committed to protecting your privacy and ensuring
+            transparency in how your data is handled.
           </Text>
           <Text style={styles.updated}>Last updated: April 2026</Text>
         </View>
 
         <Section
-          title="Information We Collect"
-          content={`We collect information to provide better services to all our users. This includes personal details such as your name, phone number, email address, and account preferences.
+          title="1. Information We Collect"
+          content={`We collect information necessary to provide and improve our services.
 
-We may also collect usage data such as interactions within the app, device information, and performance metrics to improve user experience.`}
+This may include:
+• Personal Information: Name, phone number, email address, business details  
+• Account Information: Login credentials and preferences  
+• Transaction Data: Orders, payments, and purchase history  
+• Device & Usage Data: IP address, device type, app interactions  
+
+All data is collected lawfully and only for relevant business purposes.`}
         />
 
         <Section
-          title="How We Use Your Information"
-          content={`Your information is used to operate, maintain, and improve our services. This includes:
+          title="2. How We Use Your Information"
+          content={`Your information is used to deliver a seamless and efficient experience.
 
-• Personalizing your experience  
-• Processing transactions securely  
-• Providing customer support  
-• Sending important updates and notifications  
+We use your data to:
+• Process and manage orders  
+• Provide customer support  
+• Personalize your experience  
+• Improve platform performance  
+• Send important service updates  
 
-We ensure your data is only used for legitimate business purposes.`}
+We do not use your data for unauthorized purposes.`}
         />
 
         <Section
-          title="Data Sharing & Disclosure"
-          content={`We do not sell your personal information. However, we may share limited data with trusted third-party partners to:
+          title="3. Data Sharing & Third Parties"
+          content={`We do not sell or rent your personal data.
 
-• Provide infrastructure and hosting  
-• Enable payment processing  
-• Improve analytics and performance  
+We may share limited information with trusted third parties for:
+• Payment processing (e.g., UPI, banking partners)  
+• Logistics and delivery services  
+• Cloud storage and infrastructure  
+• Analytics and performance tracking  
 
-All partners are required to follow strict confidentiality and data protection standards.`}
+All partners are contractually obligated to maintain data confidentiality and security.`}
         />
 
         <Section
-          title="Data Security"
-          content={`We implement industry-standard security measures to protect your data from unauthorized access, alteration, or disclosure.
+          title="4. Data Security"
+          content={`We implement industry-standard security measures to protect your data.
 
-This includes encryption, secure servers, and regular system monitoring. While no system is completely secure, we continuously improve our safeguards.`}
+This includes:
+• End-to-end encryption  
+• Secure servers and databases  
+• Access control and authentication  
+• Regular monitoring and security audits  
+
+While we strive to protect your data, no system is completely secure.`}
         />
 
         <Section
-          title="Your Rights & Control"
-          content={`You have full control over your personal data. You can:
+          title="5. Data Retention"
+          content={`We retain your data only as long as necessary for business, legal, or operational purposes.
 
-• Access your data  
-• Request corrections  
-• Delete your account  
-• Opt out of communications  
+Once data is no longer required, it is securely deleted or anonymized.`}
+        />
+
+        <Section
+          title="6. Your Rights"
+          content={`You have full control over your personal data.
+
+You can:
+• Access your personal information  
+• Request updates or corrections  
+• Request account deletion  
+• Opt out of notifications  
 
 To exercise your rights, please contact our support team.`}
         />
 
         <Section
-          title="Policy Updates"
-          content={`We may update this Privacy Policy from time to time to reflect changes in our services or legal requirements.
+          title="7. Cookies & Tracking"
+          content={`We may use cookies and similar technologies to enhance user experience and analyze usage patterns.
 
-We encourage you to review this page periodically. Continued use of the app implies acceptance of updates.`}
+You can manage cookie preferences through your device or browser settings.`}
+        />
+
+        <Section
+          title="8. Policy Updates"
+          content={`We may update this Privacy Policy periodically.
+
+Any changes will be reflected on this page with an updated revision date. Continued use of the platform indicates acceptance of the updated policy.`}
+        />
+
+        <Section
+          title="9. Contact Us"
+          content={`If you have any questions or concerns about this Privacy Policy, please contact us through the support section of the app or via email.
+
+We are committed to resolving your concerns promptly.`}
         />
 
         <View style={{ height: 40 }} />

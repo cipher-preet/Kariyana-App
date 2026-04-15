@@ -18,33 +18,79 @@ if (Platform.OS === 'android') {
 
 const DATA = [
   {
-    question: 'How to equalize airpods?',
-    answer: 'Go to Settings > Music > EQ and select your preferred preset .',
-  },
-  {
-    question: 'How to clean my airpods?',
+    question: 'What is this platform about?',
     answer:
-      'Use a soft, dry cloth. Avoid liquids and clean gently with cotton.',
+      'Our platform helps shopkeepers purchase quality products at wholesale prices with reliable online delivery directly to their stores.',
   },
   {
-    question: 'How to connect to my watch?',
-    answer: 'Turn on Bluetooth → Open Watch App → Pair device → Follow steps.',
+    question: 'Who can use this service?',
+    answer:
+      'This service is designed for shopkeepers, retailers, and small business owners looking for affordable and quality inventory.',
   },
   {
-    question: 'Support related questions',
-    answer: 'Reach out via support section or email.',
+    question: 'How do I place an order?',
+    answer:
+      'Browse products, add items to your cart, and place your order using our secure checkout process.',
   },
   {
-    question: 'System related questions',
-    answer: 'Restart device or check system settings.',
+    question: 'Do you offer bulk pricing?',
+    answer:
+      'Yes, we provide competitive bulk pricing to ensure maximum profit margins for shopkeepers.',
   },
   {
-    question: 'System related questions',
-    answer: 'Restart device or check system settings.',
+    question: 'What types of products are available?',
+    answer:
+      'We offer a wide range of products including groceries, daily essentials, and other wholesale items.',
   },
   {
-    question: 'System related questions',
-    answer: 'Restart device or check system settings.',
+    question: 'How fast is delivery?',
+    answer:
+      'We aim to deliver orders within 24–48 hours depending on your location.',
+  },
+  {
+    question: 'Is there a minimum order value?',
+    answer:
+      'Yes, a minimum order value may apply to ensure cost-effective delivery.',
+  },
+  {
+    question: 'Are the products quality checked?',
+    answer:
+      'Absolutely. All products go through strict quality checks before being delivered.',
+  },
+  {
+    question: 'Can I track my order?',
+    answer:
+      'Yes, you can track your order in real-time through the app or website.',
+  },
+  {
+    question: 'What payment methods are available?',
+    answer:
+      'We support multiple payment options including UPI, cards, net banking, and cash on delivery (if available).',
+  },
+  {
+    question: 'What if I receive damaged goods?',
+    answer:
+      'You can raise a return or replacement request through the app, and our team will assist you promptly.',
+  },
+  {
+    question: 'Do you offer credit or pay-later options?',
+    answer:
+      'We are working on introducing credit options for trusted shopkeepers to help manage cash flow.',
+  },
+  {
+    question: 'How can I contact support?',
+    answer:
+      'You can reach our support team via the app, email, or helpline for any assistance.',
+  },
+  {
+    question: 'Can I reorder previous items easily?',
+    answer:
+      'Yes, you can quickly reorder from your order history with just one click.',
+  },
+  {
+    question: 'Why should I choose this platform?',
+    answer:
+      'We provide affordable pricing, reliable delivery, quality products, and a seamless ordering experience tailored for shopkeepers.',
   },
 ];
 

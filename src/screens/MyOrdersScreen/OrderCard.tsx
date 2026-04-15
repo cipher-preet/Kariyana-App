@@ -1,231 +1,265 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { memo, useCallback, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const OrderCard = ({ item }: any) => {
   const navigation = useNavigation<any>();
 
+  const [showReview, setShowReview] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [desc, setDesc] = useState('');
+
+  const handlePress = useCallback(() => {
+    navigation.navigate('OrderDetailsScreen', {
+      orders: item,
+    });
+  }, [navigation, item]);
+
   if (!item || !item.items?.length) return null;
 
   const firstItem = item.items[0];
-  const remainingCount = item.items.length - 1;
-
-  const handlePress = () => {
-    navigation.navigate('OrderDetailsScreen', {
-      order: item, 
-    });
-  };
 
   return (
-    <TouchableOpacity activeOpacity={0.95} style={styles.wrapper} onPress={handlePress}>
-      <View style={styles.card}>
-        <View style={styles.top}>
-          <View style={styles.imageStack}>
-            {item.items.slice(0, 3).map((product: any, index: number) => (
-              <Image
-                key={index}
-                source={{ uri: product.image }}
-                style={[
-                  styles.image,
-                  {
-                    transform: [{ translateX: index * 10 }],
-                    zIndex: 10 - index,
-                  },
-                ]}
-              />
-            ))}
-
-            {remainingCount > 2 && (
-              <View style={styles.moreOverlay}>
-                <Text style={styles.moreText}>+{remainingCount - 2}</Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.info}>
-            <Text style={styles.title} numberOfLines={2}>
-              {firstItem.title}
+    <TouchableOpacity
+      activeOpacity={0.75}
+      style={styles.container}
+      onPress={handlePress}
+    >
+      <View style={styles.row}>
+        <Image source={{ uri: firstItem.image }} style={styles.image} />
+        <View style={styles.content}>
+          <View style={styles.topRow}>
+            <Text style={[styles.status, getStatusColor(item.status)]}>
+              {getStatusText(item.status)}
             </Text>
 
-            <Text style={styles.subtitle}>
-              {remainingCount > 0
-                ? `${item.items.length} items`
-                : firstItem.subtitle}
-            </Text>
+            <Text style={styles.orderId}>#{item.id?.slice(-5)}</Text>
+          </View>
 
-            <View style={[styles.statusChip, getStatusBg(item.status)]}>
-              <Text style={[styles.statusText, getStatusColor(item.status)]}>
-                {item.status}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.bottom}>
-          <View>
-            <Text style={styles.price}>₹{item.totalAmount}</Text>
-            <Text style={styles.extra}>
-              {remainingCount > 0
-                ? `Includes ${remainingCount} more`
-                : 'Single item'}
-            </Text>
-          </View>
+          <Text numberOfLines={2} style={styles.title}>
+            {firstItem.title}
+          </Text>
+
+          <Text style={styles.meta}>
+            {item.items.length} item{item.items.length > 1 ? 's' : ''} • ₹
+            {item.totalAmount}
+          </Text>
+
+          <Text style={styles.subMeta}>
+            {item.itemCount > 1
+              ? `+${item.itemCount - 1} more items`
+              : 'Single item'}
+          </Text>
 
           {item.canReview && (
-            <TouchableOpacity style={styles.cta}>
-              <Text style={styles.ctaText}>Review</Text>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={e => {
+                e.stopPropagation();
+                setShowReview(prev => !prev);
+              }}
+            >
+              <Text style={styles.review}>
+                {showReview ? 'Cancel Review' : 'Write a Review'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
+        <View style={styles.arrowContainer}>
+          <Text style={styles.arrow}>›</Text>
+        </View>
       </View>
+
+      {showReview && (
+        <View style={styles.reviewBox}>
+          <View style={styles.starRow}>
+            {[1, 2, 3, 4, 5].map(star => (
+              <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                <Text
+                  style={[styles.star, star <= rating && styles.activeStar]}
+                >
+                  ★
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TextInput
+            placeholder="Write your review..."
+            value={desc}
+            onChangeText={setDesc}
+            multiline
+            style={styles.input}
+          />
+
+          <TouchableOpacity style={styles.submitBtn}>
+            <Text style={styles.submitText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <View style={styles.divider} />
     </TouchableOpacity>
   );
 };
 
-export default OrderCard;
+export default memo(OrderCard);
 
-const getStatusBg = (status: string) => {
+const getStatusText = (status: string) => {
   switch (status) {
     case 'Delivered':
-      return { backgroundColor: '#EAF7EE' };
+      return 'Delivered';
     case 'Refund completed':
-      return { backgroundColor: '#EEF3FF' };
+      return 'Refund completed';
     case 'Cancelled':
-      return { backgroundColor: '#FDEDED' };
+      return 'Cancelled';
     default:
-      return { backgroundColor: '#F3F3F3' };
+      return status;
   }
 };
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Delivered':
-      return { color: '#1F9254' };
+      return { color: '#16A34A' };
     case 'Refund completed':
-      return { color: '#2F6FED' };
+      return { color: '#2563EB' };
     case 'Cancelled':
-      return { color: '#D93025' };
+      return { color: '#DC2626' };
     default:
-      return { color: '#555' };
+      return { color: '#374151' };
   }
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    paddingHorizontal: 14,
-    paddingTop: 10,
-  },
-
-  card: {
+  container: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 1,
+    paddingHorizontal: 18,
   },
 
-  top: {
+  row: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  imageStack: {
-    width: 80,
-    height: 65,
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingVertical: 28,
   },
 
   image: {
-    width: 48,
-    height: 65,
-    borderRadius: 14,
-    position: 'absolute',
-    backgroundColor: '#F5F5F5',
+    width: 72,
+    height: 72,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
   },
 
-  moreOverlay: {
-    position: 'absolute',
-    right: -6,
-    top: 20,
-    backgroundColor: '#111',
-    borderRadius: 16,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+  content: {
+    flex: 1,
+    marginLeft: 14,
+    paddingRight: 8,
   },
 
-  moreText: {
-    color: '#fff',
-    fontSize: 10,
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+
+  status: {
+    fontSize: 13,
     fontWeight: '600',
   },
 
-  info: {
-    flex: 1,
-    marginLeft: 14,
+  orderId: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '500',
   },
 
   title: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#0A0A0A',
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111827',
     lineHeight: 20,
+    marginBottom: 4,
   },
 
-  subtitle: {
+  meta: {
+    fontSize: 13,
+    color: '#374151',
+    marginBottom: 2,
+  },
+
+  subMeta: {
     fontSize: 12,
-    color: '#8A8A8A',
-    marginTop: 4,
+    color: '#6B7280',
   },
 
-  statusChip: {
+  review: {
+    fontSize: 13,
+    color: '#2563EB',
+    marginTop: 6,
+    fontWeight: '500',
+  },
+
+  arrowContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 6,
+  },
+
+  arrow: {
+    fontSize: 22,
+    color: '#9CA3AF',
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+
+  reviewBox: {
     marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    alignSelf: 'flex-start',
   },
 
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-
-  bottom: {
-    marginTop: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F2F2F2',
-
+  starRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  star: {
+    fontSize: 22,
+    color: '#D1D5DB',
+    marginRight: 6,
+  },
+
+  activeStar: {
+    color: '#FACC15',
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 8,
+    minHeight: 60,
+    textAlignVertical: 'top',
+    marginBottom: 8,
+  },
+
+  submitBtn: {
+    backgroundColor: '#111827',
+    paddingVertical: 10,
+    borderRadius: 10,
     alignItems: 'center',
   },
 
-  price: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#000',
-    letterSpacing: 0.3,
-  },
-
-  extra: {
-    fontSize: 11,
-    color: '#9A9A9A',
-    marginTop: 3,
-  },
-
-  cta: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: '#FAFAFA',
-  },
-
-  ctaText: {
-    fontSize: 12,
+  submitText: {
+    color: '#fff',
     fontWeight: '600',
-    color: '#111',
   },
 });

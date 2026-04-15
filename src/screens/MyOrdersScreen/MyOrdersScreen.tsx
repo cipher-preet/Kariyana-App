@@ -1,118 +1,77 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 
-import OrderCard from './OrderCard';
 import Header from './Header';
-
-const orders = [
-  {
-    id: '1',
-    status: 'Refund completed',
-    totalAmount: 1642,
-    canReview: false,
-    items: [
-      {
-        title: 'Prestige 1200 W Induction Cooktop',
-        subtitle: 'Refund processed',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-      {
-        title: 'Extra Pan',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-    ],
-  },
-  {
-    id: '3',
-    status: 'Cancelled',
-    totalAmount: 999,
-    canReview: true,
-    items: [
-      {
-        title: 'The 22 Immutable Laws of Marketing',
-        subtitle: 'Delivered on Feb 09',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-      {
-        title: 'Notebook',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-      {
-        title: 'Pen Pack',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-    ],
-  },
-  {
-    id: '4',
-    status: 'Delivered',
-    totalAmount: 999,
-    canReview: true,
-    items: [
-      {
-        title: 'The 22 Immutable Laws of Marketing',
-        subtitle: 'Delivered on Feb 09',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-      {
-        title: 'Notebook',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-      {
-        title: 'Pen Pack',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-    ],
-  },
-  {
-    id: '2',
-    status: 'Delivered',
-    totalAmount: 999,
-    canReview: true,
-    items: [
-      {
-        title: 'The 22 Immutable Laws of Marketing',
-        subtitle: 'Delivered on Feb 09',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-      {
-        title: 'Notebook',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-      {
-        title: 'Pen Pack',
-        image:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPd9Ld5mIJeME9tlwGvyjbzVc55jeJ-5hA-A&s',
-      },
-    ],
-  },
-];
+import OrderCard from './OrderCard';
+import { useGetOrderDetailByuserIdQuery } from '../../ReduxToolKit/Api/accountPageApi';
 
 const MyOrdersScreen = () => {
-  const navigation = useNavigation();
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+
+  const { data, isLoading, isFetching } = useGetOrderDetailByuserIdQuery(
+    { userId: '697ceb6542c7dd37f30b05ea', cursor },
+    { refetchOnMountOrArgChange: true },
+  );
+
+  useEffect(() => {
+    if (!data?.data?.data) return;
+
+    setOrders(prev => {
+      if (!cursor) return data.data.data;
+
+      const newItems = data.data.data.filter(
+        (item: any) => !prev.some(p => p.id === item.id),
+      );
+
+      return [...prev, ...newItems];
+    });
+  }, [data]);
+
+  const renderItem = useCallback(({ item }: any) => {
+    const formattedItem = {
+      ...item,
+      items: [
+        {
+          title: item.title,
+          image: item.image,
+        },
+      ],
+    };
+
+    return <OrderCard item={formattedItem} />;
+  }, []);
+
+  const loadMore = useCallback(() => {
+    if (
+      data?.data?.hasMore &&
+      !isFetching &&
+      data?.data?.nextCursor !== cursor
+    ) {
+      setCursor(data.data.nextCursor);
+    }
+  }, [data, isFetching, cursor]);
 
   return (
     <SafeAreaView style={styles.root}>
       <Header title="My Orders" />
+
       <FlatList
         data={orders}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => <OrderCard item={item} />}
+        renderItem={renderItem}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetching ? <ActivityIndicator size="large" /> : null
+        }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={7}
+        removeClippedSubviews
       />
     </SafeAreaView>
   );
@@ -125,7 +84,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-
   list: {
     paddingBottom: 100,
   },
