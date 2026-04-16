@@ -12,6 +12,7 @@ const accountPageApi = baseApi.injectEndpoints({
           userId,
           ...(cursor && { cursor }),
         },
+        providesTags: ['rating'],
       }),
     }),
 
@@ -20,10 +21,21 @@ const accountPageApi = baseApi.injectEndpoints({
         url: `/app/getOrderDetailWithOrderId?orderId=${orderId}`,
       }),
     }),
+
+    userRatingProducts: builder.mutation<any, any>({
+      query: body => ({
+        url: '/app/userRatingProducts',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['rating'],
+    }),
   }),
 });
 
 export const {
   useGetOrderDetailByuserIdQuery,
   useGetOrderDetailWithOrderIdQuery,
+  useLazyGetOrderDetailByuserIdQuery,
+  useUserRatingProductsMutation,
 } = accountPageApi;

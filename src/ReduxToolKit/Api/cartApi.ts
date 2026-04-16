@@ -59,6 +59,4 @@ export const {
   useUpdateCartMutation,
 } = cartApi;
 
-
-export const selectCartResult =
-  cartApi.endpoints.getCartByUserId.select;
+export const selectCartResult = cartApi.endpoints.getCartByUserId.select;

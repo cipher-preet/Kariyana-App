@@ -8,6 +8,7 @@ import QuickActions from './QuickActions';
 import AccountRow from './AccountRow';
 import SectionTitle from './SectionTitle';
 import { useNavigation } from '@react-navigation/native';
+import Header from '../MyOrdersScreen/Header';
 
 const AccountScreen = () => {
   const navigation = useNavigation<any>();
@@ -15,7 +16,7 @@ const AccountScreen = () => {
   return (
     <View style={styles.root}>
       <View style={styles.fixedHeader}>
-        <SectionTitle title="My Account" large />
+        <Header title="My Account" />
       </View>
 
       <ScrollView

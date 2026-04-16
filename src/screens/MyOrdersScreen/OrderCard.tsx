@@ -6,8 +6,10 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useUserRatingProductsMutation } from '../../ReduxToolKit/Api/accountPageApi';
 
 const OrderCard = ({ item }: any) => {
   const navigation = useNavigation<any>();
@@ -15,6 +17,30 @@ const OrderCard = ({ item }: any) => {
   const [showReview, setShowReview] = useState(false);
   const [rating, setRating] = useState(0);
   const [desc, setDesc] = useState('');
+
+  const [addRating, { isLoading }] = useUserRatingProductsMutation();
+
+  const handleSubmitRating = async () => {
+    try {
+      const payload = {
+        id: item.id,
+        rating,
+        review: desc,
+      };
+
+      const res = await addRating(payload);
+
+      if (res) {
+        item.status = 'Rated';
+        setShowReview(false);
+        item.rating = rating;
+        item.review = desc;
+        Alert.alert(res.data.data.message);
+      }
+    } catch (error) {
+      console.log('Rating Error:', error);
+    }
+  };
 
   const handlePress = useCallback(() => {
     navigation.navigate('OrderDetailsScreen', {
@@ -77,6 +103,24 @@ const OrderCard = ({ item }: any) => {
         </View>
       </View>
 
+      {item?.status === 'Rated' && (
+        <View style={styles.ratedContainer}>
+          <Text style={styles.ratedText}>Rated</Text>
+
+          <View style={styles.starRow}>
+            {[1, 2, 3, 4, 5].map(star => (
+              <Text key={star} style={styles.star}>
+                {star <= (item?.rating || 0) ? '⭐' : '☆'}
+              </Text>
+            ))}
+          </View>
+
+          {item?.review ? (
+            <Text style={styles.reviewText}>{item.review}</Text>
+          ) : null}
+        </View>
+      )}
+
       {showReview && (
         <View style={styles.reviewBox}>
           <View style={styles.starRow}>
@@ -99,8 +143,14 @@ const OrderCard = ({ item }: any) => {
             style={styles.input}
           />
 
-          <TouchableOpacity style={styles.submitBtn}>
-            <Text style={styles.submitText}>Submit</Text>
+          <TouchableOpacity
+            style={styles.submitBtn}
+            onPress={handleSubmitRating}
+            disabled={isLoading}
+          >
+            <Text style={styles.submitText}>
+              {isLoading ? 'Submitting...' : 'Submit'}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -261,5 +311,23 @@ const styles = StyleSheet.create({
   submitText: {
     color: '#fff',
     fontWeight: '600',
+  },
+
+  ratedContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+
+  ratedText: {
+    color: 'green',
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+
+  reviewText: {
+    marginTop: 6,
+    color: '#555',
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

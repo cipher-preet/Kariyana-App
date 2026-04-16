@@ -20,7 +20,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: Colors.black,
-    letterSpacing: 0.3,
+    borderBottomWidth: 0.6,
+    borderBottomColor: 'rgba(0,0,0,0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 56,
   },
 
   large: {

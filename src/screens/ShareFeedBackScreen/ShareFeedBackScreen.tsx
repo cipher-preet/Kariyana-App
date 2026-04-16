@@ -158,7 +158,7 @@ export default ShareFeedBackScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FA',
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
   },
 

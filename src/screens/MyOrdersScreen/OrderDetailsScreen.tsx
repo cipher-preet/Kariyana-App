@@ -150,7 +150,7 @@ const Row = ({ label, value, bold }: any) => (
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#fff',
   },
 
   loader: {

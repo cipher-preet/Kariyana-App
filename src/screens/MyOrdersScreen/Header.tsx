@@ -46,13 +46,12 @@ const styles = StyleSheet.create({
     height: 56,
     paddingHorizontal: 16,
     backgroundColor: '#fff',
-
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(0,0,0,0.08)',
   },
 
   backBtn: {
-    width: 40, // ✅ fixed touch area
+    width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'flex-start',
@@ -66,7 +65,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginLeft: 8,
-
-    flex: 1, // ✅ takes remaining space
+    flex: 1,
   },
 });
