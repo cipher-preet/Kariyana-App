@@ -11,18 +11,22 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Spacing, Radius } from '../../styles';
 import auth from '@react-native-firebase/auth';
 import { useAuth } from '../../context/AuthContext';
 import {
-  useGetMeQuery,
   useLoginUserMutation,
 } from '../../ReduxToolKit/Api/authApi';
+import { setUser } from '../../ReduxToolKit/Slices/authslice';
+
 
 const OTP_LENGTH = 6;
 
 const OtpVerifyScreen = () => {
   const navigation = useNavigation<any>();
+  const dispatch = useDispatch();
 
   const [loginUser] = useLoginUserMutation();
 
@@ -47,11 +51,11 @@ const OtpVerifyScreen = () => {
       const token = await auth().currentUser?.getIdToken();
       if (!token) throw new Error('Token not found');
 
-      console.log('this is token ', token);
-
       const res = await loginUser({ token }).unwrap();
 
-      console.log('this is response --->> ', res);
+      
+      dispatch(setUser(res.data.userId));
+      await AsyncStorage.setItem('userId', res.data.userId);
 
       switch (res.data.nextScreen) {
         case 'APPROVED':

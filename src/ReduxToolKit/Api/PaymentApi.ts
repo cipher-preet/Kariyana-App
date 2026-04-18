@@ -11,6 +11,23 @@ export const PaymentApi = baseApi.injectEndpoints({
       invalidatesTags: ['Address'],
     }),
 
+    updateDeliveryAddress: builder.mutation<any, any>({
+      query: body => ({
+        url: '/app/updateDeliveryAddress',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Address'],
+    }),
+
+    deleteDeliveryAddress: builder.mutation<any, any>({
+      query: ({ id }) => ({
+        url: `/app/deleteDeliveryAddress?id=${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Address'],
+    }),
+
     getUserDileveryAddress: builder.query<any, any>({
       query: ({ userId }) => `/app/getUserDileveryAddress?userId=${userId}`,
       providesTags: ['Address'],
@@ -32,6 +49,8 @@ export const PaymentApi = baseApi.injectEndpoints({
 
 export const {
   useAddDeliveryAddressMutation,
+  useUpdateDeliveryAddressMutation,
+  useDeleteDeliveryAddressMutation,
   useGetUserDileveryAddressQuery,
   useCreateOrderMutation,
   useGetOrderStatusQuery,

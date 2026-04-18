@@ -22,9 +22,6 @@ import {
 
 const AddressScreen = ({ route, navigation }: any) => {
   const { cartItems, totalAmount, userId } = route.params;
-
-  console.log(cartItems, totalAmount, userId);
-
   const { data, isLoading, refetch } = useGetUserDileveryAddressQuery({
     userId,
   });
@@ -193,6 +190,7 @@ const AddressScreen = ({ route, navigation }: any) => {
                   <TextInput
                     placeholder="Phone Number"
                     keyboardType="number-pad"
+                    maxLength={10}
                     value={form.phone}
                     onChangeText={t => setForm({ ...form, phone: t })}
                     style={styles.input}
@@ -226,6 +224,7 @@ const AddressScreen = ({ route, navigation }: any) => {
                       placeholder="Pincode"
                       keyboardType="number-pad"
                       value={form.pincode}
+                      maxLength={6}
                       onChangeText={t => setForm({ ...form, pincode: t })}
                       style={[styles.input, { flex: 1 }]}
                     />

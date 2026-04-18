@@ -25,7 +25,8 @@ import { Colors, Spacing, Radius } from '../../styles';
 import { CartStackParamList } from '../../navigation/CartStack';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLazyGetRandomProductsForCartPageQuery } from '../../ReduxToolKit/Api/productApi';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSelector } from 'react-redux';
 
 type NavigationProp = NativeStackNavigationProp<
   CartStackParamList,
@@ -48,6 +49,10 @@ export interface UpdateCartQuantityResponse {
 const CartScreen = () => {
   const isFocused = useIsFocused();
 
+  const user_Id = useSelector((state: any) => state.auth.userId);
+
+
+
   const navigation = useNavigation<NavigationProp>();
   const [updateCart] = useUpdateCartMutation();
   const [updatingAction, setUpdatingAction] = React.useState<{
@@ -59,7 +64,7 @@ const CartScreen = () => {
     try {
       setUpdatingAction({ productId, delta });
       await updateCart({
-        userId: '694fc82c88c809473e4455c3', // to be dynanmic
+        userId: user_Id,
         productId,
         delta,
       }).unwrap();
@@ -71,7 +76,7 @@ const CartScreen = () => {
     }
   };
 
-  const userId = '694fc82c88c809473e4455c3';
+  const userId = user_Id;
 
   const { data, isLoading, error, refetch } = useGetCartByUserIdQuery(
     { userId },

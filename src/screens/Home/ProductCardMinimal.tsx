@@ -34,6 +34,8 @@ const ProductCardMinimal: React.FC<Props> = ({ item }) => {
   const dispatch = useDispatch();
   const cartItem = useSelector((state: any) => state.cart.items[item._id]);
 
+  const user_Id = useSelector((state: any) => state.auth.userId);
+
   const qty = cartItem?.quantity ?? 0;
 
   const isOutOfStock = item.sku === 0;
@@ -54,7 +56,7 @@ const ProductCardMinimal: React.FC<Props> = ({ item }) => {
           productId: item._id,
           price: item.mrp,
         },
-        userId: '694fc82c88c809473e4455c3',
+        userId: user_Id,
       }),
     );
     triggerCartSync();

@@ -54,7 +54,6 @@ const BillDetailsSection: React.FC<billedItems> = ({
 
 export default BillDetailsSection;
 
-/* ================= ROW ================= */
 
 const Row = ({
   label,

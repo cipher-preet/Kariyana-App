@@ -6,13 +6,16 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { addItemOptimistic } from '../../ReduxToolKit/Slices/cartSlice';
 import { triggerCartSync } from '../../ReduxToolKit/Slices/cartSync';
 
 const StickyAddToCart = ({ product }: any) => {
   const dispatch = useDispatch();
+
+  const user_Id = useSelector((state: any) => state.auth.userId);
+
   const [loading, setLoading] = useState(false);
 
   const handleAddToCart = async () => {
@@ -26,7 +29,7 @@ const StickyAddToCart = ({ product }: any) => {
           productId: product._id,
           price: product.mrp,
         },
-        userId: '694fc82c88c809473e4455c3', // to be static in future when we have auth implemented
+        userId: user_Id,
       }),
     );
 

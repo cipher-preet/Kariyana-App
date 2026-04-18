@@ -5,8 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from './Header';
 import OrderCard from './OrderCard';
 import { useGetOrderDetailByuserIdQuery } from '../../ReduxToolKit/Api/accountPageApi';
+import { useSelector } from 'react-redux';
 
 const MyOrdersScreen = () => {
+    const user_Id = useSelector((state: any) => state.auth.userId);
+
   const [cursor, setCursor] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -15,7 +18,7 @@ const MyOrdersScreen = () => {
   const lastProcessedCursor = useRef<string | null>('INIT');
 
   const { data, isFetching, isSuccess } = useGetOrderDetailByuserIdQuery(
-    { userId: '697ceb6542c7dd37f30b05ea', cursor },
+    { userId: user_Id, cursor },
     { refetchOnMountOrArgChange: true },
   );
 

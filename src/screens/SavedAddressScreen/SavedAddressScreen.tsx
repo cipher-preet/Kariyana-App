@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,36 +7,40 @@ import {
   ScrollView,
   Modal,
   TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
 } from 'react-native';
 
 import CartCheckoutWrapper from '../Cart/CartCheckoutWrapper';
+import {
+  useGetUserDileveryAddressQuery,
+  useAddDeliveryAddressMutation,
+  useUpdateDeliveryAddressMutation,
+  useDeleteDeliveryAddressMutation,
+} from '../../ReduxToolKit/Api/PaymentApi';
+import { useSelector } from 'react-redux';
 
 const AddressScreen = ({ navigation }: any) => {
+  const user_Id = useSelector((state: any) => state.auth.userId);
+
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { data, isLoading, refetch } = useGetUserDileveryAddressQuery({
+    userId: user_Id,
+  });
 
-  const [addresses, setAddresses] = useState([
-    {
-      id: '1',
-      label: 'Home',
-      name: 'John Doe',
-      phone: '9876543210',
-      house: '123',
-      area: 'Sector 70',
-      city: 'Mohali',
-      pincode: '160071',
-    },
-    {
-      id: '2',
-      label: 'Work',
-      name: 'John Doe',
-      phone: '9876543210',
-      house: 'IT Park',
-      area: 'Phase 8',
-      city: 'Chandigarh',
-      pincode: '160101',
-    },
-  ]);
+  const [addDeliveryAddress, { isLoading: adding }] =
+    useAddDeliveryAddressMutation();
+
+  const [updateDeliveryAddress, { isLoading: updating }] =
+    useUpdateDeliveryAddressMutation();
+
+  const [deleteDeliveryAddress, { isLoading: deleting }] =
+    useDeleteDeliveryAddressMutation();
+
+  const [addresses, setAddresses] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     name: '',
@@ -48,49 +52,55 @@ const AddressScreen = ({ navigation }: any) => {
     type: 'Home',
   });
 
-  // ✏️ Edit
-  const handleEdit = (item: any) => {
+  useEffect(() => {
+    if (data?.data) {
+      const formatted = data.data.map((item: any) => ({
+        id: item._id,
+        label: item.type,
+        name: item.name,
+        phone: String(item.phone),
+        house: item.houseVillage,
+        area: item.areaStreet,
+        city: item.city,
+        pincode: item.pincode,
+      }));
+
+      setAddresses(formatted);
+    }
+  }, [data]);
+
+  const openEditModal = (item: any) => {
     setEditingId(item.id);
+
     setForm({
-      name: item.name,
-      phone: item.phone,
-      house: item.house,
-      area: item.area,
-      city: item.city,
-      pincode: item.pincode,
-      type: item.label,
+      name: item.name || '',
+      phone: item.phone || '',
+      house: item.house || '',
+      area: item.area || '',
+      city: item.city || '',
+      pincode: String(item.pincode || ''),
+      type: item.label || 'Home',
     });
+
     setShowModal(true);
   };
 
-  // 🗑️ Delete
-  const handleDelete = (id: string) => {
-    setAddresses(prev => prev.filter(item => item.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await deleteDeliveryAddress({ id }).unwrap();
+      if (res) {
+        Alert.alert(res.data.message);
+      }
+      refetch();
+    } catch (error) {
+      console.log('Delete Address Error:', error);
+    }
   };
 
-  // 💾 Save (Add / Edit)
-  const handleSave = () => {
-    if (!form.name || !form.phone || !form.house) return;
-
-    if (editingId) {
-      setAddresses(prev =>
-        prev.map(item =>
-          item.id === editingId ? { ...item, ...form, label: form.type } : item,
-        ),
-      );
-    } else {
-      setAddresses(prev => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          label: form.type,
-          ...form,
-        },
-      ]);
-    }
-
+  const resetFormAndClose = () => {
     setShowModal(false);
     setEditingId(null);
+
     setForm({
       name: '',
       phone: '',
@@ -102,6 +112,55 @@ const AddressScreen = ({ navigation }: any) => {
     });
   };
 
+  const handleUpdateAddress = async () => {
+    const res = await updateDeliveryAddress({
+      id: editingId,
+      name: form.name,
+      phone: form.phone,
+      houseVillage: form.house,
+      areaStreet: form.area,
+      city: form.city,
+      pincode: form.pincode,
+      type: form.type,
+    }).unwrap();
+    if (res) {
+      Alert.alert(res.data.message);
+    }
+  };
+
+  const handleAddAddress = async () => {
+    const res = await addDeliveryAddress({
+      userId: user_Id,
+      name: form.name,
+      phone: form.phone,
+      houseVillage: form.house,
+      areaStreet: form.area,
+      city: form.city,
+      pincode: form.pincode,
+      type: form.type,
+    }).unwrap();
+    if (res) {
+      Alert.alert(res.data.message);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!form.name || !form.phone || !form.house) return;
+
+    try {
+      if (editingId) {
+        await handleUpdateAddress();
+      } else {
+        await handleAddAddress();
+      }
+
+      await refetch();
+      resetFormAndClose();
+    } catch (error) {
+      console.log('Save Address Error:', error);
+    }
+  };
+
   return (
     <CartCheckoutWrapper
       title="Address"
@@ -110,147 +169,142 @@ const AddressScreen = ({ navigation }: any) => {
       <View style={styles.container}>
         <Text style={styles.header}>Add Delivery Address</Text>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-          {addresses.map(item => (
-            <View key={item.id} style={styles.card}>
-              <View style={styles.cardRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle}>{item.label}</Text>
-                  <Text style={styles.cardSub}>
-                    {item.name} • {item.phone}
-                  </Text>
-                  <Text style={styles.cardAddress}>
-                    {item.house}, {item.area}, {item.city} - {item.pincode}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Actions */}
-              <View style={styles.actions}>
-                <TouchableOpacity onPress={() => handleEdit(item)}>
-                  <Text style={styles.edit}>Edit</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                  <Text style={styles.delete}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-
-          {/* Add Button */}
-          <TouchableOpacity
-            style={styles.addBtn}
-            onPress={() => {
-              setEditingId(null);
-              setForm({
-                name: '',
-                phone: '',
-                house: '',
-                area: '',
-                city: '',
-                pincode: '',
-                type: 'Home',
-              });
-              setShowModal(true);
-            }}
+        {isLoading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
           >
-            <Text style={styles.addText}>+ Add New Address</Text>
-          </TouchableOpacity>
-        </ScrollView>
+            {addresses.map(item => (
+              <View key={item.id} style={styles.card}>
+                <Text style={styles.cardTitle}>{item.label}</Text>
 
-        {/* Modal */}
-        <Modal visible={showModal} transparent animationType="slide">
-          <View style={styles.overlay}>
-            <View style={styles.sheet}>
-              <View style={styles.sheetHeader}>
-                <Text style={styles.sheetTitle}>
-                  {editingId ? 'Edit Address' : 'Add Address'}
+                <Text style={styles.cardSub}>
+                  {item.name} • {item.phone}
                 </Text>
-                <TouchableOpacity onPress={() => setShowModal(false)}>
-                  <Text style={{ fontSize: 20 }}>✕</Text>
-                </TouchableOpacity>
+
+                <Text style={styles.cardAddress}>
+                  {item.house}, {item.area}, {item.city} - {item.pincode}
+                </Text>
+
+                <View style={styles.actions}>
+                  <TouchableOpacity onPress={() => openEditModal(item)}>
+                    <Text style={styles.edit}>Edit</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                    <Text style={styles.delete}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
+            ))}
 
-              <ScrollView>
-                <Text style={styles.section}>Contact Details</Text>
+            <TouchableOpacity
+              style={styles.addBtn}
+              onPress={() => {
+                setEditingId(null);
+                setForm({
+                  name: '',
+                  phone: '',
+                  house: '',
+                  area: '',
+                  city: '',
+                  pincode: '',
+                  type: 'Home',
+                });
+                setShowModal(true);
+              }}
+            >
+              <Text style={styles.addText}>+ Add New Address</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        )}
 
-                <TextInput
-                  placeholder="Full Name"
-                  value={form.name}
-                  onChangeText={t => setForm({ ...form, name: t })}
-                  style={styles.input}
-                />
+        <Modal visible={showModal} transparent animationType="slide">
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <View style={styles.overlay}>
+              <View style={styles.sheet}>
+                <View style={styles.sheetHeader}>
+                  <Text style={styles.sheetTitle}>
+                    {editingId ? 'Edit Address' : 'Add Address'}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowModal(false)}>
+                    <Text style={{ fontSize: 20 }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
 
-                <TextInput
-                  placeholder="Phone Number"
-                  value={form.phone}
-                  onChangeText={t => setForm({ ...form, phone: t })}
-                  style={styles.input}
-                  keyboardType="number-pad"
-                />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <Text style={styles.section}>Contact Details</Text>
 
-                <Text style={styles.section}>Address</Text>
-
-                <TextInput
-                  placeholder="House / Flat"
-                  value={form.house}
-                  onChangeText={t => setForm({ ...form, house: t })}
-                  style={styles.input}
-                />
-
-                <TextInput
-                  placeholder="Area / Street"
-                  value={form.area}
-                  onChangeText={t => setForm({ ...form, area: t })}
-                  style={styles.input}
-                />
-
-                <View style={styles.row}>
                   <TextInput
-                    placeholder="City"
-                    value={form.city}
-                    onChangeText={t => setForm({ ...form, city: t })}
-                    style={[styles.input, { flex: 1 }]}
+                    placeholder="Full Name"
+                    value={form.name}
+                    onChangeText={t => setForm({ ...form, name: t })}
+                    style={styles.input}
                   />
 
                   <TextInput
-                    placeholder="Pincode"
-                    value={form.pincode}
-                    onChangeText={t => setForm({ ...form, pincode: t })}
-                    style={[styles.input, { flex: 1 }]}
+                    placeholder="Phone Number"
                     keyboardType="number-pad"
+                    maxLength={10}
+                    value={form.phone}
+                    onChangeText={t => setForm({ ...form, phone: t })}
+                    style={styles.input}
                   />
-                </View>
 
-                {/* Chips */}
-                <View style={styles.chips}>
-                  {['Home', 'Work', 'Other'].map(type => {
-                    const active = form.type === type;
-                    return (
-                      <TouchableOpacity
-                        key={type}
-                        style={[styles.chip, active && styles.chipActive]}
-                        onPress={() => setForm({ ...form, type })}
-                      >
-                        <Text
-                          style={
-                            active ? styles.chipTextActive : styles.chipText
-                          }
-                        >
-                          {type}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
+                  <Text style={styles.section}>Address</Text>
 
-                <TouchableOpacity style={styles.save} onPress={handleSave}>
-                  <Text style={styles.saveText}>Save Address</Text>
-                </TouchableOpacity>
-              </ScrollView>
+                  <TextInput
+                    placeholder="House / Flat"
+                    value={form.house}
+                    onChangeText={t => setForm({ ...form, house: t })}
+                    style={styles.input}
+                  />
+
+                  <TextInput
+                    placeholder="Area / Street"
+                    value={form.area}
+                    onChangeText={t => setForm({ ...form, area: t })}
+                    style={styles.input}
+                  />
+
+                  <View style={styles.row}>
+                    <TextInput
+                      placeholder="City"
+                      value={form.city}
+                      onChangeText={t => setForm({ ...form, city: t })}
+                      style={[styles.input, { flex: 1 }]}
+                    />
+
+                    <TextInput
+                      placeholder="Pincode"
+                      value={form.pincode}
+                      onChangeText={t => setForm({ ...form, pincode: t })}
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      style={[styles.input, { flex: 1 }]}
+                    />
+                  </View>
+
+                  <TouchableOpacity style={styles.save} onPress={handleSave}>
+                    <Text style={styles.saveText}>
+                      {adding || updating
+                        ? editingId
+                          ? 'Updating...'
+                          : 'Saving...'
+                        : editingId
+                        ? 'Update Address'
+                        : 'Save Address'}
+                    </Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
       </View>
     </CartCheckoutWrapper>

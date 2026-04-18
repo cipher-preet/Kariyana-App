@@ -10,10 +10,12 @@ import {
   Platform,
   UIManager,
   Image,
+  Alert,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../MyOrdersScreen/Header';
+import { useShareAppFeedbackMutation } from '../../ReduxToolKit/Api/accountPageApi';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -32,6 +34,38 @@ const ShareFeedBackScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
   const [images, setImages] = useState<any[]>([]);
+
+  const [shareFeedback, { isLoading }] = useShareAppFeedbackMutation();
+
+  const handleSubmit = async () => {
+    try {
+      const formData = new FormData();
+
+      formData.append('userId', '697ceb6542c7dd37f30b05ea');
+      formData.append('rating', String(rating));
+      formData.append('type', 'Performance');
+      formData.append('feedback', feedback);
+
+      images.forEach((img, index) => {
+        formData.append('images', {
+          uri: img.uri,
+          name: img.fileName || `image_${index}.jpg`,
+          type: img.type || 'image/jpeg',
+        });
+      });
+
+      const res = await shareFeedback(formData);
+      if (res) {
+        setRating(0);
+        setSelectedCategory(null);
+        setFeedback('');
+        setImages([]);
+        Alert.alert(res.data.data.message);
+      }
+    } catch (err) {
+      console.log('ERROR', err);
+    }
+  };
 
   const handleRating = (value: number) => {
     LayoutAnimation.easeInEaseOut();
@@ -145,8 +179,11 @@ const ShareFeedBackScreen = () => {
       </ScrollView>
 
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.submitBtn}>
-          <Text style={styles.submitText}>Submit Feedback</Text>
+        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+          <Text style={styles.submitText}>
+            {' '}
+            {isLoading ? 'Submitting...' : 'Submit Feedback'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

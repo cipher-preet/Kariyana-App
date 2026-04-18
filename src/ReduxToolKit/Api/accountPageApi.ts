@@ -30,6 +30,15 @@ const accountPageApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['rating'],
     }),
+
+    shareAppFeedback: builder.mutation<any, any>({
+      query: formData => ({
+        url: '/app/shareAppFeedback',
+        method: 'POST',
+        body: formData,
+        formData: true,
+      }),
+    }),
   }),
 });
 
@@ -38,4 +47,5 @@ export const {
   useGetOrderDetailWithOrderIdQuery,
   useLazyGetOrderDetailByuserIdQuery,
   useUserRatingProductsMutation,
+  useShareAppFeedbackMutation,
 } = accountPageApi;

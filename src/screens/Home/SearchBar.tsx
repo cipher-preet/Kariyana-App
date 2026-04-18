@@ -19,9 +19,7 @@ const SearchBar: React.FC<Props> = ({
   onSearch,
 }) => {
   const navigation = useNavigation<any>();
-  const route = useRoute();
 
-  console.log(navigation.getState());
 
   const [q, setQ] = React.useState('');
 
