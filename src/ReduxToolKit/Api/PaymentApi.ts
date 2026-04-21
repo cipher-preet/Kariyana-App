@@ -44,6 +44,14 @@ export const PaymentApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+
+    emptyCartAfterCheckout: builder.mutation<any, any>({
+      query: body => ({
+        url: '/app/emptyCartAfterCheckout',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -53,5 +61,6 @@ export const {
   useDeleteDeliveryAddressMutation,
   useGetUserDileveryAddressQuery,
   useCreateOrderMutation,
+  useEmptyCartAfterCheckoutMutation,
   useGetOrderStatusQuery,
 } = PaymentApi;

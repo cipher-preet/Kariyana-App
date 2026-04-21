@@ -22,6 +22,12 @@ const accountPageApi = baseApi.injectEndpoints({
       }),
     }),
 
+    getPersonalInformationByUserId: builder.query<any, any>({
+      query: ({ userId }) => ({
+        url: `/app/getPersonalInformationByUserId?userId=${userId}`,
+      }),
+    }),
+
     userRatingProducts: builder.mutation<any, any>({
       query: body => ({
         url: '/app/userRatingProducts',
@@ -46,6 +52,7 @@ export const {
   useGetOrderDetailByuserIdQuery,
   useGetOrderDetailWithOrderIdQuery,
   useLazyGetOrderDetailByuserIdQuery,
+  useGetPersonalInformationByUserIdQuery,
   useUserRatingProductsMutation,
   useShareAppFeedbackMutation,
 } = accountPageApi;

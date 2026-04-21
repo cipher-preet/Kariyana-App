@@ -1,10 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Colors } from '../../styles';
-import { useGetOrderStatusQuery } from '../../ReduxToolKit/Api/PaymentApi';
+import {
+  useGetOrderStatusQuery,
+  useEmptyCartAfterCheckoutMutation,
+} from '../../ReduxToolKit/Api/PaymentApi';
+import { useSelector } from 'react-redux';
 
 const OrderProcessing = ({ route, navigation }: any) => {
   const { orderId } = route.params;
+  const user_Id = useSelector((state: any) => state.auth.userId);
 
   const hasNavigated = useRef(false);
   const attempts = useRef(0);
@@ -16,6 +21,8 @@ const OrderProcessing = ({ route, navigation }: any) => {
     },
   );
 
+  const [emptyCart] = useEmptyCartAfterCheckoutMutation();
+
   useEffect(() => {
     if (!data || hasNavigated.current) return;
 
@@ -25,6 +32,7 @@ const OrderProcessing = ({ route, navigation }: any) => {
 
     if (status === 'paid') {
       hasNavigated.current = true;
+      emptyCart({ userId: user_Id });
       navigation.replace('OrderSuccess', { order: data.data });
       return;
     }

@@ -16,7 +16,7 @@ const PaymentFailed = ({ route, navigation }: any) => {
       <Text style={styles.title}>Payment Failed</Text>
 
       <Text style={styles.subtitle}>
-        {message || 'Something went wrong while processing payment'}
+        {'Something went wrong while processing payment'}
       </Text>
 
       <TouchableOpacity

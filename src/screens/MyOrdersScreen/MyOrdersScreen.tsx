@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, FlatList, ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import Header from './Header';
 import OrderCard from './OrderCard';
 import { useGetOrderDetailByuserIdQuery } from '../../ReduxToolKit/Api/accountPageApi';
 import { useSelector } from 'react-redux';
 
 const MyOrdersScreen = () => {
-    const user_Id = useSelector((state: any) => state.auth.userId);
+  const user_Id = useSelector((state: any) => state.auth.userId);
 
   const [cursor, setCursor] = useState<string | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
@@ -19,7 +18,11 @@ const MyOrdersScreen = () => {
 
   const { data, isFetching, isSuccess } = useGetOrderDetailByuserIdQuery(
     { userId: user_Id, cursor },
-    { refetchOnMountOrArgChange: true },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
   );
 
   useEffect(() => {

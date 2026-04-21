@@ -26,7 +26,7 @@ const AccountScreen = () => {
         <ProfileCard />
         <QuickActions />
 
-        <AccountRow title="Personal Information" />
+        <AccountRow title="Personal Information" onPress={() => navigation.navigate('PersonalInfoScreen')} />
 
         <AccountRow
           title="FAQ's"

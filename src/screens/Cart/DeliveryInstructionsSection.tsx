@@ -34,7 +34,6 @@ const DeliveryInstructionsSection = () => {
 
 export default DeliveryInstructionsSection;
 
-/* ---------- CARD ---------- */
 
 interface InstructionCardProps {
   title: string;
@@ -67,7 +66,6 @@ const InstructionCard: React.FC<InstructionCardProps> = ({
   </TouchableOpacity>
 );
 
-/* ---------- STYLES (UNCHANGED) ---------- */
 
 const styles = StyleSheet.create({
   container: {

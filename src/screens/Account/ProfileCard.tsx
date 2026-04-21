@@ -11,18 +11,31 @@ import {
   Spacing,
   Radius
 } from '../../styles';
+import { useSelector } from 'react-redux';
+import { useGetPersonalInformationByUserIdQuery } from '../../ReduxToolKit/Api/accountPageApi';
 
 const ProfileCard = () => {
+  const user_Id = useSelector((state: any) => state.auth.userId);
+  const { data, isLoading, isError } = useGetPersonalInformationByUserIdQuery({
+    userId: user_Id,
+  });
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (isError) {
+    return <Text>Error loading data</Text>;
+  }
   return (
     <View style={styles.card}>
       <View>
-        <Text style={styles.name}>Preet Kumar</Text>
-        <Text style={styles.email}>ps1535146@gmail.com</Text>
+        <Text style={styles.name}>{data.data.ownerName}</Text>
+        <Text style={styles.email}>{data.data.shopName}</Text>
       </View>
 
-      <TouchableOpacity style={styles.editBtn} activeOpacity={0.8}>
-        <Text style={styles.editIcon}>✎</Text>
-      </TouchableOpacity>
+      {/* <TouchableOpacity style={styles.editBtn} activeOpacity={0.8}>
+        <Text style={styles.editIcon}>{data?.data?.tenureOfShop}</Text>
+      </TouchableOpacity> */}
     </View>
   );
 };
@@ -52,8 +65,8 @@ const styles = StyleSheet.create({
   },
 
   editBtn: {
-    width: 32,
-    height: 32,
+    width: 42,
+    height: 42,
     borderRadius: Radius.lg,      
     backgroundColor: Colors.success + '20', 
     alignItems: 'center',
@@ -62,7 +75,7 @@ const styles = StyleSheet.create({
 
   editIcon: {
     color: Colors.success,            
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: '600',
   },
 });
