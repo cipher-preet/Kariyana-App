@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CategoriesScreen from '../screens/Categories/CategoriesScreen';
 import ProductByCategory from '../screens/Categories/ProductByCategory';

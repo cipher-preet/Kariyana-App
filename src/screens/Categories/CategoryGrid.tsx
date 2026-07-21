@@ -4,37 +4,30 @@ import {
   Text,
   Image,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { Colors, Spacing, Radius } from '../../styles';
+import { Spacing } from '../../styles';
 
-const { width } = Dimensions.get('window');
-
-const NUM_COLUMNS = 4;
-const HORIZONTAL_GAP = Spacing.md;
-
-const AVAILABLE_WIDTH = width - Spacing.lg * 2;
-
-const CARD_SIZE =
-  (AVAILABLE_WIDTH - HORIZONTAL_GAP * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
+const HORIZONTAL_GAP = 10;
 
 const CategoryGrid: React.FC<any> = ({ data }) => {
   const navigation = useNavigation<any>();
+  const { width } = useWindowDimensions();
+  const columns =
+    width >= 900 ? 8 : width >= 700 ? 6 : width >= 520 ? 5 : width < 340 ? 3 : 4;
+  const availableWidth = width - Spacing.md * 2;
+  const cardSize =
+    (availableWidth - HORIZONTAL_GAP * (columns - 1)) / columns;
+
   return (
-    <FlatList
-      data={data}
-      keyExtractor={item => item.id}
-      numColumns={NUM_COLUMNS}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-      columnWrapperStyle={styles.row}
-      renderItem={({ item }) => (
+    <View style={styles.grid}>
+      {data.map((item: any, index: number) => (
         <TouchableOpacity
-          style={styles.card}
+          key={item._id || item.id || `${item.name}-${index}`}
+          style={[styles.card, { width: cardSize }]}
           activeOpacity={0.9}
           onPress={() =>
             navigation.navigate('productgrid', {
@@ -44,7 +37,7 @@ const CategoryGrid: React.FC<any> = ({ data }) => {
             })
           }
         >
-          <View style={styles.iconBox}>
+          <View style={[styles.iconBox, { width: cardSize, height: cardSize * 0.92 }]}>
             <Image
               source={{ uri: item.images }}
               style={styles.image}
@@ -56,50 +49,45 @@ const CategoryGrid: React.FC<any> = ({ data }) => {
             {item.name}
           </Text>
         </TouchableOpacity>
-      )}
-    />
+      ))}
+    </View>
   );
 };
 
 export default CategoryGrid;
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    paddingHorizontal: Spacing.xxs,
-    paddingBottom: Spacing.xxl,
-  },
-  row: {
+  grid: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
+    flexWrap: 'wrap',
+    gap: HORIZONTAL_GAP,
+    paddingBottom: Spacing.md,
   },
 
   card: {
-    width: CARD_SIZE,
     alignItems: 'center',
+    marginBottom: Spacing.sm,
   },
 
   iconBox: {
-    width: CARD_SIZE * 0.95,
-    height: CARD_SIZE * 0.95,
-    backgroundColor: '#EAF7F3',
-    borderRadius: Radius.md,
+    backgroundColor: '#F5F6F7',
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   image: {
-    width: '80%',
-    height: '80%',
+    width: '84%',
+    height: '84%',
   },
 
   label: {
-    marginTop: Spacing.sm,
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: Colors.gray800,
+    marginTop: 5,
+    fontSize: 10.8,
+    fontWeight: '700',
+    color: '#202124',
     textAlign: 'center',
+    lineHeight: 14,
+    minHeight: 28,
   },
 });

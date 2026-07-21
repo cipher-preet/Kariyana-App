@@ -14,7 +14,7 @@ const OrderProcessing = ({ route, navigation }: any) => {
   const hasNavigated = useRef(false);
   const attempts = useRef(0);
 
-  const { data, isLoading, error } = useGetOrderStatusQuery(
+  const { data, error } = useGetOrderStatusQuery(
     { orderId },
     {
       pollingInterval: 2500,
@@ -48,7 +48,7 @@ const OrderProcessing = ({ route, navigation }: any) => {
       hasNavigated.current = true;
       navigation.replace('PaymentFailed', { orderId });
     }
-  }, [data]);
+  }, [data, emptyCart, navigation, orderId, user_Id]);
 
   return (
     <View style={styles.container}>

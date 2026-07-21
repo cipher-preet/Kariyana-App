@@ -1,20 +1,43 @@
 import { baseApi } from './baseApi';
 
 export interface LoginResponse {
-  nextScreen: 'HOME' | 'REGISTER' | 'PENDING' | 'REJECTED';
+  nextScreen: 'APPROVED' | 'REGISTER' | 'PENDING' | 'REJECTED';
   userId: string;
   role?: 'BUYER' | 'ADMIN';
 }
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
-    loginUser: builder.mutation<any, { token: string }>({
-      query: ({ token }) => ({
+    sendOtp: builder.mutation<any, { phone: string | number }>({
+      query: ({ phone }) => ({
+        url: '/auth/send-otp',
+        method: 'POST',
+        body: { phone: Number(phone) },
+        withCredentials: true,
+      }),
+    }),
+
+    verifyOtp: builder.mutation<
+      any,
+      { phone: string | number; otp: string | number }
+    >({
+      query: ({ phone, otp }) => ({
+        url: '/auth/verify-otp',
+        method: 'POST',
+        body: { phone: Number(phone), otp: Number(otp) },
+        withCredentials: true,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    loginUser: builder.mutation<
+      any,
+      { phone: string | number; otp: string | number }
+    >({
+      query: ({ phone, otp }) => ({
         url: '/auth/loginUser',
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        body: { phone: Number(phone), otp: Number(otp) },
         withCredentials: true,
       }),
       invalidatesTags: ['User'],
@@ -40,5 +63,10 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useLoginUserMutation, useGetMeQuery, useRegisterShopMutation } =
-  authApi;
+export const {
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+  useLoginUserMutation,
+  useGetMeQuery,
+  useRegisterShopMutation,
+} = authApi;

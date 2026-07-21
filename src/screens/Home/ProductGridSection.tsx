@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, useWindowDimensions } from 'react-native';
 
 import { Colors, Spacing } from '../../styles';
 
@@ -14,15 +14,26 @@ type Props = {
 };
 
 const ProductGridSection: React.FC<Props> = ({ title, data, bg }) => {
+  const { width } = useWindowDimensions();
+  const columns = width >= 900 ? 6 : width >= 700 ? 5 : width >= 520 ? 4 : 3;
+  const contentWidth = width - Spacing.md * 2;
+  const cardWidth =
+    (contentWidth - Spacing.xs * (columns - 1)) / columns;
+
   return (
     <View style={[styles.wrap, bg && { backgroundColor: bg }]}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
       <FlatList
         data={data}
         keyExtractor={it => it._id}
-        numColumns={3}
+        key={columns}
+        numColumns={columns}
         columnWrapperStyle={styles.columnWrap}
-        renderItem={({ item }) => <ProductCardMinimal item={item} />}
+        renderItem={({ item }) => (
+          <ProductCardMinimal item={item} cardWidth={cardWidth} />
+        )}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -33,19 +44,22 @@ export default ProductGridSection;
 
 const styles = StyleSheet.create({
   wrap: {
-    marginTop: Spacing.xl,
-    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    paddingHorizontal: Spacing.md,
+  },
+
+  headerRow: {
+    marginBottom: Spacing.sm,
   },
 
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: Spacing.md,
+    fontSize: 16,
+    fontWeight: '600',
     color: Colors.gray900,
   },
 
   columnWrap: {
     justifyContent: 'space-between',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
 });

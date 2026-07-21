@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 import { Colors, Spacing, Radius } from '../../styles';
+import { ChevronIcon } from './AccountIcons';
 
 interface Props {
   title: string;
+  icon?: React.ReactNode;
   onPress?: () => void;
   rightText?: string;
   badge?: string;
@@ -16,6 +18,7 @@ interface Props {
 
 const AccountRow: React.FC<Props> = ({
   title,
+  icon,
   onPress,
   rightText,
   badge,
@@ -26,20 +29,24 @@ const AccountRow: React.FC<Props> = ({
 }) => {
   return (
     <TouchableOpacity
-      activeOpacity={disabled ? 1 : 0.7}
+      activeOpacity={disabled ? 1 : 0.78}
       onPress={onPress}
+      disabled={disabled}
       style={[styles.row, noBorder && styles.noBorder]}
     >
-      <Text
-        style={[
-          styles.title,
-          highlight && styles.highlight,
-          disabled && styles.disabled,
-        ]}
-        numberOfLines={1}
-      >
-        {title}
-      </Text>
+      <View style={styles.left}>
+        {icon && <View style={styles.icon}>{icon}</View>}
+        <Text
+          style={[
+            styles.title,
+            highlight && styles.highlight,
+            disabled && styles.disabled,
+          ]}
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
+      </View>
 
       {!disabled && (
         <View style={styles.right}>
@@ -51,7 +58,7 @@ const AccountRow: React.FC<Props> = ({
             </View>
           )}
 
-          {!noArrow && <Text style={styles.arrow}>›</Text>}
+          {!noArrow && <ChevronIcon />}
         </View>
       )}
     </TouchableOpacity>
@@ -64,27 +71,46 @@ const styles = StyleSheet.create({
   row: {
     width: '100%',
     backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 13,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: Colors.gray200,
+    borderColor: '#F0F1F3',
   },
 
   noBorder: {
     borderBottomWidth: 0,
   },
 
+  left: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: Spacing.md,
+  },
+
+  icon: {
+    width: 32,
+    height: 32,
+    borderRadius: Radius.full,
+    backgroundColor: '#F2F7F3',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
+
   title: {
-    fontSize: 15,
-    color: Colors.gray900,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#202124',
   },
 
   highlight: {
-    color: Colors.success,
-    fontWeight: '700',
+    color: '#0B6B3A',
+    fontWeight: '600',
   },
 
   disabled: {
@@ -98,13 +124,14 @@ const styles = StyleSheet.create({
 
   value: {
     marginRight: Spacing.xs,
-    fontWeight: '600',
-    color: Colors.gray900,
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.gray700,
   },
 
   badge: {
     backgroundColor: Colors.error,
-    borderRadius: Radius.xl,
+    borderRadius: Radius.full,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     marginRight: Spacing.xs,
@@ -112,12 +139,7 @@ const styles = StyleSheet.create({
 
   badgeText: {
     color: Colors.white,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-
-  arrow: {
-    fontSize: 20,
-    color: Colors.gray400,
+    fontSize: 10.5,
+    fontWeight: '700',
   },
 });

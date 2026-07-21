@@ -1,17 +1,8 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, Image, View } from 'react-native';
 
-import {
-  Colors,
-  Spacing,
-  Radius,
-} from '../../styles';
+import { Colors, Spacing, Radius } from '../../styles';
+import { ChevronRightIcon } from './HomeIcons';
 
 type Props = {
   title?: string;
@@ -37,8 +28,9 @@ const SeeAllSection: React.FC<Props> = ({
         />
 
         <Text style={styles.text}>{title}</Text>
-
-        <Text style={styles.arrow}>›</Text>
+        <View style={styles.arrow}>
+          <ChevronRightIcon size={16} color="#0F8A43" />
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -46,44 +38,44 @@ const SeeAllSection: React.FC<Props> = ({
 
 export default SeeAllSection;
 
-
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: Spacing.lg,      
-    marginBottom: Spacing.xl,        
-    marginTop: Spacing.md,             
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.xl,
+    marginTop: Spacing.xs,
   },
 
   inner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-
-    backgroundColor: '#F9F8F3',       
-    borderRadius: Radius.sm,           
-    height: 32,                        
-    borderWidth: 1,
-    borderColor: '#E5E3DA',            
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.76)',
+    borderRadius: Radius.full,
+    minHeight: 42,
+    paddingHorizontal: Spacing.md,
   },
 
   icon: {
     width: 18,
     height: 18,
-    borderRadius: Radius.sm,           
-    marginRight: Spacing.md,           
+    borderRadius: Radius.sm,
+    marginRight: Spacing.md,
   },
 
   text: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: Colors.gray900,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.gray800,
   },
 
   arrow: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginLeft: Spacing.md,           
-    color: Colors.gray900,
-    marginTop: -2,                     
+    marginLeft: Spacing.md,
+    width: 24,
+    height: 24,
+    borderRadius: Radius.full,
+    backgroundColor: '#ECF6EF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing } from '../../styles';
+import { Colors, Radius, Spacing } from '../../styles';
 
 type PriceProps = {
   mrp: number;
@@ -17,16 +17,27 @@ const ProductPriceSection: React.FC<PriceProps> = ({
   rating,
   reviewCount,
 }) => {
+  const finalPrice = sellingPrice || mrp;
+  const savings =
+    marketPrice && finalPrice && marketPrice > finalPrice
+      ? marketPrice - finalPrice
+      : null;
+
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <Text style={styles.price}>₹{mrp}</Text>
+      <View style={styles.priceRow}>
+        <Text style={styles.price}>Rs{finalPrice}</Text>
+        {mrp && mrp > finalPrice ? <Text style={styles.mrp}>Rs{mrp}</Text> : null}
+        {savings ? (
+          <View style={styles.saveBadge}>
+            <Text style={styles.saveText}>Rs{savings} OFF</Text>
+          </View>
+        ) : null}
       </View>
 
       {rating !== undefined && reviewCount !== undefined && (
         <View style={styles.ratingRow}>
-          <Text style={styles.star}>⭐</Text>
-          <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+          <Text style={styles.ratingBadge}>{rating.toFixed(1)}</Text>
           <Text style={styles.reviewText}>({reviewCount} reviews)</Text>
         </View>
       )}
@@ -36,12 +47,12 @@ const ProductPriceSection: React.FC<PriceProps> = ({
       <View style={styles.priceContainer}>
         <View style={styles.mrpRow}>
           <Text style={styles.mrpLabel}>Market Price</Text>
-          <Text style={styles.priceValue}>₹{marketPrice}</Text>
+          <Text style={styles.priceValue}>Rs{marketPrice}</Text>
         </View>
 
         <View style={styles.mrpRow}>
           <Text style={styles.mrpLabel}>Selling Price</Text>
-          <Text style={styles.priceValue}>₹{sellingPrice}</Text>
+          <Text style={styles.priceValue}>Rs{sellingPrice}</Text>
         </View>
       </View>
     </View>
@@ -52,35 +63,58 @@ export default ProductPriceSection;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
+    marginTop: Spacing.md,
   },
 
-  row: {
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
   },
 
   price: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#1f1f1f',
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.gray900,
+  },
+
+  mrp: {
+    fontSize: 13,
+    color: Colors.gray500,
+    textDecorationLine: 'line-through',
+    fontWeight: '500',
+  },
+
+  saveBadge: {
+    backgroundColor: '#E9F8EE',
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 5,
+  },
+
+  saveText: {
+    color: '#11853D',
+    fontSize: 11,
+    fontWeight: '600',
   },
 
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: Spacing.sm,
   },
 
-  star: {
-    fontSize: 12,
+  ratingBadge: {
+    backgroundColor: '#0F8A43',
+    borderRadius: Radius.xs,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    color: Colors.white,
+    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: '600',
     marginRight: 4,
-  },
-
-  ratingText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.gray900,
   },
 
   reviewText: {
@@ -90,21 +124,24 @@ const styles = StyleSheet.create({
   },
 
   tax: {
-    marginTop: 4,
+    marginTop: Spacing.xs,
     fontSize: 11.5,
-    color: '#757575',
+    color: Colors.gray600,
   },
 
   priceContainer: {
-    marginTop: 10,
-    paddingBottom: 4,
+    marginTop: Spacing.md,
+    backgroundColor: Colors.gray50,
+    borderRadius: Radius.md,
+    padding: Spacing.sm,
   },
 
   mrpRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginTop: 4,
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+    paddingVertical: 3,
   },
 
   mrpLabel: {
@@ -114,7 +151,7 @@ const styles = StyleSheet.create({
 
   priceValue: {
     fontSize: 11.5,
-    fontWeight: '700',
+    fontWeight: '600',
     color: Colors.gray900,
   },
 });

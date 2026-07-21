@@ -1,27 +1,33 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import { Colors, Radius, Spacing } from '../../styles';
 
-const DOT_SIZE = 14;
+const DOT_SIZE = 18;
+const ACTIVE_GREEN = '#0B6B3A';
+
+const CheckIcon = ({ color = Colors.white }) => (
+  <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="m7 12 3 3 7-7"
+      stroke={color}
+      strokeWidth={3}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
 
 const VerticalProgress = ({ steps, currentStep }: any) => {
-  const progressAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: currentStep,
-      duration: 600,
-      useNativeDriver: false,
-    }).start();
-  }, [currentStep]);
-
   return (
     <View style={styles.container}>
       {steps.map((step: any, index: number) => {
-        const isActive = index <= currentStep;
+        const isCompleted = index < currentStep;
         const isCurrent = index === currentStep;
+        const isActive = index <= currentStep;
 
         return (
-          <View key={index} style={styles.row}>
+          <View key={step.title || index} style={styles.row}>
             <View style={styles.left}>
               <View
                 style={[
@@ -29,16 +35,20 @@ const VerticalProgress = ({ steps, currentStep }: any) => {
                   isActive && styles.activeDot,
                   isCurrent && styles.currentDot,
                 ]}
-              />
+              >
+                {isCompleted ? <CheckIcon /> : null}
+              </View>
 
               {index !== steps.length - 1 && (
-                <View style={[styles.line, isActive && styles.activeLine]} />
+                <View style={[styles.line, isCompleted && styles.activeLine]} />
               )}
             </View>
 
             <View style={styles.content}>
-              <Text style={styles.title}>{step.title}</Text>
-              <Text style={styles.date}>{step.date}</Text>
+              <Text style={[styles.title, isActive && styles.activeTitle]}>
+                {step.title}
+              </Text>
+              {step.date ? <Text style={styles.date}>{step.date}</Text> : null}
             </View>
           </View>
         );
@@ -51,7 +61,7 @@ export default VerticalProgress;
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 10,
+    paddingTop: Spacing.md,
   },
 
   row: {
@@ -67,44 +77,52 @@ const styles = StyleSheet.create({
   dot: {
     width: DOT_SIZE,
     height: DOT_SIZE,
-    borderRadius: DOT_SIZE / 2,
-    backgroundColor: '#E5E7EB',
+    borderRadius: Radius.full,
+    backgroundColor: Colors.gray200,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   activeDot: {
-    backgroundColor: '#16A34A',
+    backgroundColor: ACTIVE_GREEN,
   },
 
   currentDot: {
-    borderWidth: 2,
-    borderColor: '#16A34A',
-    backgroundColor: '#fff',
+    borderWidth: 3,
+    borderColor: '#BFE5CB',
   },
 
   line: {
     width: 2,
-    flex: 1,
-    backgroundColor: '#E5E7EB',
-    marginTop: 2,
+    height: 28,
+    backgroundColor: Colors.gray200,
+    marginTop: 3,
   },
 
   activeLine: {
-    backgroundColor: '#16A34A',
+    backgroundColor: ACTIVE_GREEN,
   },
 
   content: {
     flex: 1,
-    paddingBottom: 20,
+    paddingBottom: Spacing.md,
   },
 
   title: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '500',
+    color: Colors.gray500,
+  },
+
+  activeTitle: {
+    color: Colors.gray900,
     fontWeight: '600',
   },
 
   date: {
-    fontSize: 12,
-    color: '#888',
+    fontSize: 11,
+    color: Colors.gray500,
     marginTop: 2,
+    fontWeight: '500',
   },
 });

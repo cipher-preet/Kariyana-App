@@ -6,11 +6,9 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  StatusBar,
+  ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-
-import { useIsFocused } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 import ProductGridSection from '../Home/ProductGridSection';
 import CartCheckoutWrapper from './CartCheckoutWrapper';
@@ -20,18 +18,18 @@ import {
   useGetCartByUserIdQuery,
   useUpdateCartMutation,
 } from '../../ReduxToolKit/Api/cartApi';
-import { ActivityIndicator } from 'react-native';
 import { Colors, Spacing, Radius } from '../../styles';
 import { CartStackParamList } from '../../navigation/CartStack';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useLazyGetRandomProductsForCartPageQuery } from '../../ReduxToolKit/Api/productApi';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSelector } from 'react-redux';
+import { TruckIcon } from './CartIcons';
 
 type NavigationProp = NativeStackNavigationProp<
   CartStackParamList,
   'categoryMain'
 >;
+
 export interface UpdateCartQuantityRequest {
   userId: string;
   productId: string;
@@ -48,17 +46,39 @@ export interface UpdateCartQuantityResponse {
 
 const CartScreen = () => {
   const isFocused = useIsFocused();
-
   const user_Id = useSelector((state: any) => state.auth.userId);
-
-
-
   const navigation = useNavigation<NavigationProp>();
   const [updateCart] = useUpdateCartMutation();
   const [updatingAction, setUpdatingAction] = React.useState<{
     productId: string;
     delta: 1 | -1;
   } | null>(null);
+
+  const userId = user_Id;
+
+  const { data, isLoading, refetch } = useGetCartByUserIdQuery(
+    { userId },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    },
+  );
+
+  const [
+    getRandomProducts,
+    { data: randomProductsData },
+  ] = useLazyGetRandomProductsForCartPageQuery();
+
+  React.useEffect(() => {
+    getRandomProducts();
+  }, [getRandomProducts]);
+
+  React.useEffect(() => {
+    if (isFocused) {
+      refetch();
+    }
+  }, [isFocused, refetch]);
 
   const handleQuantityChange = async (productId: string, delta: 1 | -1) => {
     try {
@@ -76,66 +96,42 @@ const CartScreen = () => {
     }
   };
 
-  const userId = user_Id;
-
-  const { data, isLoading, error, refetch } = useGetCartByUserIdQuery(
-    { userId },
-    {
-      refetchOnMountOrArgChange: true,
-      refetchOnFocus: true,
-      refetchOnReconnect: true,
-    },
-  );
-
-  const [
-    getRandomProducts,
-    { data: randomProductsData, isLoading: randomLoading },
-  ] = useLazyGetRandomProductsForCartPageQuery();
-
-  React.useEffect(() => {
-    getRandomProducts();
-  }, []);
-
   const randomProducts = randomProductsData?.data?.products ?? [];
-
-  const itemPresent = data?.data?.items?.length || 0;
-  const subtotal = data?.data?.subtotal;
-  const totalItems = data?.data?.totalItems;
-
-  React.useEffect(() => {
-    if (isFocused) {
-      refetch();
-    }
-  }, [isFocused, refetch]);
+  const items = data?.data?.items ?? [];
+  const itemPresent = items.length;
+  const subtotal = data?.data?.subtotal ?? 0;
+  const totalItems = data?.data?.totalItems ?? 0;
 
   return (
     <CartCheckoutWrapper
       title="Checkout"
       onBackPress={() => navigation.goBack()}
     >
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={Colors.white}
-        translucent={false}
-      />
-
       <View style={styles.root}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.deliveryBox}>
-            <Text style={styles.deliveryText}>
-              Free delivery in 24-48 Hours
-            </Text>
-            <Text style={styles.subText}>Shipment of {itemPresent} items</Text>
+            <View style={styles.deliveryIcon}>
+              <TruckIcon />
+            </View>
+            <View style={styles.deliveryCopy}>
+              <Text style={styles.deliveryText}>Free delivery in 24-48 hrs</Text>
+              <Text style={styles.subText}>{itemPresent} items in shipment</Text>
+            </View>
           </View>
 
-          {itemPresent === 0 ? (
+          {isLoading ? (
+            <View style={styles.loadingCard}>
+              <ActivityIndicator size="small" color="#0B6B3A" />
+              <Text style={styles.loadingText}>Loading cart</Text>
+            </View>
+          ) : itemPresent === 0 ? (
             <View style={styles.emptyCartContainer}>
               <Text style={styles.emptyTitle}>Your cart is empty</Text>
               <Text style={styles.emptySubtitle}>
-                Looks like you haven’t added anything yet.
+                Add products to review prices and place your order.
               </Text>
 
               <TouchableOpacity
@@ -147,15 +143,23 @@ const CartScreen = () => {
             </View>
           ) : (
             <View style={styles.cartContainer}>
-              {data?.data.items.map((item: any) => (
-                <View key={item.id} style={styles.cartItem}>
-                  <Image source={{ uri: item.image }} style={styles.cartImg} />
+              {items.map((item: any, index: number) => (
+                <View
+                  key={item.id || item.productId}
+                  style={[
+                    styles.cartItem,
+                    index === items.length - 1 && styles.lastCartItem,
+                  ]}
+                >
+                  <View style={styles.cartImgBox}>
+                    <Image source={{ uri: item.image }} style={styles.cartImg} />
+                  </View>
 
                   <View style={styles.itemInfo}>
                     <Text style={styles.itemTitle} numberOfLines={2}>
                       {item.name}
                     </Text>
-                    <Text style={styles.itemSize}>
+                    <Text style={styles.itemSize} numberOfLines={1}>
                       {item.quantityPerUnit} {item.unit}
                     </Text>
                   </View>
@@ -170,12 +174,9 @@ const CartScreen = () => {
                       >
                         {updatingAction?.productId === item.productId &&
                         updatingAction?.delta === -1 ? (
-                          <ActivityIndicator
-                            size="small"
-                            color={Colors.success}
-                          />
+                          <ActivityIndicator size="small" color={Colors.white} />
                         ) : (
-                          <Text style={styles.qtyText}>−</Text>
+                          <Text style={styles.qtyText}>-</Text>
                         )}
                       </TouchableOpacity>
 
@@ -189,24 +190,19 @@ const CartScreen = () => {
                       >
                         {updatingAction?.productId === item.productId &&
                         updatingAction?.delta === 1 ? (
-                          <ActivityIndicator
-                            size="small"
-                            color={Colors.success}
-                          />
+                          <ActivityIndicator size="small" color={Colors.white} />
                         ) : (
                           <Text style={styles.qtyText}>+</Text>
                         )}
                       </TouchableOpacity>
                     </View>
 
-                    <Text style={styles.itemPrice}>₹{item.price}</Text>
+                    <Text style={styles.itemPrice}>{`Rs${item.price}`}</Text>
                   </View>
                 </View>
               ))}
             </View>
           )}
-
-          <Text style={styles.sectionTitle}>You might also like</Text>
 
           <ProductGridSection
             title="Recommended for you"
@@ -221,14 +217,18 @@ const CartScreen = () => {
         <View style={styles.orderBar}>
           <View>
             <Text style={styles.totalLabel}>TOTAL</Text>
-            <Text style={styles.totalAmount}>₹{subtotal}</Text>
+            <Text style={styles.totalAmount}>{`Rs${subtotal}`}</Text>
           </View>
 
           <TouchableOpacity
-            style={styles.orderBtn}
+            style={[
+              styles.orderBtn,
+              itemPresent === 0 && styles.orderBtnDisabled,
+            ]}
+            disabled={itemPresent === 0}
             onPress={() =>
               navigation.navigate('addressScreen', {
-                cartItems: data?.data?.items,
+                cartItems: items,
                 totalAmount: subtotal,
                 userId,
               })
@@ -247,63 +247,119 @@ export default CartScreen;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: '#F6F8F2',
   },
 
   scrollContent: {
-    paddingBottom: 90,
+    paddingBottom: 100,
   },
 
   deliveryBox: {
-    backgroundColor: Colors.success + '20',
-    padding: Spacing.lg,
-    borderRadius: Radius.md,
+    backgroundColor: Colors.white,
+    padding: Spacing.md,
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+
+  deliveryIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: Radius.full,
+    backgroundColor: '#EAF6EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
+
+  deliveryCopy: {
+    flex: 1,
   },
 
   deliveryText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.success,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#202124',
   },
 
   subText: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.gray500,
-    marginTop: Spacing.xs,
+    marginTop: 2,
+    fontWeight: '600',
+  },
+
+  loadingCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 18,
+    minHeight: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+
+  loadingText: {
+    marginTop: Spacing.sm,
+    color: Colors.gray600,
+    fontSize: 11,
+    fontWeight: '700',
   },
 
   cartContainer: {
-    marginTop: Spacing.xxs,
+    overflow: 'hidden',
+    backgroundColor: Colors.white,
+    borderRadius: 18,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
   },
 
   cartItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.lg,
+    padding: Spacing.md,
     borderBottomWidth: 1,
-    borderColor: Colors.gray200,
+    borderColor: '#F0F1F3',
+  },
+
+  lastCartItem: {
+    borderBottomWidth: 0,
+  },
+
+  cartImgBox: {
+    width: 62,
+    height: 62,
+    borderRadius: 12,
+    backgroundColor: '#F5F6F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
   },
 
   cartImg: {
-    width: 70,
-    height: 70,
-    marginRight: Spacing.md,
+    width: '88%',
+    height: '88%',
   },
 
   itemInfo: {
     flex: 1,
+    paddingRight: Spacing.sm,
   },
 
   itemTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: Colors.gray900,
+    color: '#202124',
+    lineHeight: 17,
   },
 
   itemSize: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.gray500,
-    marginTop: Spacing.xs,
+    marginTop: 3,
+    fontWeight: '600',
   },
 
   qtyPriceWrap: {
@@ -313,47 +369,38 @@ const styles = StyleSheet.create({
   qtyBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.success + '20',
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.md,
-    height: 32,
+    backgroundColor: '#0B6B3A',
+    borderRadius: 9,
+    height: 29,
   },
 
   qtyBtn: {
     width: 22,
-    height: 40,
+    height: 29,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
   },
 
   qtyText: {
     fontSize: 20,
     fontWeight: '700',
-    color: Colors.success,
+    color: Colors.white,
+    lineHeight: 21,
   },
 
   qtyNumber: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    marginHorizontal: Spacing.xs,
-    color: Colors.gray900,
+    minWidth: 22,
+    textAlign: 'center',
+    color: Colors.white,
   },
 
   itemPrice: {
     marginTop: Spacing.xs,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: Colors.gray900,
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.md,
-    color: Colors.gray900,
+    color: '#202124',
   },
 
   orderBar: {
@@ -362,74 +409,85 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: Spacing.md,
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.md,
     backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderColor: Colors.gray200,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    shadowColor: '#163326',
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 6,
   },
 
   totalLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.gray500,
+    fontWeight: '700',
   },
 
   totalAmount: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.gray900,
+    color: '#202124',
   },
 
   orderBtn: {
-    backgroundColor: Colors.success,
-    paddingHorizontal: 28,
+    backgroundColor: '#E91E63',
+    paddingHorizontal: 26,
     paddingVertical: 12,
-    borderRadius: Radius.md,
+    borderRadius: 12,
+  },
+
+  orderBtnDisabled: {
+    opacity: 0.45,
   },
 
   orderBtnText: {
     color: Colors.white,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
-  },
-  qtyLoader: {
-    width: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   emptyCartContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.xl * 2,
+    backgroundColor: Colors.white,
+    borderRadius: 18,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
   },
 
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.gray900,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#202124',
   },
 
   emptySubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.gray500,
     marginTop: Spacing.sm,
     textAlign: 'center',
     paddingHorizontal: Spacing.xl,
+    fontWeight: '600',
   },
 
   emptyBtn: {
     marginTop: Spacing.lg,
-    backgroundColor: Colors.success,
+    backgroundColor: '#0B6B3A',
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
-    borderRadius: Radius.md,
+    borderRadius: 12,
   },
 
   emptyBtnText: {
     color: Colors.white,
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

@@ -19,6 +19,7 @@ interface RouteParams {
 
 const PaymentScreen = ({ route, navigation }: any) => {
   const { items, userId, addressId, totalAmount } = route.params as RouteParams;
+  const formattedTotal = `\u20B9${totalAmount ?? 0}`;
 
   const [method, setMethod] = useState<Method>('upi');
   const [loading, setLoading] = useState(false);
@@ -108,6 +109,11 @@ const PaymentScreen = ({ route, navigation }: any) => {
       <View style={styles.container}>
         <Text style={styles.heading}>Select Payment Method</Text>
 
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Cart Value</Text>
+          <Text style={styles.summaryAmount}>{formattedTotal}</Text>
+        </View>
+
         <TouchableOpacity
           style={[styles.card, method === 'upi' && styles.active]}
           onPress={() => setMethod('upi')}
@@ -132,7 +138,7 @@ const PaymentScreen = ({ route, navigation }: any) => {
           disabled={loading}
         >
           <Text style={styles.payText}>
-            {loading ? 'Processing...' : `Pay ₹${totalAmount}`}
+            {loading ? 'Processing...' : `Pay ${formattedTotal}`}
           </Text>
         </TouchableOpacity>
       </View>
@@ -152,7 +158,29 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
     fontWeight: '700',
-    marginBottom: 20,
+    marginBottom: 14,
+    color: Colors.gray900,
+  },
+
+  summaryCard: {
+    backgroundColor: Colors.gray50,
+    borderWidth: 1,
+    borderColor: Colors.gray200,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 18,
+  },
+
+  summaryLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.gray700,
+    marginBottom: 6,
+  },
+
+  summaryAmount: {
+    fontSize: 26,
+    fontWeight: '600',
     color: Colors.gray900,
   },
 

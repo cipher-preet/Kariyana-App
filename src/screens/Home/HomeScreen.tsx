@@ -2,16 +2,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Image } from 'react-native';
 import {
   View,
+  Text,
   StatusBar,
   ScrollView,
   StyleSheet,
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { Colors, Radius, Shadows, Spacing } from '../../styles';
+import { Colors, Radius, Spacing } from '../../styles';
 import SearchBar from './SearchBar';
 import CategoryTabBar from './CategoryTabBar';
-import { Category, Product } from '../../types';
+import { Product } from '../../types';
 import HomeIcon from '../../assest/home';
 import SaleGrid from './SaleGrid';
 import BannerCarousel from './BannerCarousel';
@@ -26,18 +27,14 @@ import {
 
 import { useNavigation } from '@react-navigation/native';
 import { useGetParentcatandTagDataQuery } from '../../ReduxToolKit/Api';
+import { LocationIcon, BoltIcon } from './HomeIcons';
 
-interface ApiProduct {
-  _id: string;
-  name: string;
-  images: string;
-  mrp: number;
-  sellingPrice: number;
-  reviewCount: number;
-  rating: number;
-  unit: string;
-  quantityPerUnit: number;
-}
+const HOME_COLORS = {
+  page: '#F6F8F2',
+  hero: '#0B6B3A',
+  heroDark: '#07512E',
+  accent: '#F7CB14',
+};
 
 export type TrendSection = {
   _id: string;
@@ -56,8 +53,7 @@ const HomeScreen = () => {
   const navigation = useNavigation<any>();
   const [trigger, { isFetching }] = useLazyGetHomePageDataQuery();
   const [triggerTrend] = useLazyGetTrendSectionDataForHomePageQuery();
-  const { data: catData, isLoading: catLoading } =
-    useGetParentcatandTagDataQuery();
+  const { data: catData } = useGetParentcatandTagDataQuery();
 
   const [selectedCat, setSelectedCat] = useState('all');
 
@@ -70,11 +66,7 @@ const HomeScreen = () => {
       icon: item.image ? (
         <Image
           source={{ uri: item.image }}   // ---- change this part and add icons when Parent category is defined -----
-          style={{
-            width: 18,
-            height: 18,
-            borderRadius: 4,
-          }}
+          style={styles.categoryImage}
         />
       ) : (
         <HomeIcon width={18} height={18} color="white" />
@@ -105,10 +97,6 @@ const HomeScreen = () => {
   const [hasNext, setHasNext] = useState(true);
   const [initialLoaded, setInitialLoaded] = useState(false);
   const statusBarHeight = getStatusBarHeight();
-
-  useEffect(() => {
-    loadHomeData(null);
-  }, []);
 
   const loadHomeData = async (nextCursor: string | null) => {
     if (!hasNext && nextCursor !== null) return;
@@ -169,6 +157,10 @@ const HomeScreen = () => {
     quantityPerUnit: item.quantityPerUnit,
     marketPrice: item.marketPrice,
     sku: item.sku,
+    subcategoryId: item.subcategoryId || item.childCategoryId || item.childCatId,
+    categoryId: item.categoryId,
+    childCatId: item.childCatId,
+    childCategoryId: item.childCategoryId,
   });
 
   const mappedEvents = banners.slice(0, 3).map((url, index) => ({
@@ -193,13 +185,27 @@ const HomeScreen = () => {
   useEffect(() => {
     loadHomeData(null);
     loadTrendProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <View style={styles.container}>
-      <View style={[styles.hero, { paddingTop: statusBarHeight + Spacing.lg }]}>
+      <View style={[styles.hero, { paddingTop: statusBarHeight + Spacing.md }]}>
+        <View style={styles.locationRow}>
+          <View style={styles.locationCopy}>
+            <View style={styles.locationLabelRow}>
+              <LocationIcon size={13} color="rgba(255,255,255,0.74)" />
+              <Text style={styles.deliveryLabel}>Wholesale delivery to</Text>
+            </View>
+            <Text style={styles.deliveryTitle}>Kariyana Market</Text>
+          </View>
+          <View style={styles.deliveryBadge}>
+            <BoltIcon size={12} color={HOME_COLORS.hero} />
+            <Text style={styles.deliveryBadgeText}>24-48 hrs</Text>
+          </View>
+        </View>
         <SearchBar />
-        <View style={{ height: Spacing.md }} />
+        <View style={styles.heroGap} />
         <CategoryTabBar
           categories={categories}
           selectedId={selectedCat}
@@ -278,7 +284,7 @@ const HomeScreen = () => {
           <ActivityIndicator
             size="large"
             color={Colors.primary}
-            style={{ marginVertical: 20 }}
+            style={styles.loader}
           />
         )}
 
@@ -292,7 +298,7 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: HOME_COLORS.page,
   },
 
   scrollView: {
@@ -300,15 +306,81 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
+    paddingTop: Spacing.md,
     paddingBottom: Spacing.xxxl,
   },
 
   hero: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.lg,
-    borderBottomLeftRadius: Radius.xl,
-    borderBottomRightRadius: Radius.xl,
-    ...Shadows.soft,
+    backgroundColor: HOME_COLORS.hero,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+    shadowColor: HOME_COLORS.heroDark,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 2,
+  },
+
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
+
+  locationCopy: {
+    flex: 1,
+    paddingRight: Spacing.sm,
+  },
+
+  locationLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+
+  deliveryLabel: {
+    color: 'rgba(255,255,255,0.78)',
+    fontSize: 10.5,
+    fontWeight: '600',
+  },
+
+  deliveryTitle: {
+    color: Colors.white,
+    fontSize: 17,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+
+  deliveryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    backgroundColor: HOME_COLORS.accent,
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 6,
+  },
+
+  deliveryBadgeText: {
+    color: HOME_COLORS.hero,
+    fontSize: 10.5,
+    fontWeight: '600',
+  },
+
+  heroGap: {
+    height: 6,
+  },
+
+  categoryImage: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+  },
+
+  loader: {
+    marginVertical: 20,
   },
 });

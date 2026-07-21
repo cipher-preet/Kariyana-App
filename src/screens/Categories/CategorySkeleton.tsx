@@ -1,14 +1,18 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
+import { Spacing } from '../../styles';
 
-const { width } = Dimensions.get('window');
-const NUM_COLUMNS = 4;
-const GAP = 16;
-const CARD_WIDTH = (width - GAP * (NUM_COLUMNS + 1)) / NUM_COLUMNS;
+const GAP = 8;
 
 const CategorySkeleton = () => {
+  const { width } = useWindowDimensions();
+  const columns =
+    width >= 900 ? 8 : width >= 700 ? 6 : width >= 520 ? 5 : width < 340 ? 3 : 4;
+  const cardWidth =
+    (width - Spacing.md * 2 - GAP * (columns - 1)) / columns;
+
   return (
     <View style={styles.container}>
       <ShimmerPlaceholder
@@ -16,11 +20,11 @@ const CategorySkeleton = () => {
         style={styles.title}
       />
       <View style={styles.row}>
-        {[...Array(NUM_COLUMNS)].map((_, index) => (
-          <View key={index} style={styles.card}>
+        {[...Array(columns)].map((_, index) => (
+          <View key={index} style={[styles.card, { width: cardWidth }]}>
             <ShimmerPlaceholder
               LinearGradient={LinearGradient}
-              style={styles.image}
+              style={[styles.image, { height: cardWidth }]}
             />
             <ShimmerPlaceholder
               LinearGradient={LinearGradient}
@@ -37,12 +41,11 @@ export default CategorySkeleton;
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 32,
-    paddingHorizontal: 16,
+    marginBottom: 20,
   },
   title: {
-    width: 160,
-    height: 18,
+    width: 120,
+    height: 16,
     borderRadius: 4,
     marginBottom: 12,
   },
@@ -51,16 +54,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   card: {
-    width: CARD_WIDTH,
+    flexShrink: 0,
   },
   image: {
     width: '100%',
-    height: 70,
-    borderRadius: 8,
+    borderRadius: 14,
   },
   text: {
     marginTop: 6,
-    height: 12,
+    height: 10,
     borderRadius: 4,
   },
 });

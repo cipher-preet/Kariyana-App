@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -25,7 +26,13 @@ import {
 
 const SearchScreen = () => {
   const navigation = useNavigation<any>();
+  const { width } = useWindowDimensions();
   const [query, setQuery] = useState('');
+  const columns = width >= 900 ? 6 : width >= 700 ? 5 : width >= 520 ? 4 : 3;
+  const gap = Spacing.sm;
+  const contentWidth = width - Spacing.lg * 2;
+  const cardWidth = (contentWidth - gap * (columns - 1)) / columns;
+  const imageSize = Math.min(96, Math.max(68, cardWidth * 0.72));
 
   const [triggerSearch, { data, isFetching, isError }] =
     useLazySearchProductQuery();
@@ -81,10 +88,10 @@ const SearchScreen = () => {
     return (
       <TouchableOpacity
         activeOpacity={0.9}
-        style={styles.card}
+        style={[styles.card, { width: cardWidth }]}
         onPress={() => handleProductPress(item._id)}
       >
-        <View style={styles.imageBox}>
+        <View style={[styles.imageBox, { width: imageSize, height: imageSize }]}>
           <Image source={{ uri: imageUrl }} style={styles.image} />
         </View>
 
@@ -124,7 +131,7 @@ const SearchScreen = () => {
           <ActivityIndicator
             size="small"
             color={Colors.primary}
-            style={{ marginTop: 10 }}
+            style={styles.fetchingIndicator}
           />
         )}
 
@@ -133,14 +140,12 @@ const SearchScreen = () => {
         <FlatList
           data={results}
           keyExtractor={(item: any) => item._id}
-          numColumns={3}
+          key={columns}
+          numColumns={columns}
           showsVerticalScrollIndicator={false}
           renderItem={renderItem}
-          columnWrapperStyle={{
-            justifyContent: 'flex-start',
-            marginBottom: 12,
-          }}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
         />
         {isDetailLoading && (
           <View style={styles.loaderOverlay}>
@@ -190,8 +195,6 @@ const styles = StyleSheet.create({
   },
 
   imageBox: {
-    width: 80,
-    height: 80,
     borderRadius: 12,
     backgroundColor: '#F3F4F6',
 
@@ -199,8 +202,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    width: '31%',
-    marginRight: 10,
     marginBottom: 12,
     backgroundColor: '#fff',
     borderRadius: 14,
@@ -212,6 +213,10 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   image: {
     width: '85%',
@@ -242,6 +247,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'red',
     marginTop: 10,
+  },
+  fetchingIndicator: {
+    marginTop: 10,
+  },
+  listContent: {
+    paddingBottom: 20,
   },
   loaderOverlay: {
     position: 'absolute',

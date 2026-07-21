@@ -1,16 +1,7 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
-import {
-  Colors,
-  Spacing,
-  Radius
-} from '../../styles';
+import { Colors, Spacing, Radius } from '../../styles';
 import { useSelector } from 'react-redux';
 import { useGetPersonalInformationByUserIdQuery } from '../../ReduxToolKit/Api/accountPageApi';
 
@@ -19,23 +10,34 @@ const ProfileCard = () => {
   const { data, isLoading, isError } = useGetPersonalInformationByUserIdQuery({
     userId: user_Id,
   });
-  if (isLoading) {
-    return <Text>Loading...</Text>;
-  }
 
-  if (isError) {
-    return <Text>Error loading data</Text>;
-  }
+  const ownerName = data?.data?.ownerName || 'Kariyana Partner';
+  const shopName = data?.data?.shopName || 'Wholesale buyer account';
+  const initials = ownerName
+    .split(' ')
+    .map((part: string) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <View style={styles.card}>
-      <View>
-        <Text style={styles.name}>{data.data.ownerName}</Text>
-        <Text style={styles.email}>{data.data.shopName}</Text>
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{isLoading ? '..' : initials}</Text>
       </View>
 
-      {/* <TouchableOpacity style={styles.editBtn} activeOpacity={0.8}>
-        <Text style={styles.editIcon}>{data?.data?.tenureOfShop}</Text>
-      </TouchableOpacity> */}
+      <View style={styles.info}>
+        <Text style={styles.name} numberOfLines={1}>
+          {isError ? 'Account details unavailable' : ownerName}
+        </Text>
+        <Text style={styles.email} numberOfLines={1}>
+          {isLoading ? 'Loading profile' : shopName}
+        </Text>
+      </View>
+
+      <View style={styles.statusPill}>
+        <Text style={styles.statusText}>Active</Text>
+      </View>
     </View>
   );
 };
@@ -44,37 +46,58 @@ export default ProfileCard;
 
 const styles = StyleSheet.create({
   card: {
-    width: '100%',                    
+    width: '100%',
     backgroundColor: Colors.white,
-    padding: Spacing.lg,              
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    borderRadius: 18,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
   },
 
-  name: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.gray900,
-  },
-
-  email: {
-    fontSize: 13,
-    color: Colors.gray500,            
-    marginTop: Spacing.xs,            
-  },
-
-  editBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: Radius.lg,      
-    backgroundColor: Colors.success + '20', 
+  avatar: {
+    width: 46,
+    height: 46,
+    borderRadius: Radius.full,
+    backgroundColor: '#EAF6EE',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  editIcon: {
-    color: Colors.success,            
+  avatarText: {
+    color: '#0B6B3A',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+
+  info: {
+    flex: 1,
+    marginLeft: Spacing.md,
+    marginRight: Spacing.sm,
+  },
+
+  name: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#202124',
+  },
+
+  email: {
+    fontSize: 11.5,
+    color: Colors.gray500,
+    marginTop: 3,
+    fontWeight: '600',
+  },
+
+  statusPill: {
+    backgroundColor: '#F7CB14',
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 5,
+  },
+
+  statusText: {
+    color: '#0B6B3A',
     fontSize: 10,
     fontWeight: '600',
   },

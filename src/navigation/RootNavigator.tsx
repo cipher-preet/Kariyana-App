@@ -27,7 +27,7 @@ const RootNavigator = () => {
         case 'REGISTER':
           navigation.reset({
             index: 0,
-            routes: [{ name: 'Auth' }],
+            routes: [{ name: 'Auth', params: { screen: 'RegisterStep1' } }],
           });
           break;
 
@@ -57,7 +57,7 @@ const RootNavigator = () => {
           });
       }
     }
-  }, [data, isLoading, isError, isSuccess]);
+  }, [data, isLoading, isError, isSuccess, navigation]);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

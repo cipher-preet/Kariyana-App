@@ -25,7 +25,10 @@ const MainApp = () => {
     <SafeAreaProvider>
       <NavigationContainer>
         <AuthProvider>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator
+            initialRouteName="Root"
+            screenOptions={{ headerShown: false }}
+          >
             <Stack.Screen name="Root" component={RootNavigator} />
             <Stack.Screen name="Auth" component={AuthStack} />
             <Stack.Screen name="App" component={AppNavigator} />

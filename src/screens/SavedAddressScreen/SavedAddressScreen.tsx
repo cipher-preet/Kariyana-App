@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Modal,
-  TextInput,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import CartCheckoutWrapper from '../Cart/CartCheckoutWrapper';
 import {
@@ -21,6 +22,74 @@ import {
   useDeleteDeliveryAddressMutation,
 } from '../../ReduxToolKit/Api/PaymentApi';
 import { useSelector } from 'react-redux';
+import { Colors, Radius, Shadows, Spacing } from '../../styles';
+
+const ACTIVE_GREEN = '#0B6B3A';
+
+const LocationIcon = ({ color = ACTIVE_GREEN }) => (
+  <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Circle cx={12} cy={10} r={2.4} stroke={color} strokeWidth={2} />
+  </Svg>
+);
+
+const PlusIcon = ({ color = ACTIVE_GREEN }) => (
+  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M12 5v14M5 12h14"
+      stroke={color}
+      strokeWidth={2.4}
+      strokeLinecap="round"
+    />
+  </Svg>
+);
+
+const EditIcon = ({ color = ACTIVE_GREEN }) => (
+  <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M12 20h9"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+    />
+    <Path
+      d="m16.5 3.5 4 4L8 20H4v-4L16.5 3.5Z"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const TrashIcon = ({ color = Colors.error }) => (
+  <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const CloseIcon = ({ color = Colors.gray700 }) => (
+  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="m7 7 10 10M17 7 7 17"
+      stroke={color}
+      strokeWidth={2.3}
+      strokeLinecap="round"
+    />
+  </Svg>
+);
 
 const AddressScreen = ({ navigation }: any) => {
   const user_Id = useSelector((state: any) => state.auth.userId);
@@ -33,15 +102,12 @@ const AddressScreen = ({ navigation }: any) => {
 
   const [addDeliveryAddress, { isLoading: adding }] =
     useAddDeliveryAddressMutation();
-
   const [updateDeliveryAddress, { isLoading: updating }] =
     useUpdateDeliveryAddressMutation();
-
   const [deleteDeliveryAddress, { isLoading: deleting }] =
     useDeleteDeliveryAddressMutation();
 
   const [addresses, setAddresses] = useState<any[]>([]);
-
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -69,38 +135,8 @@ const AddressScreen = ({ navigation }: any) => {
     }
   }, [data]);
 
-  const openEditModal = (item: any) => {
-    setEditingId(item.id);
-
-    setForm({
-      name: item.name || '',
-      phone: item.phone || '',
-      house: item.house || '',
-      area: item.area || '',
-      city: item.city || '',
-      pincode: String(item.pincode || ''),
-      type: item.label || 'Home',
-    });
-
-    setShowModal(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const res = await deleteDeliveryAddress({ id }).unwrap();
-      if (res) {
-        Alert.alert(res.data.message);
-      }
-      refetch();
-    } catch (error) {
-      console.log('Delete Address Error:', error);
-    }
-  };
-
-  const resetFormAndClose = () => {
-    setShowModal(false);
+  const resetForm = () => {
     setEditingId(null);
-
     setForm({
       name: '',
       phone: '',
@@ -112,36 +148,38 @@ const AddressScreen = ({ navigation }: any) => {
     });
   };
 
-  const handleUpdateAddress = async () => {
-    const res = await updateDeliveryAddress({
-      id: editingId,
-      name: form.name,
-      phone: form.phone,
-      houseVillage: form.house,
-      areaStreet: form.area,
-      city: form.city,
-      pincode: form.pincode,
-      type: form.type,
-    }).unwrap();
-    if (res) {
-      Alert.alert(res.data.message);
+  const openAddModal = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: any) => {
+    setEditingId(item.id);
+    setForm({
+      name: item.name || '',
+      phone: item.phone || '',
+      house: item.house || '',
+      area: item.area || '',
+      city: item.city || '',
+      pincode: String(item.pincode || ''),
+      type: item.label || 'Home',
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await deleteDeliveryAddress({ id }).unwrap();
+      if (res) Alert.alert(res.data.message);
+      refetch();
+    } catch (error) {
+      console.log('Delete Address Error:', error);
     }
   };
 
-  const handleAddAddress = async () => {
-    const res = await addDeliveryAddress({
-      userId: user_Id,
-      name: form.name,
-      phone: form.phone,
-      houseVillage: form.house,
-      areaStreet: form.area,
-      city: form.city,
-      pincode: form.pincode,
-      type: form.type,
-    }).unwrap();
-    if (res) {
-      Alert.alert(res.data.message);
-    }
+  const closeSheet = () => {
+    setShowModal(false);
+    resetForm();
   };
 
   const handleSave = async () => {
@@ -149,13 +187,33 @@ const AddressScreen = ({ navigation }: any) => {
 
     try {
       if (editingId) {
-        await handleUpdateAddress();
+        const res = await updateDeliveryAddress({
+          id: editingId,
+          name: form.name,
+          phone: form.phone,
+          houseVillage: form.house,
+          areaStreet: form.area,
+          city: form.city,
+          pincode: form.pincode,
+          type: form.type,
+        }).unwrap();
+        if (res) Alert.alert(res.data.message);
       } else {
-        await handleAddAddress();
+        const res = await addDeliveryAddress({
+          userId: user_Id,
+          name: form.name,
+          phone: form.phone,
+          houseVillage: form.house,
+          areaStreet: form.area,
+          city: form.city,
+          pincode: form.pincode,
+          type: form.type,
+        }).unwrap();
+        if (res) Alert.alert(res.data.message);
       }
 
       await refetch();
-      resetFormAndClose();
+      closeSheet();
     } catch (error) {
       console.log('Save Address Error:', error);
     }
@@ -167,63 +225,81 @@ const AddressScreen = ({ navigation }: any) => {
       onBackPress={() => navigation.goBack()}
     >
       <View style={styles.container}>
-        <Text style={styles.header}>Add Delivery Address</Text>
+        <Text style={styles.header}>Saved Addresses</Text>
 
         {isLoading ? (
-          <ActivityIndicator size="large" />
+          <View style={styles.loader}>
+            <ActivityIndicator size="large" color={ACTIVE_GREEN} />
+            <Text style={styles.loaderText}>Loading addresses</Text>
+          </View>
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={styles.scrollContent}
           >
-            {addresses.map(item => (
-              <View key={item.id} style={styles.card}>
-                <Text style={styles.cardTitle}>{item.label}</Text>
-
-                <Text style={styles.cardSub}>
-                  {item.name} • {item.phone}
-                </Text>
-
-                <Text style={styles.cardAddress}>
-                  {item.house}, {item.area}, {item.city} - {item.pincode}
-                </Text>
-
-                <View style={styles.actions}>
-                  <TouchableOpacity onPress={() => openEditModal(item)}>
-                    <Text style={styles.edit}>Edit</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                    <Text style={styles.delete}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
+            {addresses.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <LocationIcon color={Colors.gray500} />
+                <Text style={styles.emptyTitle}>No saved address</Text>
+                <Text style={styles.emptyText}>Add one for faster checkout.</Text>
               </View>
-            ))}
+            ) : (
+              addresses.map(item => (
+                <View key={item.id} style={styles.card}>
+                  <View style={styles.cardRow}>
+                    <View style={styles.iconCircle}>
+                      <LocationIcon />
+                    </View>
+
+                    <View style={styles.cardCopy}>
+                      <Text style={styles.cardTitle}>{item.label}</Text>
+                      <Text style={styles.cardSub}>
+                        {item.name} | {item.phone}
+                      </Text>
+                      <Text style={styles.cardAddress}>
+                        {item.house}, {item.area}, {item.city} - {item.pincode}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.actions}>
+                    <TouchableOpacity
+                      onPress={() => openEditModal(item)}
+                      style={styles.actionButton}
+                      activeOpacity={0.82}
+                    >
+                      <EditIcon />
+                      <Text style={styles.edit}>Edit</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => handleDelete(item.id)}
+                      style={styles.actionButton}
+                      activeOpacity={0.82}
+                      disabled={deleting}
+                    >
+                      <TrashIcon />
+                      <Text style={styles.delete}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
 
             <TouchableOpacity
               style={styles.addBtn}
-              onPress={() => {
-                setEditingId(null);
-                setForm({
-                  name: '',
-                  phone: '',
-                  house: '',
-                  area: '',
-                  city: '',
-                  pincode: '',
-                  type: 'Home',
-                });
-                setShowModal(true);
-              }}
+              onPress={openAddModal}
+              activeOpacity={0.84}
             >
-              <Text style={styles.addText}>+ Add New Address</Text>
+              <PlusIcon />
+              <Text style={styles.addText}>Add New Address</Text>
             </TouchableOpacity>
           </ScrollView>
         )}
 
         <Modal visible={showModal} transparent animationType="slide">
           <KeyboardAvoidingView
-            style={{ flex: 1 }}
+            style={styles.keyboardView}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
             <View style={styles.overlay}>
@@ -232,74 +308,74 @@ const AddressScreen = ({ navigation }: any) => {
                   <Text style={styles.sheetTitle}>
                     {editingId ? 'Edit Address' : 'Add Address'}
                   </Text>
-                  <TouchableOpacity onPress={() => setShowModal(false)}>
-                    <Text style={{ fontSize: 20 }}>✕</Text>
+                  <TouchableOpacity
+                    onPress={closeSheet}
+                    style={styles.closeButton}
+                    activeOpacity={0.8}
+                  >
+                    <CloseIcon />
                   </TouchableOpacity>
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false}>
                   <Text style={styles.section}>Contact Details</Text>
-
-                  <TextInput
+                  <AddressInput
                     placeholder="Full Name"
                     value={form.name}
-                    onChangeText={t => setForm({ ...form, name: t })}
-                    style={styles.input}
+                    onChangeText={(t: string) => setForm({ ...form, name: t })}
                   />
-
-                  <TextInput
+                  <AddressInput
                     placeholder="Phone Number"
                     keyboardType="number-pad"
                     maxLength={10}
                     value={form.phone}
-                    onChangeText={t => setForm({ ...form, phone: t })}
-                    style={styles.input}
+                    onChangeText={(t: string) => setForm({ ...form, phone: t })}
                   />
 
                   <Text style={styles.section}>Address</Text>
-
-                  <TextInput
+                  <AddressInput
                     placeholder="House / Flat"
                     value={form.house}
-                    onChangeText={t => setForm({ ...form, house: t })}
-                    style={styles.input}
+                    onChangeText={(t: string) => setForm({ ...form, house: t })}
                   />
-
-                  <TextInput
+                  <AddressInput
                     placeholder="Area / Street"
                     value={form.area}
-                    onChangeText={t => setForm({ ...form, area: t })}
-                    style={styles.input}
+                    onChangeText={(t: string) => setForm({ ...form, area: t })}
                   />
 
-                  <View style={styles.row}>
-                    <TextInput
+                  <View style={styles.inputRow}>
+                    <AddressInput
                       placeholder="City"
                       value={form.city}
-                      onChangeText={t => setForm({ ...form, city: t })}
-                      style={[styles.input, { flex: 1 }]}
+                      onChangeText={(t: string) => setForm({ ...form, city: t })}
+                      style={styles.halfInput}
                     />
-
-                    <TextInput
+                    <AddressInput
                       placeholder="Pincode"
                       value={form.pincode}
-                      onChangeText={t => setForm({ ...form, pincode: t })}
+                      onChangeText={(t: string) =>
+                        setForm({ ...form, pincode: t })
+                      }
                       keyboardType="number-pad"
                       maxLength={6}
-                      style={[styles.input, { flex: 1 }]}
+                      style={styles.halfInput}
                     />
                   </View>
 
-                  <TouchableOpacity style={styles.save} onPress={handleSave}>
-                    <Text style={styles.saveText}>
-                      {adding || updating
-                        ? editingId
-                          ? 'Updating...'
-                          : 'Saving...'
-                        : editingId
-                        ? 'Update Address'
-                        : 'Save Address'}
-                    </Text>
+                  <TouchableOpacity
+                    style={styles.save}
+                    onPress={handleSave}
+                    activeOpacity={0.86}
+                    disabled={adding || updating}
+                  >
+                    {adding || updating ? (
+                      <ActivityIndicator color={Colors.white} />
+                    ) : (
+                      <Text style={styles.saveText}>
+                        {editingId ? 'Update Address' : 'Save Address'}
+                      </Text>
+                    )}
                   </TouchableOpacity>
                 </ScrollView>
               </View>
@@ -313,112 +389,210 @@ const AddressScreen = ({ navigation }: any) => {
 
 export default AddressScreen;
 
+const AddressInput = ({ style, ...props }: any) => (
+  <TextInput
+    placeholderTextColor={Colors.gray500}
+    style={[styles.input, style]}
+    {...props}
+  />
+);
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb', padding: 16 },
-
-  header: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
-
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+  container: {
+    flex: 1,
+    backgroundColor: '#F6F8F2',
+    paddingHorizontal: Spacing.md,
   },
-
-  cardRow: { flexDirection: 'row', alignItems: 'center' },
-
-  cardTitle: { fontWeight: '700', fontSize: 14 },
-
-  cardSub: { fontSize: 12, marginTop: 4 },
-
-  cardAddress: { fontSize: 12, color: '#666', marginTop: 6 },
-
+  header: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.gray900,
+    marginBottom: Spacing.md,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  card: {
+    backgroundColor: Colors.white,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    ...Shadows.soft,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#E9F8EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
+  cardCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  cardTitle: {
+    fontWeight: '700',
+    fontSize: 14,
+    color: Colors.gray900,
+    textTransform: 'capitalize',
+  },
+  cardSub: {
+    fontSize: 12,
+    marginTop: 3,
+    color: Colors.gray700,
+    fontWeight: '500',
+  },
+  cardAddress: {
+    fontSize: 12,
+    color: Colors.gray600,
+    marginTop: 5,
+    lineHeight: 17,
+    fontWeight: '600',
+  },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 10,
-    gap: 20,
+    marginTop: Spacing.md,
+    gap: Spacing.md,
   },
-
-  edit: { color: '#2563eb', fontWeight: '600' },
-
-  delete: { color: '#dc2626', fontWeight: '600' },
-
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  edit: {
+    color: ACTIVE_GREEN,
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  delete: {
+    color: Colors.error,
+    fontWeight: '600',
+    fontSize: 12,
+  },
   addBtn: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
     borderWidth: 1,
     borderStyle: 'dashed',
-    padding: 14,
-    borderRadius: 14,
+    borderColor: '#BFE5CB',
+    backgroundColor: Colors.white,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
     alignItems: 'center',
-    marginTop: 6,
+    justifyContent: 'center',
   },
-
-  addText: { color: '#16a34a', fontWeight: '600' },
-
+  addText: {
+    color: ACTIVE_GREEN,
+    fontWeight: '600',
+    fontSize: 13,
+  },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.36)',
     justifyContent: 'flex-end',
   },
-
   sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    maxHeight: '85%',
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: Spacing.lg,
+    maxHeight: '86%',
   },
-
   sheetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
   },
-
-  sheetTitle: { fontSize: 18, fontWeight: '700' },
-
-  section: { fontSize: 13, fontWeight: '700', marginTop: 12 },
-
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.gray900,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.gray50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  section: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.gray900,
+    marginTop: Spacing.md,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#eee',
-    borderRadius: 12,
-    padding: 14,
-    marginTop: 10,
-    backgroundColor: '#fafafa',
+    borderColor: Colors.gray200,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    height: 46,
+    marginTop: Spacing.sm,
+    backgroundColor: Colors.gray50,
+    color: Colors.gray900,
+    fontSize: 13,
+    fontWeight: '500',
   },
-
-  row: { flexDirection: 'row', gap: 10 },
-
-  chips: { flexDirection: 'row', marginTop: 14 },
-
-  chip: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 8,
+  inputRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
   },
-
-  chipActive: {
-    backgroundColor: '#16a34a',
-    borderColor: '#16a34a',
+  halfInput: {
+    flex: 1,
   },
-
-  chipText: { color: '#333' },
-
-  chipTextActive: { color: '#fff' },
-
   save: {
-    backgroundColor: '#16a34a',
-    padding: 16,
-    borderRadius: 14,
+    backgroundColor: ACTIVE_GREEN,
+    height: 48,
+    borderRadius: Radius.md,
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.md,
   },
-
-  saveText: { color: '#fff', fontWeight: '700' },
+  saveText: {
+    color: Colors.white,
+    fontWeight: '700',
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loaderText: {
+    marginTop: Spacing.sm,
+    color: Colors.gray600,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  emptyCard: {
+    alignItems: 'center',
+    padding: Spacing.xl,
+    backgroundColor: Colors.white,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.md,
+  },
+  emptyTitle: {
+    color: Colors.gray900,
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: Spacing.sm,
+  },
+  emptyText: {
+    color: Colors.gray600,
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 3,
+  },
+  keyboardView: {
+    flex: 1,
+  },
 });

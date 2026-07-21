@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { Colors, Spacing, Typography } from '../../styles';
+import { Colors, Spacing } from '../../styles';
 
 const BottomBrandSection = () => {
   return (
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
 
   bigText: {
     fontSize: 32,
-    fontWeight: '900',
+    fontWeight: '700',
     color: Colors.gray300,
     textAlign: 'center',
     lineHeight: 40,

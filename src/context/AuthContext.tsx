@@ -3,20 +3,15 @@ import React, { createContext, useContext, useState } from 'react';
 type AuthContextType = {
   phone: string;
   setPhone: (v: string) => void;
-  confirmation: any;
-  setConfirmation: (v: any) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: any) => {
-  const [confirmation, setConfirmation] = useState<any>(null);
   const [phone, setPhone] = useState('');
 
   return (
-    <AuthContext.Provider
-      value={{ phone, setPhone, confirmation, setConfirmation }}
-    >
+    <AuthContext.Provider value={{ phone, setPhone }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -6,6 +6,7 @@ import {
   Text,
   View,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import WrapperContainer from '../../components/common/WrapperContainer/WrapperContainer';
 import { Colors, Spacing } from '../../styles';
@@ -17,10 +18,7 @@ import {
 
 const ProductByCategory = ({ route }: any) => {
   const { categoryId, categoryName, type } = route.params;
-
-  console.log('Category ID:', categoryId);
-  console.log('Category Name:', categoryName);
-  console.log('Type:', type);
+  const { width } = useWindowDimensions();
 
   const [products, setProducts] = useState<any[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -31,12 +29,12 @@ const ProductByCategory = ({ route }: any) => {
 
   const [getChildProducts, { isLoading }] = useLazyGetProductByCatagoryQuery();
   const [getParentProducts] = useLazyGetProductsbyParentcategoryidQuery();
+  const columns = width >= 900 ? 6 : width >= 700 ? 5 : width >= 520 ? 4 : 3;
+  const contentWidth = width - Spacing.md * 2;
+  const cardWidth =
+    (contentWidth - Spacing.xs * (columns - 1)) / columns;
 
-  useEffect(() => {
-    loadInitialProducts();
-  }, [categoryId]);
-
-  const loadInitialProducts = async () => {
+  const loadInitialProducts = useCallback(async () => {
     try {
       setIsInitialLoading(true);
 
@@ -64,7 +62,11 @@ const ProductByCategory = ({ route }: any) => {
     } finally {
       setIsInitialLoading(false);
     }
-  };
+  }, [categoryId, getChildProducts, getParentProducts, type]);
+
+  useEffect(() => {
+    loadInitialProducts();
+  }, [loadInitialProducts]);
 
   const loadMoreProducts = async () => {
     if (isLoadingMore.current || isLoading || !hasMore || !nextCursor) {
@@ -106,7 +108,12 @@ const ProductByCategory = ({ route }: any) => {
 
   if (isInitialLoading) {
     return (
-      <WrapperContainer scrollable={false}>
+      <WrapperContainer
+        title={categoryName || 'Products'}
+        subtitle="Loading products"
+        scrollable={false}
+        showBackButton
+      >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
@@ -115,18 +122,22 @@ const ProductByCategory = ({ route }: any) => {
   }
 
   return (
-    <WrapperContainer scrollable={false}>
+    <WrapperContainer
+      title={categoryName || 'Products'}
+      subtitle={`${products.length} items`}
+      scrollable={false}
+      showBackButton
+    >
       <View style={styles.wrap}>
         <FlatList
           data={products}
           keyExtractor={(item, index) => `${item._id}-${index}`}
-          numColumns={3}
+          key={columns}
+          numColumns={columns}
           columnWrapperStyle={styles.columnWrap}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
-            <View style={styles.itemWrapper}>
-              <ProductCardMinimal item={item} />
-            </View>
+            <ProductCardMinimal item={item} cardWidth={cardWidth} />
           )}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
@@ -135,7 +146,7 @@ const ProductByCategory = ({ route }: any) => {
               {isLoading || isLoadingMore.current ? (
                 <>
                   <ActivityIndicator size="small" color={Colors.primary} />
-                  <Text style={styles.loadingText}>Loading more...</Text>
+                  <Text style={styles.loadingText}>Loading more</Text>
                 </>
               ) : null}
             </View>
@@ -163,24 +174,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: Spacing.md,
-    color: Colors.gray900,
-  },
-
   listContent: {
-    paddingBottom: Spacing.xl,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.xxl,
   },
 
   columnWrap: {
     justifyContent: 'space-between',
-    marginBottom: Spacing.sm,
-  },
-
-  itemWrapper: {
-    width: '32%',
+    marginBottom: Spacing.xs,
   },
 
   loadingContainer: {
@@ -198,12 +199,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: Spacing.sm,
     color: Colors.gray600,
-    fontSize: 12,
-  },
-
-  endText: {
-    color: Colors.gray600,
-    fontSize: 14,
+    fontSize: 11,
   },
 
   emptyContainer: {
@@ -215,6 +211,7 @@ const styles = StyleSheet.create({
 
   emptyText: {
     color: Colors.gray600,
-    fontSize: 16,
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

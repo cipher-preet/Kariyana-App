@@ -1,186 +1,339 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Header from '../MyOrdersScreen/Header';
+import {
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import { useNavigation } from '@react-navigation/native';
+import { Colors, Radius, Spacing } from '../../styles';
+
+const PAGE_BG = '#F7F8FA';
+const BRAND_GREEN = '#0B6B3A';
+const BORDER = '#E7EAEE';
+
+const POLICY_SECTIONS = [
+  {
+    title: 'Information We Collect',
+    intro:
+      'We collect information necessary to provide and improve our services.',
+    points: [
+      'Personal information such as name, phone number, email address, and business details.',
+      'Account information such as login credentials and preferences.',
+      'Transaction data including orders, payments, and purchase history.',
+      'Device and usage data such as IP address, device type, and app interactions.',
+    ],
+    note: 'All data is collected lawfully and only for relevant business purposes.',
+  },
+  {
+    title: 'How We Use Your Information',
+    intro:
+      'Your information is used to deliver a seamless and efficient experience.',
+    points: [
+      'Process and manage orders.',
+      'Provide customer support.',
+      'Personalize your experience.',
+      'Improve platform performance.',
+      'Send important service updates.',
+    ],
+    note: 'We do not use your data for unauthorized purposes.',
+  },
+  {
+    title: 'Data Sharing And Third Parties',
+    intro: 'We do not sell or rent your personal data.',
+    points: [
+      'Payment processing through UPI, banking partners, or payment gateways.',
+      'Logistics and delivery services.',
+      'Cloud storage and infrastructure providers.',
+      'Analytics and performance tracking tools.',
+    ],
+    note:
+      'All partners are contractually obligated to maintain data confidentiality and security.',
+  },
+  {
+    title: 'Data Security',
+    intro:
+      'We implement industry-standard security measures to protect your data.',
+    points: [
+      'End-to-end encryption.',
+      'Secure servers and databases.',
+      'Access control and authentication.',
+      'Regular monitoring and security audits.',
+    ],
+    note: 'While we strive to protect your data, no system is completely secure.',
+  },
+  {
+    title: 'Data Retention',
+    intro:
+      'We retain your data only as long as necessary for business, legal, or operational purposes.',
+    points: [
+      'Data is retained to support orders, account service, compliance, and dispute resolution.',
+      'Data that is no longer required is securely deleted or anonymized.',
+    ],
+  },
+  {
+    title: 'Your Rights',
+    intro: 'You have control over your personal data.',
+    points: [
+      'Access your personal information.',
+      'Request updates or corrections.',
+      'Request account deletion.',
+      'Opt out of notifications where available.',
+    ],
+    note: 'To exercise your rights, please contact our support team.',
+  },
+  {
+    title: 'Cookies And Tracking',
+    intro:
+      'We may use cookies and similar technologies to enhance user experience and analyze usage patterns.',
+    points: [
+      'You can manage cookie preferences through your device or browser settings.',
+    ],
+  },
+  {
+    title: 'Policy Updates',
+    intro: 'We may update this Privacy Policy periodically.',
+    points: [
+      'Any changes will be reflected on this page with an updated revision date.',
+      'Continued use of the platform indicates acceptance of the updated policy.',
+    ],
+  },
+  {
+    title: 'Contact Us',
+    intro:
+      'If you have questions or concerns about this Privacy Policy, please contact us through the support section of the app or via email.',
+    points: ['We are committed to resolving your concerns promptly.'],
+  },
+];
+
+const getStatusBarHeight = () => {
+  if (Platform.OS === 'ios') return 44;
+  return StatusBar.currentHeight || 24;
+};
+
+const BackIcon = ({ color = Colors.white }) => (
+  <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M15 18 9 12l6-6"
+      stroke={color}
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
 
 export const PrivacyPolicyScreen = () => {
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <Header title="Privacy Policy" />
+  const navigation = useNavigation<any>();
+  const statusBarHeight = getStatusBarHeight();
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <Text style={styles.title}>Privacy Policy</Text>
-          <Text style={styles.subtitle}>
-            We are committed to protecting your privacy and ensuring
-            transparency in how your data is handled.
+  return (
+    <View style={styles.root}>
+      <StatusBar backgroundColor={BRAND_GREEN} barStyle="light-content" />
+      <View style={[styles.header, { paddingTop: statusBarHeight + Spacing.sm }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          activeOpacity={0.82}
+          onPress={() => navigation.goBack()}
+        >
+          <BackIcon />
+        </TouchableOpacity>
+
+        <View style={styles.headerCopy}>
+          <Text style={styles.headerTitle}>Privacy Policy</Text>
+          <Text style={styles.headerSubtitle}>How your data is handled</Text>
+        </View>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        <View style={styles.summaryPanel}>
+          <Text style={styles.summaryLabel}>Last Updated</Text>
+          <Text style={styles.summaryValue}>April 2026</Text>
+          <Text style={styles.summaryText}>
+            We are committed to protecting your privacy and being transparent
+            about how your information is collected, used, and protected.
           </Text>
-          <Text style={styles.updated}>Last updated: April 2026</Text>
         </View>
 
-        <Section
-          title="1. Information We Collect"
-          content={`We collect information necessary to provide and improve our services.
-
-This may include:
-• Personal Information: Name, phone number, email address, business details  
-• Account Information: Login credentials and preferences  
-• Transaction Data: Orders, payments, and purchase history  
-• Device & Usage Data: IP address, device type, app interactions  
-
-All data is collected lawfully and only for relevant business purposes.`}
-        />
-
-        <Section
-          title="2. How We Use Your Information"
-          content={`Your information is used to deliver a seamless and efficient experience.
-
-We use your data to:
-• Process and manage orders  
-• Provide customer support  
-• Personalize your experience  
-• Improve platform performance  
-• Send important service updates  
-
-We do not use your data for unauthorized purposes.`}
-        />
-
-        <Section
-          title="3. Data Sharing & Third Parties"
-          content={`We do not sell or rent your personal data.
-
-We may share limited information with trusted third parties for:
-• Payment processing (e.g., UPI, banking partners)  
-• Logistics and delivery services  
-• Cloud storage and infrastructure  
-• Analytics and performance tracking  
-
-All partners are contractually obligated to maintain data confidentiality and security.`}
-        />
-
-        <Section
-          title="4. Data Security"
-          content={`We implement industry-standard security measures to protect your data.
-
-This includes:
-• End-to-end encryption  
-• Secure servers and databases  
-• Access control and authentication  
-• Regular monitoring and security audits  
-
-While we strive to protect your data, no system is completely secure.`}
-        />
-
-        <Section
-          title="5. Data Retention"
-          content={`We retain your data only as long as necessary for business, legal, or operational purposes.
-
-Once data is no longer required, it is securely deleted or anonymized.`}
-        />
-
-        <Section
-          title="6. Your Rights"
-          content={`You have full control over your personal data.
-
-You can:
-• Access your personal information  
-• Request updates or corrections  
-• Request account deletion  
-• Opt out of notifications  
-
-To exercise your rights, please contact our support team.`}
-        />
-
-        <Section
-          title="7. Cookies & Tracking"
-          content={`We may use cookies and similar technologies to enhance user experience and analyze usage patterns.
-
-You can manage cookie preferences through your device or browser settings.`}
-        />
-
-        <Section
-          title="8. Policy Updates"
-          content={`We may update this Privacy Policy periodically.
-
-Any changes will be reflected on this page with an updated revision date. Continued use of the platform indicates acceptance of the updated policy.`}
-        />
-
-        <Section
-          title="9. Contact Us"
-          content={`If you have any questions or concerns about this Privacy Policy, please contact us through the support section of the app or via email.
-
-We are committed to resolving your concerns promptly.`}
-        />
-
-        <View style={{ height: 40 }} />
+        {POLICY_SECTIONS.map((section, index) => (
+          <PolicySection
+            key={section.title}
+            number={index + 1}
+            title={section.title}
+            intro={section.intro}
+            points={section.points}
+            note={section.note}
+          />
+        ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
-export default PrivacyPolicyScreen;
+const PolicySection = ({ number, title, intro, points, note }: any) => (
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>{`${number}. ${title}`}</Text>
+    <View style={styles.sectionBody}>
+      <Text style={styles.intro}>{intro}</Text>
 
-const Section = ({ title, content }: any) => (
-  <View style={styles.card}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <Text style={styles.sectionText}>{content}</Text>
+      {points.map((point: string, index: number) => (
+        <View key={`${title}-${index}`} style={styles.pointRow}>
+          <View style={styles.bullet} />
+          <Text style={styles.pointText}>{point}</Text>
+        </View>
+      ))}
+
+      {note && <Text style={styles.note}>{note}</Text>}
+    </View>
   </View>
 );
 
+export default PrivacyPolicyScreen;
+
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: '#F8F9FB',
+    backgroundColor: PAGE_BG,
   },
 
-  hero: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
+  header: {
+    minHeight: 104,
+    backgroundColor: BRAND_GREEN,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.lg,
   },
 
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111',
-    marginBottom: 6,
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
   },
 
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-    marginBottom: 8,
+  headerCopy: {
+    flex: 1,
   },
 
-  updated: {
+  headerTitle: {
+    color: Colors.white,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.76)',
     fontSize: 12,
-    color: '#999',
+    fontWeight: '600',
+    marginTop: 3,
   },
 
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 18,
-    marginHorizontal: 16,
-    marginBottom: 14,
+  content: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xxxl,
+  },
 
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+  summaryPanel: {
+    backgroundColor: Colors.white,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: BORDER,
+    padding: Spacing.md,
+    marginTop: -Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+
+  summaryLabel: {
+    color: Colors.gray500,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+
+  summaryValue: {
+    color: Colors.gray900,
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 5,
+  },
+
+  summaryText: {
+    color: Colors.gray600,
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 19,
+    marginTop: Spacing.sm,
+  },
+
+  section: {
+    marginBottom: Spacing.lg,
   },
 
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#111',
-    marginBottom: 8,
+    color: Colors.gray600,
+    textTransform: 'uppercase',
+    letterSpacing: 0,
+    marginBottom: Spacing.sm,
   },
 
-  sectionText: {
-    fontSize: 14,
-    color: '#444',
-    lineHeight: 22,
+  sectionBody: {
+    backgroundColor: Colors.white,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: BORDER,
+    padding: Spacing.md,
+  },
+
+  intro: {
+    color: Colors.gray900,
+    fontSize: 13.5,
+    fontWeight: '700',
+    lineHeight: 20,
+    marginBottom: Spacing.sm,
+  },
+
+  pointRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: Spacing.sm,
+  },
+
+  bullet: {
+    width: 6,
+    height: 6,
+    borderRadius: Radius.full,
+    backgroundColor: BRAND_GREEN,
+    marginTop: 7,
+    marginRight: Spacing.sm,
+  },
+
+  pointText: {
+    flex: 1,
+    color: Colors.gray600,
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 19,
+  },
+
+  note: {
+    color: BRAND_GREEN,
+    fontSize: 12.5,
+    fontWeight: '700',
+    lineHeight: 18,
+    marginTop: Spacing.md,
   },
 });

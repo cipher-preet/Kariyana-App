@@ -1,10 +1,7 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Colors, Spacing, Radius } from '../../styles';
+import { BellOffIcon, MicIcon, PhoneOffIcon } from './CartIcons';
 
 const DeliveryInstructionsSection = () => {
   return (
@@ -13,19 +10,19 @@ const DeliveryInstructionsSection = () => {
 
       <View style={styles.row}>
         <InstructionCard
+          icon={<MicIcon />}
           title="Record"
-          subtitle="Press here and hold"
-          highlight
+          subtitle="Voice note"
         />
         <InstructionCard
-          title="Avoid calling"
-          subtitle="Press here and hold"
-          highlight
+          icon={<PhoneOffIcon />}
+          title="Avoid calls"
+          subtitle="Message only"
         />
         <InstructionCard
-          title="Don't ring the bell"
-          subtitle="Press here and hold"
-          highlight
+          icon={<BellOffIcon />}
+          title="No bell"
+          subtitle="Leave quietly"
         />
       </View>
     </View>
@@ -34,49 +31,41 @@ const DeliveryInstructionsSection = () => {
 
 export default DeliveryInstructionsSection;
 
-
 interface InstructionCardProps {
+  icon: React.ReactNode;
   title: string;
   subtitle?: string;
-  highlight?: boolean;
 }
 
 const InstructionCard: React.FC<InstructionCardProps> = ({
+  icon,
   title,
   subtitle,
-  highlight,
 }) => (
-  <TouchableOpacity
-    activeOpacity={0.8}
-    style={[
-      styles.card,
-      highlight && styles.highlightCard,
-    ]}
-  >
-    <View
-      style={[
-        styles.iconBox,
-        highlight && styles.highlightIcon,
-      ]}
-    />
-    <Text style={styles.cardTitle}>{title}</Text>
+  <TouchableOpacity activeOpacity={0.84} style={styles.card}>
+    <View style={styles.iconBox}>{icon}</View>
+    <Text style={styles.cardTitle} numberOfLines={1}>
+      {title}
+    </Text>
     {subtitle && (
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text style={styles.subtitle} numberOfLines={1}>
+        {subtitle}
+      </Text>
     )}
   </TouchableOpacity>
 );
 
-
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 14,
-    marginTop: 16,
+    marginTop: Spacing.md,
+    marginHorizontal: Spacing.md,
   },
 
   title: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+    color: '#202124',
   },
 
   row: {
@@ -85,47 +74,36 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    width: '31%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 12,
+    width: '31.5%',
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xs,
     alignItems: 'center',
-
-    shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 1,
-  },
-
-  highlightCard: {
-    borderWidth: 1,
-    borderColor: '#2BBE4A',
-    backgroundColor: '#F3FFF7',
   },
 
   iconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E0E0E0',
-    marginBottom: 8,
-  },
-
-  highlightIcon: {
-    backgroundColor: '#2BBE4A',
+    width: 34,
+    height: 34,
+    borderRadius: Radius.full,
+    backgroundColor: '#EAF6EE',
+    marginBottom: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   cardTitle: {
-    fontSize: 13,
+    fontSize: 11.5,
     fontWeight: '600',
+    color: '#202124',
     textAlign: 'center',
   },
 
   subtitle: {
-    fontSize: 11,
-    color: '#777',
+    fontSize: 10,
+    color: Colors.gray500,
+    fontWeight: '600',
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 2,
   },
 });

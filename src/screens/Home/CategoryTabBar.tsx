@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  Animated,
 } from 'react-native';
 
 import { Colors, Spacing, Radius } from '../../styles';
@@ -26,13 +25,12 @@ const CategoryTabBar: React.FC<Props> = ({
   const flatRef = useRef<FlatList>(null);
 
   const handleSelect = (item: Category, index: number) => {
-    console.log('Selected Category:', item);
     onSelect?.(item);
 
     flatRef.current?.scrollToIndex({
       index,
       animated: true,
-      viewPosition: 0.4,
+      viewPosition: 0.35,
     });
   };
 
@@ -50,37 +48,17 @@ const CategoryTabBar: React.FC<Props> = ({
 
           return (
             <TouchableOpacity
-              activeOpacity={0.75}
+              activeOpacity={0.82}
               onPress={() => handleSelect(item, index)}
-              style={styles.itemWrapper}
+              style={styles.tab}
             >
-              <Animated.View
-                style={[styles.iconBox, selected && styles.iconBoxSelected]}
-              >
-                {item.icon ? (
-                  <View
-                    style={[
-                      styles.svgWrapper,
-                      selected && styles.svgWrapperSelected,
-                    ]}
-                  >
-                    {item.icon}
-                  </View>
-                ) : (
-                  <Text style={[styles.icon, selected && styles.iconSelected]}>
-                    🏷️
-                  </Text>
-                )}
-              </Animated.View>
-
               <Text
                 numberOfLines={1}
                 style={[styles.title, selected && styles.titleSelected]}
               >
                 {item.title}
               </Text>
-
-              {selected && <View style={styles.underline} />}
+              <View style={[styles.indicator, selected && styles.activeLine]} />
             </TouchableOpacity>
           );
         }}
@@ -93,72 +71,44 @@ export default CategoryTabBar;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'transparent',
-    paddingTop: Spacing.sm,
-    paddingBottom: 0,
+    height: 34,
+    justifyContent: 'flex-end',
   },
 
   listContent: {
-    paddingHorizontal: Spacing.xs,
+    alignItems: 'flex-end',
+    paddingHorizontal: 0,
   },
 
-  itemWrapper: {
+  tab: {
+    height: 30,
+    minWidth: 52,
+    paddingHorizontal: Spacing.sm,
+    marginRight: Spacing.md,
     alignItems: 'center',
-    marginRight: Spacing.xxxl,
-  },
-
-  iconBox: {
-    width: 28,
-    height: 28,
-    borderRadius: Radius.sm,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xxs,
-  },
-
-  iconBoxSelected: {
-    backgroundColor: 'rgba(255,255,255,0.30)',
-    borderColor: Colors.white,
-    borderWidth: 1,
-  },
-
-  svgWrapper: {
-    width: 18,
-    height: 18,
-  },
-
-  svgWrapperSelected: {},
-
-  icon: {
-    fontSize: 14,
-    color: Colors.white,
-    opacity: 0.9,
-  },
-
-  iconSelected: {
-    color: Colors.white,
-    opacity: 1,
+    justifyContent: 'space-between',
   },
 
   title: {
+    maxWidth: 78,
+    color: 'rgba(255,255,255,0.82)',
     fontSize: 12,
-    color: Colors.white,
-    opacity: 0.85,
-    marginTop: 1,
+    fontWeight: '700',
   },
 
   titleSelected: {
     color: Colors.white,
-    opacity: 1,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
-  underline: {
-    marginTop: Spacing.xxs,
-    width: 20,
-    height: 2,
-    backgroundColor: Colors.white,
-    borderRadius: 2,
+  indicator: {
+    width: '100%',
+    height: 3,
+    borderRadius: Radius.full,
+    backgroundColor: 'transparent',
+  },
+
+  activeLine: {
+    backgroundColor: '#F7CB14',
   },
 });

@@ -5,7 +5,7 @@ import { Colors } from '../../styles';
 import { CommonActions } from '@react-navigation/native';
 
 const PaymentFailed = ({ route, navigation }: any) => {
-  const { orderId, message } = route.params || {};
+  const { orderId } = route.params || {};
 
   return (
     <View style={styles.container}>

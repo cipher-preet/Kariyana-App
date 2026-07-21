@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Spacing, Typography } from '../../styles';
+import { Colors, Radius, Spacing, Typography } from '../../styles';
 
 type ProductHeaderProps = {
   quantityPerUnit?: number;
@@ -17,16 +17,28 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
 }) => {
   return (
     <View>
-      <Text style={styles.quantity}>
-        {quantityPerUnit} {unit}
-      </Text>
+      <View style={styles.chipRow}>
+        {quantityPerUnit ? (
+          <View style={styles.quantityChip}>
+            <Text style={styles.quantity}>
+              {quantityPerUnit} {unit}
+            </Text>
+          </View>
+        ) : null}
+
+        {sku < 10 && sku > 0 ? (
+          <View style={styles.stockChip}>
+            <Text style={styles.stock}>Only {sku} left</Text>
+          </View>
+        ) : null}
+      </View>
 
       <Text style={styles.title}>{name}</Text>
 
       <View style={styles.metaRow}>
-        {sku < 10 && <Text style={styles.stock}>Only {sku} left</Text>}
+        <Text style={styles.delivery}>Delivery 14-48 hrs</Text>
+        {sku === 0 ? <Text style={styles.out}>Out of stock</Text> : null}
       </View>
-      <Text style={styles.delivery}>Delivery 14-48 hrs</Text>
     </View>
   );
 };
@@ -34,40 +46,63 @@ const ProductHeader: React.FC<ProductHeaderProps> = ({
 export default ProductHeader;
 
 const styles = StyleSheet.create({
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+
+  quantityChip: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#ECF7EF',
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 5,
+  },
+
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#1f1f1f',
+    color: Colors.gray900,
+    lineHeight: 25,
   },
 
   quantity: {
     ...Typography.caption,
-    marginBottom: Spacing.xs,
-    fontSize: 14,
+    fontSize: 12,
+    color: '#0B6B3A',
+    fontWeight: '600',
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: Spacing.sm,
     marginTop: 8,
   },
 
+  stockChip: {
+    backgroundColor: '#FFF2F0',
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 5,
+  },
+
   stock: {
-    fontSize: 12.5,
-    color: '#d32f2f',
+    fontSize: 11,
+    color: Colors.error,
     fontWeight: '600',
   },
 
   delivery: {
-    fontSize: 12.5,
-    color: '#4caf50',
+    fontSize: 12,
+    color: '#0B6B3A',
     fontWeight: '600',
   },
 
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#bdbdbd',
-    marginHorizontal: 6,
+  out: {
+    fontSize: 12,
+    color: Colors.error,
+    fontWeight: '600',
   },
 });

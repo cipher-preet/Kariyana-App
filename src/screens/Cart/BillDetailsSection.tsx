@@ -1,51 +1,41 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextStyle } from 'react-native';
-import { Colors } from '../../styles';
+import { Colors, Spacing, Radius } from '../../styles';
 
-interface billedItems {
+interface BilledItems {
   subtotal: number;
   totalItems: number;
 }
 
-const BillDetailsSection: React.FC<billedItems> = ({
+const BillDetailsSection: React.FC<BilledItems> = ({
   subtotal,
   totalItems,
 }) => {
+  const formattedSubtotal = `Rs${subtotal ?? 0}`;
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Bill details</Text>
 
-      <Row
-        label="Items total"
-        value={subtotal}
-        // strike="₹652"
-        // badge="Saved ₹11"
-      />
+      <Row label={`Items total (${totalItems})`} value={formattedSubtotal} />
 
       <Row
         label="Delivery charge"
         value="FREE"
-        strike="₹100"
-        valueStyle={{ color: Colors.success }}
+        strike="Rs100"
+        valueStyle={styles.freeValue}
       />
-
-      {/* <Row label="Handling charge" value="₹4" /> */}
-      {/* <Row label="Tip for your delivery partner" value="₹1,000" /> */}
 
       <View style={styles.divider} />
 
       <View style={styles.grandRow}>
         <Text style={styles.grandText}>Grand total</Text>
-        <Text style={styles.grandAmount}>{subtotal}</Text>
+        <Text style={styles.grandAmount}>{formattedSubtotal}</Text>
       </View>
 
       <View style={styles.savingBox}>
-        {/* <Text style={styles.savingText}>
-          Your total savings{' '}
-          <Text style={styles.savingStrong}>₹41</Text>
-        </Text> */}
         <Text style={styles.savingSub}>
-          Includes ₹100 savings through free delivery
+          Includes Rs100 savings through free delivery
         </Text>
       </View>
     </View>
@@ -54,25 +44,21 @@ const BillDetailsSection: React.FC<billedItems> = ({
 
 export default BillDetailsSection;
 
-
 const Row = ({
   label,
   value,
   strike,
-  badge,
   valueStyle = {},
 }: {
   label: string;
   value: number | string;
   strike?: string;
-  badge?: string;
   valueStyle?: TextStyle;
 }) => (
   <View style={styles.row}>
     <Text style={styles.label}>{label}</Text>
 
     <View style={styles.right}>
-      {badge && <Text style={styles.badge}>{badge}</Text>}
       {strike && <Text style={styles.strike}>{strike}</Text>}
       <Text style={[styles.value, valueStyle]}>{value}</Text>
     </View>
@@ -82,23 +68,17 @@ const Row = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.white,
-    borderRadius: 14,
-    padding: 14,
-    marginHorizontal: 14,
-    marginTop: 12,
-
-    shadowColor: Colors.black,
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    borderRadius: 18,
+    padding: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.md,
   },
 
   title: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-    color: Colors.gray900,
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+    color: '#202124',
   },
 
   row: {
@@ -108,7 +88,8 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '600',
     color: Colors.gray700,
   },
 
@@ -117,34 +98,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  badge: {
-    fontSize: 11,
-    backgroundColor: Colors.primaryLight,
-    color: Colors.primaryDark,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginRight: 6,
-    fontWeight: '600',
-  },
-
   strike: {
     textDecorationLine: 'line-through',
     color: Colors.gray500,
     marginRight: 6,
-    fontSize: 13,
+    fontSize: 12,
   },
 
   value: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: Colors.gray900,
+    color: '#202124',
+  },
+
+  freeValue: {
+    color: '#0B6B3A',
   },
 
   divider: {
     borderTopWidth: 1,
-    borderColor: Colors.gray200,
-    marginVertical: 10,
+    borderColor: '#F0F1F3',
+    marginVertical: Spacing.sm,
   },
 
   grandRow: {
@@ -153,36 +127,27 @@ const styles = StyleSheet.create({
   },
 
   grandText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.gray900,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#202124',
   },
 
   grandAmount: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: Colors.gray900,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#202124',
   },
 
   savingBox: {
-    backgroundColor: Colors.primaryLight,
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-
-  savingText: {
-    fontSize: 13,
-    color: Colors.primaryDark,
-  },
-
-  savingStrong: {
-    fontWeight: '700',
+    backgroundColor: '#EAF6EE',
+    padding: Spacing.sm,
+    borderRadius: Radius.md,
+    marginTop: Spacing.sm,
   },
 
   savingSub: {
-    fontSize: 12,
-    color: Colors.gray600,
-    marginTop: 2,
+    fontSize: 11.5,
+    color: '#0B6B3A',
+    fontWeight: '700',
   },
 });

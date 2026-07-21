@@ -2,9 +2,8 @@ import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CommonActions } from '@react-navigation/native';
-import { useRoute } from '@react-navigation/native';
 
-import { Colors, Spacing, Radius, Shadows } from '../../styles';
+import { Colors, Spacing, Radius } from '../../styles';
 
 import SearchIcon from '../../assest/search';
 import MicIcon from '../../assest/mic';
@@ -15,7 +14,7 @@ type Props = {
 };
 
 const SearchBar: React.FC<Props> = ({
-  placeholder = 'Search products...',
+  placeholder = 'Search for "atta & more"',
   onSearch,
 }) => {
   const navigation = useNavigation<any>();
@@ -37,12 +36,12 @@ const SearchBar: React.FC<Props> = ({
         }}
       >
         <View style={styles.searchContainer}>
-          <SearchIcon width={20} height={20} color={Colors.gray500} />
+          <SearchIcon width={18} height={18} color={Colors.gray700} />
 
           <TextInput
             style={styles.input}
             placeholder={placeholder}
-            placeholderTextColor={Colors.gray500}
+            placeholderTextColor={Colors.gray600}
             value={q}
             onChangeText={setQ}
             editable={false}
@@ -50,7 +49,7 @@ const SearchBar: React.FC<Props> = ({
           />
 
           <TouchableOpacity onPress={() => onSearch?.(q)}>
-            <MicIcon width={20} height={20} color={Colors.gray500} />
+            <MicIcon width={18} height={18} color={Colors.gray600} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -69,21 +68,22 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-
     backgroundColor: Colors.white,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-
-    paddingHorizontal: Spacing.lg,
-    height: 48,
-    ...Shadows.soft,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md,
+    height: 46,
+    shadowColor: '#063B24',
+    shadowOpacity: 0.08,
+    shadowRadius: 9,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
 
   input: {
     flex: 1,
-    marginLeft: Spacing.md,
+    marginLeft: Spacing.sm,
     color: Colors.gray900,
-    fontSize: 15,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

@@ -1,15 +1,9 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
-import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
 
-import { Colors, Responsive, Shadows } from '../../styles';
+import { Colors, Shadows, Spacing } from '../../styles';
 
 import AccountIcon from '../../assest/account';
 import CartIcon from '../../assest/cart';
@@ -18,30 +12,37 @@ import HomeIcon from '../../assest/home';
 import { useGetCartByUserIdQuery } from '../../ReduxToolKit/Api/cartApi';
 import { useSelector } from 'react-redux';
 
-const { scale, moderateScale, textScale } = Responsive;
+const ACTIVE_GREEN = '#0B6B3A';
 
 const getIcon = (routeName: string, focused: boolean) => {
-  const color = focused ? Colors.white : Colors.gray500;
+  const color = focused ? ACTIVE_GREEN : Colors.gray500;
 
   switch (routeName) {
     case 'Home':
-      return <HomeIcon color={color} />;
+      return <HomeIcon color={color} width={22} height={22} />;
     case 'categories':
-      return <CategoryIcon color={color} />;
+      return <CategoryIcon color={color} width={22} height={22} />;
     case 'Account':
-      return <AccountIcon color={color} />;
+      return <AccountIcon color={color} width={22} height={22} />;
     case 'Cart':
-      return <CartIcon color={color} />;
+      return <CartIcon color={color} width={22} height={22} />;
     default:
       return null;
   }
 };
 
+const getLabel = (routeName: string) => {
+  switch (routeName) {
+    case 'categories':
+      return 'Categories';
+    default:
+      return routeName;
+  }
+};
+
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
   const insets = useSafeAreaInsets();
-
-  const user_Id = useSelector((state: any) => state.auth.userId);
-  const userId = user_Id;
+  const userId = useSelector((reduxState: any) => reduxState.auth.userId);
 
   const { data } = useGetCartByUserIdQuery(
     { userId },
@@ -51,80 +52,61 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
       refetchOnReconnect: true,
     },
   );
+
   const totalItems = data?.data?.totalItems ?? 0;
+
+  const handlePress = (routeName: string, isFocused: boolean) => {
+    if (isFocused) return;
+
+    if (routeName === 'Account') {
+      navigation.navigate('Account', {
+        screen: 'AccountMain',
+      });
+      return;
+    }
+
+    if (routeName === 'categories') {
+      navigation.navigate('categories', {
+        screen: 'categoryMain',
+      });
+      return;
+    }
+
+    navigation.navigate(routeName);
+  };
+
   return (
-    <View style={[styles.tabContainer, { paddingBottom: insets.bottom + 10 }]}>
-      {' '}
+    <View style={[styles.container, { paddingBottom: insets.bottom + Spacing.sm }]}>
       <View style={styles.row}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
-          const progress = isFocused ? 1 : 0;
-
-          const bubbleAnim = useAnimatedStyle(() => ({
-            opacity: withTiming(interpolate(progress, [0, 1], [0, 1]), {
-              duration: 250,
-            }),
-            transform: [
-              {
-                scale: withTiming(interpolate(progress, [0, 1], [0.3, 1]), {
-                  duration: 250,
-                }),
-              },
-            ],
-          }));
-
-          const iconAnim = useAnimatedStyle(() => ({
-            transform: [
-              {
-                scale: withTiming(interpolate(progress, [0, 1], [1, 1.15]), {
-                  duration: 200,
-                }),
-              },
-            ],
-          }));
 
           return (
-            <TouchableWithoutFeedback
+            <Pressable
               key={route.key}
-              onPress={() => {
-                if (route.name === 'Account') {
-                  navigation.navigate('Account', {
-                    screen: 'AccountMain',
-                  });
-                } else if (route.name === 'categories') {
-                  navigation.navigate('categories', {
-                    screen: 'categoryMain',
-                  });
-                } else {
-                  navigation.navigate(route.name);
-                }
-              }}
+              onPress={() => handlePress(route.name, isFocused)}
+              style={({ pressed }) => [
+                styles.tabButton,
+                pressed && styles.pressedTab,
+              ]}
             >
-              <View style={styles.tabButton}>
-                <Animated.View style={[styles.simpleGradient, bubbleAnim]}>
-                  <LinearGradient
-                    colors={Colors.gradients.primary}
-                    style={styles.gradientFill}
-                  />
-                </Animated.View>
+              <View style={styles.iconShell}>
+                {(isFocused) && <View style={styles.activeCircle} />}
+                {getIcon(route.name, isFocused)}
 
-                <Animated.View style={[styles.iconWrapper, iconAnim]}>
-                  {getIcon(route.name, isFocused)}
-
-                  {route.name === 'Cart' && totalItems > 0 && (
-                    <View style={styles.cartBadge}>
-                      <Text style={styles.cartBadgeText}>
-                        {totalItems > 99 ? '99+' : totalItems}
-                      </Text>
-                    </View>
-                  )}
-                </Animated.View>
-
-                <Text style={[styles.label, isFocused && styles.labelActive]}>
-                  {route.name}
-                </Text>
+                {route.name === 'Cart' && totalItems > 0 && (
+                  <View style={styles.cartBadge}>
+                    <Text style={styles.cartBadgeText}>
+                      {totalItems > 99 ? '99+' : totalItems}
+                    </Text>
+                  </View>
+                )}
               </View>
-            </TouchableWithoutFeedback>
+
+              <Text style={[styles.label, isFocused && styles.labelActive]}>
+                {getLabel(route.name)}
+              </Text>
+            </Pressable>
           );
         })}
       </View>
@@ -135,72 +117,82 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
 export default CustomTabBar;
 
 const styles = StyleSheet.create({
-  tabContainer: {
-    paddingBottom: moderateScale(12) + 10,
-    ...Shadows.card,
+  container: {
+    backgroundColor: Colors.white,
+    paddingTop: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray100,
+    ...Shadows.soft,
   },
 
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
     alignItems: 'center',
-    paddingVertical: moderateScale(2),
+    justifyContent: 'space-between',
   },
 
   tabButton: {
-    width: scale(80),
-    height: moderateScale(58),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  simpleGradient: {
-    position: 'absolute',
-    top: moderateScale(2),
-    width: scale(36),
-    height: scale(36),
-    borderRadius: scale(40),
-    overflow: 'hidden',
-  },
-
-  gradientFill: {
     flex: 1,
+    height: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  iconWrapper: {
-    width: scale(28),
-    height: scale(28),
-    justifyContent: 'center',
+  pressedTab: {
+    opacity: 0.82,
+  },
+
+  iconShell: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+
+  activeCircle: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E9F8EE',
+    borderWidth: 1,
+    borderColor: '#BFE5CB',
   },
 
   label: {
-    fontSize: textScale(10),
+    marginTop: 2,
+    fontSize: 10.5,
+    lineHeight: 13,
     color: Colors.gray500,
-    marginTop: moderateScale(4),
+    fontWeight: '500',
   },
 
   labelActive: {
-    color: Colors.primaryDark,
+    color: ACTIVE_GREEN,
     fontWeight: '600',
   },
 
   cartBadge: {
     position: 'absolute',
-    top: -6,
-    right: -10,
-    minWidth: scale(18),
-    height: scale(18),
-    borderRadius: scale(9),
-    backgroundColor: Colors.error || '#ff3b30',
+    top: -5,
+    right: 3,
+    minWidth: 17,
+    height: 17,
+    borderRadius: 8.5,
+    backgroundColor: Colors.error,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: Colors.white,
   },
 
   cartBadgeText: {
     color: Colors.white,
-    fontSize: textScale(9),
+    fontSize: 8.5,
     fontWeight: '700',
+    lineHeight: 10,
   },
 });

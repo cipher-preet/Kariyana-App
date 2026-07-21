@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+} from 'react-native';
 
 import { Colors, Spacing, Radius } from '../../styles';
 import type { Product } from '../../types';
@@ -11,7 +18,20 @@ import {
 } from '../../ReduxToolKit/Slices/cartSlice';
 import { triggerCartSync } from '../../ReduxToolKit/Slices/cartSync';
 
-const YELLOW_BG = '#FDE9A5';
+const PRICE_GREEN = '#16823A';
+const OFFER_GREEN = '#11853D';
+const ADD_PINK = '#E91E63';
+
+const getSavings = (item: Product) => {
+  const basePrice = item.marketPrice || item.mrp;
+  const sellingPrice = item.sellingPrice || item.price;
+
+  if (!basePrice || !sellingPrice || basePrice <= sellingPrice) {
+    return null;
+  }
+
+  return basePrice - sellingPrice;
+};
 
 type Props = {
   item: Product;
@@ -19,10 +39,14 @@ type Props = {
 };
 
 const SaleCard: React.FC<Props> = ({ item, onAdd }) => {
+  const { width } = useWindowDimensions();
+  const user_Id = useSelector((state: any) => state.auth.userId);
   const dispatch = useDispatch();
 
   const cartItem = useSelector((state: any) => state.cart.items[item._id]);
   const qty = cartItem?.quantity ?? 0;
+  const savings = getSavings(item);
+  const cardWidth = Math.min(150, Math.max(112, width * 0.31));
 
   const increase = () => {
     dispatch(
@@ -31,7 +55,7 @@ const SaleCard: React.FC<Props> = ({ item, onAdd }) => {
           productId: item._id,
           price: item.mrp,
         },
-        userId: '694fc82c88c809473e4455c3',
+        userId: user_Id,
       }),
     );
 
@@ -47,8 +71,14 @@ const SaleCard: React.FC<Props> = ({ item, onAdd }) => {
   };
 
   return (
-    <View style={styles.card}>
-      <View style={styles.imageBox}>
+    <View style={[styles.card, { width: cardWidth }]}>
+      <View style={[styles.imageBox, { height: cardWidth * 0.9 }]}>
+        {item.marketPrice > item.sellingPrice && (
+          <View style={styles.saveBadge}>
+            <Text style={styles.saveText}>Deal</Text>
+          </View>
+        )}
+
         <Image
           source={{ uri: item.images }}
           style={styles.image}
@@ -61,7 +91,7 @@ const SaleCard: React.FC<Props> = ({ item, onAdd }) => {
             onPress={increase}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.addText}>ADD</Text>
+            <Text style={styles.addText}>+</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.stepper}>
@@ -86,27 +116,22 @@ const SaleCard: React.FC<Props> = ({ item, onAdd }) => {
         )}
       </View>
 
-      {item.quantityPerUnit && (
-        <Text style={styles.unitPrice}>
-          {item.quantityPerUnit} {item.unit}
-        </Text>
-      )}
+      <View style={styles.priceRow}>
+        <Text style={styles.price}>Rs{item.sellingPrice}</Text>
+        <Text style={styles.mrp}>Rs{item.mrp}</Text>
+      </View>
+
+      {savings ? <Text style={styles.saving}>Rs{savings} OFF</Text> : null}
 
       <Text numberOfLines={2} style={styles.title}>
         {item.name}
       </Text>
 
-      <View style={styles.rateRow}>
-        <Text style={styles.rating}>⭐ {item.rating}</Text>
-        <Text style={styles.time}>24-48 hrs</Text>
-      </View>
-
-      <View style={styles.priceRowBg}>
-        <View style={styles.priceRow}>
-          <Text style={styles.price}>₹{item.sellingPrice}</Text>
-          <Text style={styles.mrp}>₹{item.mrp}</Text>
-        </View>
-      </View>
+      {item.quantityPerUnit && (
+        <Text style={styles.unitPrice} numberOfLines={1}>
+          {item.quantityPerUnit} {item.unit}
+        </Text>
+      )}
     </View>
   );
 };
@@ -115,178 +140,140 @@ export default SaleCard;
 
 const styles = StyleSheet.create({
   card: {
-    width: 120,
-    marginRight: Spacing.lg,
+    marginRight: Spacing.md,
+    padding: 0,
   },
 
   imageBox: {
-    height: 130,
-    borderRadius: Radius.md,
+    height: 104,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    marginBottom: Spacing.sm,
-    backgroundColor: YELLOW_BG,
+    marginBottom: Spacing.xs,
+    backgroundColor: '#F1F2F4',
   },
 
   image: {
-    width: '80%',
-    height: '80%',
+    width: '92%',
+    height: '92%',
   },
 
   saveBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: Colors.error,
-    paddingHorizontal: Spacing.xs,
+    top: Spacing.xs,
+    left: Spacing.xs,
+    backgroundColor: '#111A14',
+    paddingHorizontal: 7,
     paddingVertical: Spacing.xxs,
-    borderRadius: Radius.xs,
+    borderRadius: Radius.full,
+    zIndex: 1,
   },
 
   saveText: {
     color: Colors.white,
-    fontSize: 10.5,
-    fontWeight: '700',
+    fontSize: 9.5,
+    fontWeight: '600',
   },
 
   addBtn: {
     position: 'absolute',
-    bottom: 6,
-    right: 6,
+    bottom: 5,
+    right: 5,
     backgroundColor: Colors.white,
-    borderWidth: 1.8,
-    borderColor: Colors.success,
-    paddingVertical: 7,
-    paddingHorizontal: 22,
-    borderRadius: 6,
+    borderWidth: 1.4,
+    borderColor: ADD_PINK,
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   addText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: Colors.success,
+    fontSize: 24,
+    fontWeight: '700',
+    color: ADD_PINK,
+    lineHeight: 25,
   },
 
   stepper: {
     position: 'absolute',
-    bottom: 6,
-    right: 6,
+    bottom: 5,
+    right: 5,
     flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderWidth: 1.8,
-    borderColor: Colors.success,
-    borderRadius: 6,
+    backgroundColor: ADD_PINK,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
 
   stepBtn: {
-    width: 25,
-    height: 32,
+    width: 22,
+    height: 27,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   stepTxt: {
     fontSize: 20,
-    fontWeight: '900',
-    color: Colors.success,
+    fontWeight: '700',
+    color: Colors.white,
     lineHeight: 22,
   },
 
   qtyTxt: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: Colors.success,
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.white,
     minWidth: 24,
     textAlign: 'center',
   },
 
-  labelRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.xs,
-    marginTop: Spacing.sm,
-  },
-
-  label: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: Spacing.xxs,
-    borderRadius: Radius.xs,
-    borderWidth: 0.5,
-    borderColor: Colors.gray300,
-  },
-
-  labelTxt: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: Colors.gray800,
-  },
-
   title: {
-    marginTop: Spacing.sm,
-    fontSize: 12.5,
+    marginTop: 4,
+    fontSize: 11.5,
     fontWeight: '700',
     color: Colors.gray900,
-    lineHeight: 17,
-  },
-
-  rateRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: Spacing.sm,
-  },
-
-  rating: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.success,
-  },
-
-  time: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.gray700,
-  },
-
-  stock: {
-    marginTop: Spacing.sm,
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.warning,
-  },
-
-  priceRowBg: {
-    marginTop: Spacing.sm,
-    backgroundColor: YELLOW_BG,
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.xs,
-    borderRadius: Radius.sm,
+    lineHeight: 15,
+    minHeight: 30,
   },
 
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
+    marginBottom: 3,
   },
 
   price: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: Colors.gray900,
+    overflow: 'hidden',
+    backgroundColor: PRICE_GREEN,
+    borderRadius: Radius.xs,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.white,
   },
 
   mrp: {
-    fontSize: 11.5,
-    color: Colors.gray600,
+    fontSize: 11,
+    color: Colors.gray500,
     textDecorationLine: 'line-through',
+  },
+
+  saving: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '700',
+    color: OFFER_GREEN,
   },
 
   unitPrice: {
     marginTop: Spacing.xxs,
-    fontSize: 10.5,
+    fontSize: 10,
     color: Colors.gray700,
+    fontWeight: '700',
   },
 });

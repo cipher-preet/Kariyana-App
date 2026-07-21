@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getAuth, signInWithPhoneNumber } from '@react-native-firebase/auth';
 
 import {
   View,
@@ -10,34 +9,38 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Image,
   StatusBar,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { Colors, Spacing, Radius } from '../../styles';
-import { moderateScaleVertical } from '../../styles/responsiveStyles';
+import {
+  moderateScale,
+  moderateScaleVertical,
+} from '../../styles/responsiveStyles';
+import { useSendOtpMutation } from '../../ReduxToolKit/Api/authApi';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 const LoginScreen = ({ navigation }: any) => {
-  const { phone, setPhone, setConfirmation } = useAuth();
+  const { phone, setPhone } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [sendOtpRequest] = useSendOtpMutation();
+  const isPhoneValid = phone.length === 10;
 
   const sendOtp = async () => {
-    if (phone.length !== 10) return;
+    if (!isPhoneValid) {
+      Alert.alert('Invalid number', 'Please enter a valid 10-digit mobile number');
+      return;
+    }
 
     try {
       setLoading(true);
-      const authInstance = getAuth();
-      const confirmationResult = await signInWithPhoneNumber(
-        authInstance,
-        `+91${phone}`,
-      );
-
-      setConfirmation(confirmationResult);
+      await sendOtpRequest({ phone }).unwrap();
       navigation.navigate('OtpVerify');
     } catch (error) {
       console.log('OTP error:', error);
-      Alert.alert('OTP Failed', 'Unable to send OTP. Try again later.');
+      Alert.alert('OTP Failed', getApiErrorMessage(error, 'Try again later'));
     } finally {
       setLoading(false);
     }
@@ -50,61 +53,71 @@ const LoginScreen = ({ navigation }: any) => {
     >
       <StatusBar
         barStyle="dark-content"
-        backgroundColor={Colors.white}
+        backgroundColor={styles.container.backgroundColor}
         translucent={false}
       />
 
-      <View style={styles.wrapper}>
-        <View style={styles.brandWrapper}>
-          <Image
-            source={{
-              uri: 'https://www.shutterstock.com/image-vector/shopping-food-basket-icon-isolated-260nw-2370040877.jpg',
-            }}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.brandTagline}>
-            Wholesale prices for your shop
-          </Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.heroArea}>
+          <View style={styles.greenOrb} />
+          <View style={styles.orangeOrb} />
+          <View style={styles.deepCurve} />
+          <View style={styles.phonePreview}>
+            <View style={styles.previewNotch} />
+            <View style={styles.previewLineShort} />
+            <View style={styles.previewLine} />
+            <View style={styles.previewInput} />
+            <View style={styles.previewButton} />
+          </View>
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome To Kariyana</Text>
+          <Text style={styles.eyebrow}>Kariyana partner access</Text>
+          <Text style={styles.title}>Sign in to continue</Text>
           <Text style={styles.subtitle}>
-            Login OR Register using your mobile number
+            Enter your mobile number and we will send a secure OTP.
           </Text>
 
-          <View style={styles.inputWrapper}>
+          <Text style={styles.label}>Mobile number</Text>
+          <View style={[styles.inputWrapper, isPhoneValid && styles.inputActive]}>
             <Text style={styles.prefix}>+91</Text>
+            <View style={styles.divider} />
             <TextInput
               placeholder="Enter mobile number"
               placeholderTextColor={Colors.gray400}
               keyboardType="number-pad"
               maxLength={10}
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={text => setPhone(text.replace(/[^0-9]/g, ''))}
               style={styles.input}
             />
           </View>
 
           <TouchableOpacity
-            style={[styles.button, loading && { opacity: 0.6 }]}
+            activeOpacity={0.82}
+            style={[
+              styles.button,
+              (!isPhoneValid || loading) && styles.buttonDisabled,
+            ]}
             disabled={loading}
             onPress={sendOtp}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={Colors.white} />
             ) : (
-              <Text style={styles.buttonText}>Continue</Text>
+              <Text style={styles.buttonText}>Send OTP</Text>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.registerBtn}
-            onPress={() => navigation.navigate('RegisterStep1')}
-          ></TouchableOpacity>
+          <Text style={styles.footerText}>
+            New to Kariyana? Verification will guide you to registration.
+          </Text>
         </View>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -114,64 +127,174 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F7F8F4',
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: moderateScaleVertical(32),
+  },
+
+  heroArea: {
+    minHeight: moderateScaleVertical(292),
+    justifyContent: 'flex-end',
+    paddingHorizontal: Spacing.xl,
+    overflow: 'hidden',
+  },
+
+  greenOrb: {
+    position: 'absolute',
+    top: moderateScaleVertical(48),
+    left: moderateScale(42),
+    width: moderateScale(42),
+    height: moderateScale(42),
+    borderRadius: moderateScale(21),
+    backgroundColor: '#0F5A20',
+  },
+
+  orangeOrb: {
+    position: 'absolute',
+    right: moderateScale(46),
+    bottom: moderateScaleVertical(28),
+    width: moderateScale(24),
+    height: moderateScale(24),
+    borderRadius: moderateScale(12),
+    backgroundColor: Colors.secondary,
+  },
+
+  deepCurve: {
+    position: 'absolute',
+    width: moderateScale(390),
+    height: moderateScale(390),
+    borderRadius: moderateScale(195),
+    backgroundColor: '#124F20',
+    right: moderateScale(-142),
+    bottom: moderateScaleVertical(-126),
+    opacity: 0.96,
+  },
+
+  phonePreview: {
+    alignSelf: 'flex-end',
+    width: moderateScale(166),
+    minHeight: moderateScaleVertical(218),
+    borderRadius: Radius.xl,
     backgroundColor: Colors.white,
+    padding: moderateScale(18),
+    marginRight: moderateScale(10),
+    marginBottom: moderateScaleVertical(8),
+    shadowColor: Colors.black,
+    shadowOpacity: 0.18,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 12,
   },
 
-  wrapper: {
-    flex: 0.8,
-    justifyContent: 'center',
+  previewNotch: {
+    width: moderateScale(38),
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.gray200,
+    alignSelf: 'center',
+    marginBottom: moderateScaleVertical(28),
   },
 
-  brandWrapper: {
-    alignItems: 'center',
-    marginBottom: moderateScaleVertical(32),
+  previewLineShort: {
+    width: '58%',
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: Colors.gray800,
+    alignSelf: 'center',
+    marginBottom: moderateScaleVertical(8),
   },
 
-  logo: {
-    height: 150,
-    width: 160,
+  previewLine: {
+    width: '74%',
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.gray200,
+    alignSelf: 'center',
+    marginBottom: moderateScaleVertical(22),
   },
 
-  brandTagline: {
-    fontSize: 13,
-    color: Colors.gray600,
+  previewInput: {
+    height: moderateScaleVertical(34),
+    borderRadius: Radius.md,
+    backgroundColor: Colors.gray100,
+    marginBottom: moderateScaleVertical(16),
+  },
+
+  previewButton: {
+    height: moderateScaleVertical(36),
+    borderRadius: Radius.lg,
+    backgroundColor: '#0F5A20',
   },
 
   content: {
     paddingHorizontal: Spacing.xl,
-    paddingTop: moderateScaleVertical(16),
+    paddingTop: moderateScaleVertical(18),
+  },
+
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.secondaryDark,
+    textTransform: 'uppercase',
+    marginBottom: moderateScaleVertical(10),
   },
 
   title: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '700',
     color: Colors.gray900,
-    marginBottom: 6,
+    marginBottom: moderateScaleVertical(8),
   },
 
   subtitle: {
     fontSize: 14,
     color: Colors.gray600,
-    lineHeight: 20,
-    marginBottom: Spacing.lg,
+    lineHeight: 21,
+    marginBottom: moderateScaleVertical(30),
+    maxWidth: '88%',
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.gray800,
+    marginBottom: moderateScaleVertical(8),
   },
 
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 52,
+    height: moderateScaleVertical(56),
     borderWidth: 1,
-    borderColor: Colors.gray300,
-    borderRadius: Radius.lg,
-    paddingHorizontal: 14,
+    borderColor: Colors.gray200,
+    borderRadius: Radius.xl,
+    paddingHorizontal: moderateScale(16),
     backgroundColor: Colors.white,
+    shadowColor: Colors.black,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 2,
+  },
+
+  inputActive: {
+    borderColor: '#0F5A20',
   },
 
   prefix: {
     fontSize: 15,
     color: Colors.gray800,
-    marginRight: 8,
-    fontWeight: '500',
+    fontWeight: '700',
+  },
+
+  divider: {
+    width: 1,
+    height: 24,
+    backgroundColor: Colors.gray200,
+    marginHorizontal: moderateScale(12),
   },
 
   input: {
@@ -181,32 +304,34 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    marginTop: Spacing.xl,
-    height: 52,
-    borderRadius: Radius.lg,
-    backgroundColor: Colors.primary,
+    marginTop: moderateScaleVertical(24),
+    height: moderateScaleVertical(56),
+    borderRadius: Radius.xl,
+    backgroundColor: '#0F5A20',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#0F5A20',
+    shadowOpacity: 0.26,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
+
+  buttonDisabled: {
+    opacity: 0.62,
   },
 
   buttonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.white,
-    letterSpacing: 0.3,
-  },
-  registerBtn: {
-    marginTop: Spacing.lg,
-    alignItems: 'center',
   },
 
-  registerText: {
-    fontSize: 14,
-    color: Colors.gray600,
-  },
-
-  registerBold: {
-    color: Colors.primary,
-    fontWeight: '600',
+  footerText: {
+    marginTop: moderateScaleVertical(18),
+    fontSize: 12,
+    lineHeight: 18,
+    color: Colors.gray500,
+    textAlign: 'center',
   },
 });

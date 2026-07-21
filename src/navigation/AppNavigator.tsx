@@ -9,11 +9,13 @@ import CartStack from './CartStack';
 
 const Tab = createBottomTabNavigator();
 
+const renderCustomTabBar = (props: any) => <CustomTabBar {...props} />;
+
 const AppNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={{ headerShown: false }}
-      tabBar={props => <CustomTabBar {...props} />}
+      tabBar={renderCustomTabBar}
     >
       <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="categories" component={CategoriesStack} />

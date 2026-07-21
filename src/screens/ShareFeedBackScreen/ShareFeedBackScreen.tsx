@@ -1,27 +1,35 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Image,
   LayoutAnimation,
   Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
   UIManager,
-  Image,
-  Alert,
+  View,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Header from '../MyOrdersScreen/Header';
+import Svg, { Path } from 'react-native-svg';
+import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 import { useShareAppFeedbackMutation } from '../../ReduxToolKit/Api/accountPageApi';
+import { Colors, Radius, Spacing } from '../../styles';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
 
-const categories = [
+const PAGE_BG = '#F7F8FA';
+const BRAND_GREEN = '#0B6B3A';
+const BORDER = '#E7EAEE';
+
+const CATEGORIES = [
   'Bug',
   'UI Issue',
   'Performance',
@@ -29,7 +37,63 @@ const categories = [
   'Other',
 ];
 
+const getStatusBarHeight = () => {
+  if (Platform.OS === 'ios') return 44;
+  return StatusBar.currentHeight || 24;
+};
+
+const BackIcon = ({ color = Colors.white }) => (
+  <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M15 18 9 12l6-6"
+      stroke={color}
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const StarIcon = ({ active }: { active: boolean }) => (
+  <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.2-4.1 5.8-.8L12 3.5Z"
+      fill={active ? '#F7CB14' : 'transparent'}
+      stroke={active ? '#B98600' : Colors.gray400}
+      strokeWidth={1.8}
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const UploadIcon = ({ color = BRAND_GREEN }) => (
+  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M12 16V4m0 0 4 4m-4-4-4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const CloseIcon = ({ color = Colors.white }) => (
+  <Svg width={13} height={13} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="m7 7 10 10M17 7 7 17"
+      stroke={color}
+      strokeWidth={2.6}
+      strokeLinecap="round"
+    />
+  </Svg>
+);
+
 const ShareFeedBackScreen = () => {
+  const navigation = useNavigation<any>();
+  const statusBarHeight = getStatusBarHeight();
+  const userId = useSelector((state: any) => state.auth.userId);
+
   const [rating, setRating] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
@@ -37,14 +101,24 @@ const ShareFeedBackScreen = () => {
 
   const [shareFeedback, { isLoading }] = useShareAppFeedbackMutation();
 
+  const canSubmit = useMemo(
+    () => Boolean(userId && rating && selectedCategory && feedback.trim()),
+    [feedback, rating, selectedCategory, userId],
+  );
+
   const handleSubmit = async () => {
+    if (!canSubmit) {
+      Alert.alert('Incomplete feedback', 'Please add rating, category, and feedback.');
+      return;
+    }
+
     try {
       const formData = new FormData();
 
-      formData.append('userId', '697ceb6542c7dd37f30b05ea');
+      formData.append('userId', userId);
       formData.append('rating', String(rating));
-      formData.append('type', 'Performance');
-      formData.append('feedback', feedback);
+      formData.append('type', selectedCategory || '');
+      formData.append('feedback', feedback.trim());
 
       images.forEach((img, index) => {
         formData.append('images', {
@@ -54,16 +128,15 @@ const ShareFeedBackScreen = () => {
         });
       });
 
-      const res = await shareFeedback(formData);
-      if (res) {
-        setRating(0);
-        setSelectedCategory(null);
-        setFeedback('');
-        setImages([]);
-        Alert.alert(res.data.data.message);
-      }
+      const res: any = await shareFeedback(formData).unwrap();
+      setRating(0);
+      setSelectedCategory(null);
+      setFeedback('');
+      setImages([]);
+      Alert.alert('Feedback submitted', res?.data?.message || 'Thank you for sharing your feedback.');
     } catch (err) {
-      console.log('ERROR', err);
+      console.log('Share Feedback Error:', err);
+      Alert.alert('Submission failed', 'Please try again after a moment.');
     }
   };
 
@@ -83,270 +156,397 @@ const ShareFeedBackScreen = () => {
       selectionLimit: 5,
     });
 
-    if (result.assets) {
-      setImages(prev => [...prev, ...(result.assets || [])]);
+    if (result.assets?.length) {
+      setImages(prev => [...prev, ...(result.assets || [])].slice(0, 5));
     }
   };
 
   const removeImage = (index: number) => {
-    const updated = [...images];
-    updated.splice(index, 1);
-    setImages(updated);
+    setImages(prev => prev.filter((_, itemIndex) => itemIndex !== index));
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header title="Share Feedback" />
+    <View style={styles.root}>
+      <StatusBar backgroundColor={BRAND_GREEN} barStyle="light-content" />
+      <View style={[styles.header, { paddingTop: statusBarHeight + Spacing.sm }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          activeOpacity={0.82}
+          onPress={() => navigation.goBack()}
+        >
+          <BackIcon />
+        </TouchableOpacity>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.subtitle}>Help us improve your experience</Text>
+        <View style={styles.headerCopy}>
+          <Text style={styles.headerTitle}>Share Feedback</Text>
+          <Text style={styles.headerSubtitle}>Help improve your app experience</Text>
+        </View>
+      </View>
 
-        <View style={styles.card}>
-          <Text style={styles.label}>How was your experience?</Text>
-          <View style={styles.row}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.summaryPanel}>
+          <Text style={styles.summaryLabel}>Feedback Form</Text>
+          <Text style={styles.summaryValue}>Tell us what worked and what needs attention.</Text>
+        </View>
+
+        <FormSection title="Experience Rating">
+          <View style={styles.ratingRow}>
             {[1, 2, 3, 4, 5].map(item => (
               <TouchableOpacity
                 key={item}
                 onPress={() => handleRating(item)}
-                style={[styles.starBox, rating >= item && styles.activeStarBox]}
+                style={[styles.starButton, rating >= item && styles.activeStarButton]}
+                activeOpacity={0.82}
               >
-                <Text style={styles.star}>★</Text>
+                <StarIcon active={rating >= item} />
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </FormSection>
 
-        <View style={styles.card}>
-          <Text style={styles.label}>Select Category</Text>
+        <FormSection title="Feedback Category">
           <View style={styles.chipContainer}>
-            {categories.map(cat => (
-              <TouchableOpacity
-                key={cat}
-                onPress={() => handleCategory(cat)}
-                style={[
-                  styles.chip,
-                  selectedCategory === cat && styles.activeChip,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.chipText,
-                    selectedCategory === cat && styles.activeChipText,
-                  ]}
-                >
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+            {CATEGORIES.map(cat => {
+              const isActive = selectedCategory === cat;
 
-        <View style={styles.card}>
-          <Text style={styles.label}>Your Feedback</Text>
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => handleCategory(cat)}
+                  style={[styles.chip, isActive && styles.activeChip]}
+                  activeOpacity={0.82}
+                >
+                  <Text style={[styles.chipText, isActive && styles.activeChipText]}>
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </FormSection>
+
+        <FormSection title="Details">
           <TextInput
-            placeholder="Tell us what can be improved..."
-            placeholderTextColor="#9CA3AF"
+            placeholder="Describe the issue or suggestion clearly."
+            placeholderTextColor={Colors.gray500}
             multiline
             value={feedback}
             onChangeText={setFeedback}
             style={styles.input}
+            textAlignVertical="top"
           />
-        </View>
+        </FormSection>
 
-        <View style={styles.card}>
-          <Text style={styles.label}>Attach Screenshot</Text>
-
-          <TouchableOpacity style={styles.uploadBox} onPress={handleImagePick}>
-            <Text style={styles.uploadText}>＋ Add Images</Text>
+        <FormSection title="Attachments">
+          <TouchableOpacity
+            style={styles.uploadBox}
+            onPress={handleImagePick}
+            activeOpacity={0.84}
+          >
+            <UploadIcon />
+            <View style={styles.uploadCopy}>
+              <Text style={styles.uploadTitle}>Add screenshots</Text>
+              <Text style={styles.uploadSubText}>Up to 5 images</Text>
+            </View>
           </TouchableOpacity>
 
-          <View style={styles.imageRow}>
-            {images.map((img, index) => (
-              <View key={index} style={styles.imageWrapper}>
-                <Image source={{ uri: img.uri }} style={styles.image} />
-                <TouchableOpacity
-                  style={styles.removeBtn}
-                  onPress={() => removeImage(index)}
-                >
-                  <Text style={styles.removeText}>✕</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={{ height: 120 }} />
+          {images.length > 0 && (
+            <View style={styles.imageRow}>
+              {images.map((img, index) => (
+                <View key={`${img.uri}-${index}`} style={styles.imageWrapper}>
+                  <Image source={{ uri: img.uri }} style={styles.image} />
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeImage(index)}
+                    activeOpacity={0.82}
+                  >
+                    <CloseIcon />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+        </FormSection>
       </ScrollView>
 
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-          <Text style={styles.submitText}>
-            {' '}
-            {isLoading ? 'Submitting...' : 'Submit Feedback'}
-          </Text>
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.submitButton, (!canSubmit || isLoading) && styles.disabledButton]}
+          onPress={handleSubmit}
+          activeOpacity={0.86}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color={Colors.white} />
+          ) : (
+            <Text style={styles.submitText}>Submit Feedback</Text>
+          )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
+
+const FormSection = ({ title, children }: any) => (
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    <View style={styles.sectionBody}>{children}</View>
+  </View>
+);
 
 export default ShareFeedBackScreen;
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    backgroundColor: PAGE_BG,
   },
 
-  subtitle: {
-    marginTop: 14,
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 22,
-  },
-
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 4,
-  },
-
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#111827',
-  },
-
-  row: {
+  header: {
+    minHeight: 104,
+    backgroundColor: BRAND_GREEN,
     flexDirection: 'row',
-  },
-
-  starBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#EEF1F6',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.lg,
   },
 
-  activeStarBox: {
-    backgroundColor: '#FFE8A3',
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
   },
 
-  star: {
+  headerCopy: {
+    flex: 1,
+  },
+
+  headerTitle: {
+    color: Colors.white,
     fontSize: 20,
-    color: '#FFB800',
+    fontWeight: '700',
+  },
+
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.76)',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 3,
+  },
+
+  content: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: 112,
+  },
+
+  summaryPanel: {
+    backgroundColor: Colors.white,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: BORDER,
+    padding: Spacing.md,
+    marginTop: -Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+
+  summaryLabel: {
+    color: Colors.gray500,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+
+  summaryValue: {
+    color: Colors.gray900,
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 20,
+    marginTop: 5,
+  },
+
+  section: {
+    marginBottom: Spacing.lg,
+  },
+
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.gray600,
+    textTransform: 'uppercase',
+    letterSpacing: 0,
+    marginBottom: Spacing.sm,
+  },
+
+  sectionBody: {
+    backgroundColor: Colors.white,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: BORDER,
+    padding: Spacing.md,
+  },
+
+  ratingRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+
+  starButton: {
+    width: 42,
+    height: 42,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: BORDER,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  activeStarButton: {
+    borderColor: '#F3D066',
+    backgroundColor: '#FFF8DB',
   },
 
   chipContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: Spacing.sm,
   },
 
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#EEF1F6',
-    marginRight: 8,
-    marginBottom: 10,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: BORDER,
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 9,
   },
 
   activeChip: {
-    backgroundColor: '#111827',
+    borderColor: BRAND_GREEN,
+    backgroundColor: '#EAF6EE',
   },
 
   chipText: {
-    fontSize: 13,
-    color: '#4B5563',
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: Colors.gray600,
   },
 
   activeChipText: {
-    color: '#fff',
+    color: BRAND_GREEN,
   },
 
   input: {
-    minHeight: 110,
-    textAlignVertical: 'top',
-    fontSize: 14,
-    color: '#111',
+    minHeight: 126,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: BORDER,
+    backgroundColor: '#FBFCFD',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.gray900,
+    lineHeight: 19,
   },
 
   uploadBox: {
-    height: 80,
-    borderRadius: 14,
+    minHeight: 70,
+    borderRadius: Radius.md,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    justifyContent: 'center',
+    borderStyle: 'dashed',
+    borderColor: '#BBDCC6',
+    backgroundColor: '#FBFDFB',
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    paddingHorizontal: Spacing.md,
   },
 
-  uploadText: {
-    color: '#6B7280',
-    fontSize: 14,
+  uploadCopy: {
+    marginLeft: Spacing.sm,
+  },
+
+  uploadTitle: {
+    color: Colors.gray900,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  uploadSubText: {
+    color: Colors.gray500,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 3,
   },
 
   imageRow: {
     flexDirection: 'row',
-    marginTop: 12,
     flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
   },
 
   imageWrapper: {
     position: 'relative',
-    marginRight: 10,
-    marginTop: 10,
   },
 
   image: {
-    width: 70,
-    height: 70,
-    borderRadius: 10,
+    width: 72,
+    height: 72,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: BORDER,
   },
 
-  removeBtn: {
+  removeButton: {
     position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#111',
-    borderRadius: 10,
-    paddingHorizontal: 5,
-  },
-
-  removeText: {
-    color: '#fff',
-    fontSize: 12,
-  },
-
-  bottomContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
+    top: -7,
+    right: -7,
+    width: 22,
+    height: 22,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.gray900,
     alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  submitBtn: {
-    backgroundColor: '#111827',
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    elevation: 5,
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: BORDER,
+  },
+
+  submitButton: {
+    height: 50,
+    borderRadius: Radius.md,
+    backgroundColor: BRAND_GREEN,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  disabledButton: {
+    opacity: 0.58,
   },
 
   submitText: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

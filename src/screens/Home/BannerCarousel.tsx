@@ -5,17 +5,13 @@ import {
   FlatList,
   Animated,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 
 import { Spacing } from '../../styles';
 
 import BannerCard from './BannerCard';
 
-const { width } = Dimensions.get('window');
-
-const ITEM_WIDTH = width * 0.86;                
-const ITEM_GAP = ITEM_WIDTH + Spacing.lg;       
 type Banner = {
   id: string;
   title?: string;
@@ -34,9 +30,12 @@ const BannerCarousel: React.FC<Props> = ({
   onPress,
   autoPlayInterval = 3500,
 }) => {
+  const { width } = useWindowDimensions();
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   const currentIndex = useRef(0);
+  const itemWidth = width - Spacing.lg * 2;
+  const itemGap = itemWidth + Spacing.md;
 
   // AUTO PLAY (UNCHANGED)
   useEffect(() => {
@@ -47,13 +46,13 @@ const BannerCarousel: React.FC<Props> = ({
         (currentIndex.current + 1) % data.length;
 
       flatListRef.current?.scrollToOffset({
-        offset: currentIndex.current * ITEM_GAP,
+        offset: currentIndex.current * itemGap,
         animated: true,
       });
     }, autoPlayInterval);
 
     return () => clearInterval(interval);
-  }, [data, autoPlayInterval]);
+  }, [data, autoPlayInterval, itemGap]);
 
   return (
     <View style={styles.container}>
@@ -63,10 +62,10 @@ const BannerCarousel: React.FC<Props> = ({
         data={data}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
-        snapToInterval={ITEM_GAP}
+        snapToInterval={itemGap}
         decelerationRate="fast"
         contentContainerStyle={{
-          paddingHorizontal: Spacing.lg,   // was 16
+          paddingHorizontal: Spacing.lg,
         }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -74,14 +73,14 @@ const BannerCarousel: React.FC<Props> = ({
         )}
         renderItem={({ item, index }) => {
           const inputRange = [
-            (index - 1) * ITEM_GAP,
-            index * ITEM_GAP,
-            (index + 1) * ITEM_GAP,
+            (index - 1) * itemGap,
+            index * itemGap,
+            (index + 1) * itemGap,
           ];
 
           const scale = scrollX.interpolate({
             inputRange,
-            outputRange: [0.9, 1, 0.9],
+            outputRange: [0.96, 1, 0.96],
             extrapolate: 'clamp',
           });
 
@@ -89,7 +88,7 @@ const BannerCarousel: React.FC<Props> = ({
             <Animated.View style={{ transform: [{ scale }] }}>
               <BannerCard
                 banner={item}
-                width={ITEM_WIDTH}
+                width={itemWidth}
                 onPress={() => onPress?.(item.id)}
               />
             </Animated.View>
@@ -105,6 +104,6 @@ export default BannerCarousel;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: Spacing.md,            
+    marginTop: Spacing.sm,
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 
-import { Colors, Spacing, Radius, Shadows } from '../../styles';
+import { Colors, Spacing } from '../../styles';
 
 import SaleCard from './SaleCard';
 import type { Product } from '../../types';
@@ -16,6 +16,7 @@ const SaleGrid: React.FC<Props> = ({ title, data, onAdd }) => {
   return (
     <View style={styles.wrap}>
       <View style={styles.headerWrap}>
+        <Text style={styles.kicker}>Trending now</Text>
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
 
@@ -36,28 +37,33 @@ export default SaleGrid;
 const styles = StyleSheet.create({
   wrap: {
     width: '100%',
-    borderRadius: Radius.lg,
-    marginTop: Spacing.md,
-    backgroundColor: '#FFF7E0',
-    ...Shadows.soft,
+    marginTop: Spacing.sm,
+    backgroundColor: 'transparent',
   },
 
   headerWrap: {
+    paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.xxs,
-    alignItems: 'center',
+  },
+
+  kicker: {
+    color: Colors.secondaryDark,
+    fontSize: 10.5,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: Spacing.xxs,
   },
 
   headerTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '700',
     color: Colors.gray900,
-    letterSpacing: 0.3,
   },
 
   listContent: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-    paddingTop: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    paddingTop: Spacing.sm,
   },
 });

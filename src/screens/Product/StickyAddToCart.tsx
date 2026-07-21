@@ -6,20 +6,25 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { addItemOptimistic } from '../../ReduxToolKit/Slices/cartSlice';
 import { triggerCartSync } from '../../ReduxToolKit/Slices/cartSync';
+import { Colors, Radius, Shadows, Spacing } from '../../styles';
 
 const StickyAddToCart = ({ product }: any) => {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
 
   const user_Id = useSelector((state: any) => state.auth.userId);
 
   const [loading, setLoading] = useState(false);
+  const isOutOfStock = product.sku === 0;
+  const finalPrice = product.sellingPrice || product.mrp;
 
   const handleAddToCart = async () => {
-    if (loading) return;
+    if (loading || isOutOfStock) return;
 
     setLoading(true);
 
@@ -27,7 +32,7 @@ const StickyAddToCart = ({ product }: any) => {
       addItemOptimistic({
         product: {
           productId: product._id,
-          price: product.mrp,
+          price: finalPrice,
         },
         userId: user_Id,
       }),
@@ -40,23 +45,27 @@ const StickyAddToCart = ({ product }: any) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View>
-        <Text style={styles.price}>₹{product.mrp}</Text>
-        <Text style={styles.unit}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
+      <View style={styles.priceBlock}>
+        <Text style={styles.label}>Order price</Text>
+        <Text style={styles.price}>Rs{finalPrice}</Text>
+        <Text style={styles.unit} numberOfLines={1}>
           {product.quantityPerUnit} {product.unit}
         </Text>
       </View>
 
       <TouchableOpacity
-        style={styles.button}
+        activeOpacity={0.85}
+        style={[styles.button, isOutOfStock && styles.disabledButton]}
         onPress={handleAddToCart}
-        disabled={loading}
+        disabled={loading || isOutOfStock}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={Colors.white} size="small" />
         ) : (
-          <Text style={styles.text}>Add to cart</Text>
+          <Text style={styles.text}>
+            {isOutOfStock ? 'Out of stock' : 'Add to cart'}
+          </Text>
         )}
       </TouchableOpacity>
     </View>
@@ -71,31 +80,51 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
-    backgroundColor: '#fff',
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    backgroundColor: Colors.white,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: Colors.gray200,
+    ...Shadows.card,
+  },
+  priceBlock: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: Spacing.md,
+  },
+  label: {
+    fontSize: 10.5,
+    color: Colors.gray500,
+    fontWeight: '500',
   },
   price: {
-    fontSize: 16,
+    marginTop: 1,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#111',
+    color: Colors.gray900,
   },
   unit: {
-    fontSize: 12,
-    color: '#666',
+    marginTop: 1,
+    fontSize: 11.5,
+    color: Colors.gray600,
+    fontWeight: '600',
   },
   button: {
-    backgroundColor: '#2e7d32',
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-    borderRadius: 10,
+    minWidth: 148,
+    height: 48,
+    backgroundColor: '#0B6B3A',
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabledButton: {
+    backgroundColor: Colors.gray400,
   },
   text: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 14,
     fontWeight: '700',
   },

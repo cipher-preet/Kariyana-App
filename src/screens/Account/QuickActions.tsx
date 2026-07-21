@@ -4,13 +4,20 @@ import { useNavigation } from '@react-navigation/native';
 import { CommonActions } from '@react-navigation/native';
 
 import { Colors, Spacing, Radius } from '../../styles';
+import {
+  AddressIcon,
+  ChartIcon,
+  HelpIcon,
+  OrdersIcon,
+} from './AccountIcons';
 
 const QuickActions = () => {
   const navigation = useNavigation<any>();
 
   const actions = [
     {
-      title: 'My Orders',
+      title: 'Orders',
+      icon: <OrdersIcon />,
       onPress: () =>
         navigation.dispatch(
           CommonActions.reset({
@@ -21,6 +28,7 @@ const QuickActions = () => {
     },
     {
       title: 'Analytics',
+      icon: <ChartIcon />,
       onPress: () =>
         navigation.dispatch(
           CommonActions.reset({
@@ -30,7 +38,8 @@ const QuickActions = () => {
         ),
     },
     {
-      title: 'Saved Addresses',
+      title: 'Addresses',
+      icon: <AddressIcon />,
       onPress: () =>
         navigation.dispatch(
           CommonActions.reset({
@@ -40,7 +49,8 @@ const QuickActions = () => {
         ),
     },
     {
-      title: 'Help center',
+      title: 'Help',
+      icon: <HelpIcon />,
       onPress: () =>
         navigation.dispatch(
           CommonActions.reset({
@@ -53,8 +63,13 @@ const QuickActions = () => {
 
   return (
     <View style={styles.grid}>
-      {actions.map((item, index) => (
-        <QuickItem key={index} title={item.title} onPress={item.onPress} />
+      {actions.map(item => (
+        <QuickItem
+          key={item.title}
+          title={item.title}
+          icon={item.icon}
+          onPress={item.onPress}
+        />
       ))}
     </View>
   );
@@ -62,17 +77,15 @@ const QuickActions = () => {
 
 const QuickItem = ({
   title,
+  icon,
   onPress,
 }: {
   title: string;
+  icon: React.ReactNode;
   onPress: () => void;
 }) => (
-  <TouchableOpacity
-    style={styles.item}
-    activeOpacity={0.8}
-    onPress={onPress}
-  >
-    <View style={styles.icon} />
+  <TouchableOpacity style={styles.item} activeOpacity={0.86} onPress={onPress}>
+    <View style={styles.icon}>{icon}</View>
     <Text style={styles.text} numberOfLines={1}>
       {title}
     </Text>
@@ -86,32 +99,30 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: Colors.white,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: Spacing.md,
-    gap: Spacing.md,
+    borderRadius: 18,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    marginBottom: Spacing.md,
   },
 
   item: {
-    width: '48%',
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    borderRadius: Radius.md,
-    padding: Spacing.md,
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
   },
 
   icon: {
-    width: 24,
-    height: 24,
-    borderRadius: Radius.sm,
-    backgroundColor: Colors.success + '20',
-    marginRight: Spacing.sm,
+    width: 38,
+    height: 38,
+    borderRadius: Radius.full,
+    backgroundColor: '#EAF6EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
   },
 
   text: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.gray900,
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#202124',
   },
 });

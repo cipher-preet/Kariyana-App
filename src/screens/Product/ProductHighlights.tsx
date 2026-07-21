@@ -8,19 +8,11 @@ import {
   UIManager,
   TouchableOpacity,
 } from 'react-native';
+import { Colors, Radius, Spacing } from '../../styles';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
-
-const DATA = [
-  { label: 'Brand Warranty', value: '1 Year' },
-  { label: 'Capacity', value: '80 ltrs' },
-  { label: 'Closure', value: 'Zipper' },
-  { label: 'Material', value: 'Polyester' },
-  { label: 'Gender', value: 'Unisex' },
-  { label: 'Dimensions', value: '81 x 38 x 22 cm' },
-];
 
 const ProductHighlights: React.FC<{ highlights: any[] }> = ({ highlights }) => {
   const [open, setOpen] = useState(true);
@@ -37,25 +29,34 @@ const ProductHighlights: React.FC<{ highlights: any[] }> = ({ highlights }) => {
         onPress={toggle}
         style={styles.header}
       >
-        <Text style={styles.title}>Highlights</Text>
+        <View>
+          <Text style={styles.eyebrow}>Product info</Text>
+          <Text style={styles.title}>Highlights</Text>
+        </View>
 
         <View style={[styles.chevron, open && styles.chevronOpen]} />
       </TouchableOpacity>
 
       {open && (
         <View style={styles.content}>
-          {highlights.map((item, index) => (
-            <View
-              key={index}
-              style={[
-                styles.row,
-                index !== highlights.length - 1 && styles.divider,
-              ]}
-            >
-              <Text style={styles.label}>{item.heading}</Text>
-              <Text style={styles.value}>{item.description}</Text>
+          {highlights.length > 0 ? (
+            highlights.map((item, index) => (
+              <View
+                key={`${item.heading}-${index}`}
+                style={[
+                  styles.row,
+                  index !== highlights.length - 1 && styles.divider,
+                ]}
+              >
+                <Text style={styles.label}>{item.heading}</Text>
+                <Text style={styles.value}>{item.description}</Text>
+              </View>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No extra highlights available</Text>
             </View>
-          ))}
+          )}
         </View>
       )}
     </View>
@@ -66,30 +67,35 @@ export default ProductHighlights;
 
 const styles = StyleSheet.create({
   section: {
-    backgroundColor: '#f4f4f4',
+    backgroundColor: Colors.white,
   },
   header: {
-    backgroundColor: '#ffffff',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+  },
+
+  eyebrow: {
+    fontSize: 10.5,
+    color: '#0B6B3A',
+    fontWeight: '600',
+    marginBottom: 2,
   },
 
   title: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1f1f1f',
+    color: Colors.gray900,
   },
 
   chevron: {
-    width: 7,
-    height: 7,
-    borderRightWidth: 1.2,
-    borderBottomWidth: 1.2,
-    borderColor: '#9e9e9e',
+    width: 9,
+    height: 9,
+    borderRightWidth: 1.7,
+    borderBottomWidth: 1.7,
+    borderColor: Colors.gray500,
     transform: [{ rotate: '45deg' }],
+    marginRight: Spacing.xs,
   },
 
   chevronOpen: {
@@ -97,30 +103,47 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    backgroundColor: '#ffffff',
+    marginTop: Spacing.md,
+    backgroundColor: Colors.gray50,
+    borderRadius: Radius.md,
+    overflow: 'hidden',
   },
 
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 11,
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 12,
   },
 
   divider: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#e6e6e6',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray200,
   },
 
   label: {
-    fontSize: 13,
-    color: '#757575',
+    flex: 0.42,
+    fontSize: 12,
+    color: Colors.gray600,
+    fontWeight: '500',
   },
 
   value: {
-    fontSize: 13,
-    color: '#212121',
+    flex: 0.58,
+    fontSize: 12,
+    color: Colors.gray900,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+
+  emptyState: {
+    padding: Spacing.md,
+  },
+
+  emptyText: {
+    color: Colors.gray600,
+    fontSize: 12,
     fontWeight: '500',
   },
 });

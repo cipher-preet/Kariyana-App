@@ -1,19 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Colors, Spacing } from '../../styles';
+
+const items = [
+  ['Quality', 'Checked'],
+  ['Bulk', 'Ready'],
+  ['14-48 hrs', 'Delivery'],
+  ['Order', 'Support'],
+];
 
 const ProductMetaIcons = () => {
   return (
     <View style={styles.row}>
-      {[
-        ['7 Days', 'Replacement'],
-        ['1 Year', 'Warranty'],
-        ['24/7', 'Support'],
-        ['Fast', 'Delivery'],
-      ].map((item, index) => (
-        <View
-          key={index}
-          style={[styles.item, index !== 3 && styles.divider]}
-        >
+      {items.map((item, index) => (
+        <View key={item[0]} style={[styles.item, index !== 3 && styles.divider]}>
           <Text style={styles.main}>{item[0]}</Text>
           <Text style={styles.sub}>{item[1]}</Text>
         </View>
@@ -27,25 +27,27 @@ export default ProductMetaIcons;
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    backgroundColor:"#ffffff"
+    backgroundColor: Colors.white,
   },
   item: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: 2,
   },
   divider: {
     borderRightWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: Colors.gray100,
   },
   main: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#111',
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.gray900,
   },
   sub: {
-    fontSize: 11,
-    color: '#666',
+    fontSize: 10.5,
+    color: Colors.gray600,
     marginTop: 2,
+    fontWeight: '600',
   },
 });

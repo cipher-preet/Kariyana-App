@@ -19,6 +19,9 @@ export type Product = {
   sku: number;
   stockStatus?: 'IN_STOCK' | 'LIMITED' | 'OUT';
   subcategoryId?: string;
+  categoryId?: string;
+  childCatId?: string;
+  childCategoryId?: string;
   
 };
 
