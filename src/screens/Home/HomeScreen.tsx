@@ -42,11 +42,96 @@ export type TrendSection = {
   products: Product[];
 };
 
+type HomeMediaItem = {
+  id: string;
+  title?: string;
+  subtitle?: string;
+  imageUrl: string;
+};
+
 const getStatusBarHeight = () => {
   if (Platform.OS === 'ios') {
     return 44;
   }
   return StatusBar.currentHeight || 24;
+};
+
+const getMediaUrl = (item: any) => {
+  if (typeof item === 'string') return item;
+
+  return (
+    item?.image ||
+    item?.images ||
+    item?.url ||
+    item?.banner ||
+    item?.bannerImage ||
+    item?.imageUrl ||
+    item?.mediaUrl ||
+    item?.thumbnail ||
+    ''
+  );
+};
+
+const toMediaArray = (items: any) => {
+  if (!items) return [];
+  return Array.isArray(items) ? items : [items];
+};
+
+const normalizeHomeMedia = (items: any): HomeMediaItem[] => {
+  return toMediaArray(items)
+    .map((item, index) => {
+      const imageUrl = getMediaUrl(item);
+
+      if (!imageUrl) return null;
+
+      return {
+        id: item?._id || item?.id || `${imageUrl}-${index}`,
+        title: item?.title || item?.name || item?.bannerName,
+        subtitle: item?.subtitle || item?.description,
+        imageUrl,
+      };
+    })
+    .filter(Boolean) as HomeMediaItem[];
+};
+
+const normalizeTrendSections = (payload: any): TrendSection[] => {
+  const rawTrends =
+    payload?.products ||
+    payload?.trends ||
+    payload?.trendSections ||
+    payload?.trendSection ||
+    payload?.data ||
+    payload ||
+    [];
+
+  return toMediaArray(rawTrends)
+    .map((trend, index) => {
+      const rawProducts =
+        trend?.products ||
+        trend?.product ||
+        trend?.trendProducts ||
+        trend?.items ||
+        trend?.productList ||
+        [];
+
+      const products = toMediaArray(rawProducts)
+        .map((item: any) => item?.product || item?.productId || item)
+        .filter((item: any) => item && (item._id || item.id));
+
+      if (products.length === 0) return null;
+
+      return {
+        _id: trend?._id || trend?.id || `trend-${index}`,
+        TrendName:
+          trend?.TrendName ||
+          trend?.trendName ||
+          trend?.title ||
+          trend?.name ||
+          `Trend ${index + 1}`,
+        products,
+      };
+    })
+    .filter(Boolean) as TrendSection[];
 };
 
 const HomeScreen = () => {
@@ -91,8 +176,8 @@ const HomeScreen = () => {
 
   const [trendProducts, setTrendProducts] = useState<TrendSection[]>([]);
   const [sections, setSections] = useState<any[]>([]);
-  const [banners, setBanners] = useState<string[]>([]);
-  const [carousels, setCarousels] = useState<string[]>([]);
+  const [banners, setBanners] = useState<HomeMediaItem[]>([]);
+  const [carousels, setCarousels] = useState<HomeMediaItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasNext, setHasNext] = useState(true);
   const [initialLoaded, setInitialLoaded] = useState(false);
@@ -111,8 +196,20 @@ const HomeScreen = () => {
       const apiData = response.data;
 
       if (!initialLoaded) {
-        setBanners(apiData.banners || []);
-        setCarousels(apiData.carosels || []);
+        setBanners(
+          normalizeHomeMedia(
+            apiData.banners || apiData.banner || apiData.homeBanners || [],
+          ),
+        );
+        setCarousels(
+          normalizeHomeMedia(
+            apiData.carosels ||
+              apiData.carousels ||
+              apiData.carousel ||
+              apiData.sliders ||
+              [],
+          ),
+        );
         setInitialLoaded(true);
       }
 
@@ -144,15 +241,27 @@ const HomeScreen = () => {
     }
   };
 
+  const getProductImage = (item: any) => {
+    if (typeof item?.images === 'string') return item.images;
+    if (Array.isArray(item?.images)) {
+      const firstImage = item.images[0];
+      return typeof firstImage === 'string'
+        ? firstImage
+        : firstImage?.url || firstImage?.image || firstImage?.uri;
+    }
+
+    return item?.image || item?.url || item?.thumbnail;
+  };
+
   const mapProduct = (item: any) => ({
-    _id: item._id,
+    _id: item._id || item.id,
     name: item.name,
-    images: item.images,
-    price: item.sellingPrice,
+    images: getProductImage(item),
+    price: item.sellingPrice || item.price,
     mrp: item.mrp,
     rating: item.rating,
     reviewCount: item.reviewCount,
-    sellingPrice: item.sellingPrice,
+    sellingPrice: item.sellingPrice || item.price,
     unit: item.unit,
     quantityPerUnit: item.quantityPerUnit,
     marketPrice: item.marketPrice,
@@ -163,18 +272,18 @@ const HomeScreen = () => {
     childCategoryId: item.childCategoryId,
   });
 
-  const mappedEvents = banners.slice(0, 3).map((url, index) => ({
-    id: index.toString(),
-    title: `Offer ${index + 1}`,
-    image: { uri: url },
-    onPress: () => console.log('Banner clicked', url),
+  const mappedEvents = banners.map((item, index) => ({
+    id: item.id,
+    title: item.title || `Offer ${index + 1}`,
+    image: { uri: item.imageUrl },
+    onPress: () => console.log('Banner clicked', item.imageUrl),
   }));
 
   const loadTrendProducts = async () => {
     try {
       const response = await triggerTrend().unwrap();
 
-      const trends = response.data.products;
+      const trends = normalizeTrendSections(response.data);
 
       setTrendProducts(trends);
     } catch (err) {
@@ -247,16 +356,18 @@ const HomeScreen = () => {
 
         {carousels.length > 0 && (
           <BannerCarousel
-            data={carousels.map((url, index) => ({
-              id: index.toString(),
-              image: { uri: url },
+            data={carousels.map(item => ({
+              id: item.id,
+              title: item.title,
+              subtitle: item.subtitle,
+              image: { uri: item.imageUrl },
             }))}
             onPress={() => {}}
           />
         )}
 
-        {mappedEvents.length >= 3 && (
-          <EventsSection title="Events this week" data={mappedEvents} />
+        {mappedEvents.length > 0 && (
+          <EventsSection title="Latest offers" data={mappedEvents} />
         )}
 
         {sections.map(section => (

@@ -31,23 +31,30 @@ const CARD_HEIGHT = 200;
 const EventsSection: React.FC<Props> = ({ title, data }) => {
   const { width } = useWindowDimensions();
 
-  if (data.length < 3) return null;
+  if (data.length === 0) return null;
 
   const [big, small1, small2] = data;
   const isNarrow = width < 340;
   const bigCardWidth = isNarrow ? '100%' : width * 0.55;
+  const hasSideCards = data.length >= 3 && !isNarrow;
 
   return (
     <View style={styles.section}>
       <Text style={styles.kicker}>Offers and campaigns</Text>
       <Text style={styles.title}>{title}</Text>
 
-      <View style={[styles.row, isNarrow && styles.rowStacked]}>
+      <View
+        style={[
+          styles.row,
+          isNarrow && styles.rowStacked,
+          data.length < 3 && styles.singleColumn,
+        ]}
+      >
         <TouchableOpacity
           style={[
             styles.bigCard,
-            { width: bigCardWidth },
-            isNarrow && styles.stackedBigCard,
+            hasSideCards && { width: bigCardWidth },
+            (!hasSideCards || isNarrow) && styles.stackedBigCard,
           ]}
           activeOpacity={0.9}
           onPress={big.onPress}
@@ -57,27 +64,43 @@ const EventsSection: React.FC<Props> = ({ title, data }) => {
           <Text style={styles.overlayText}>{big.title}</Text>
         </TouchableOpacity>
 
-        <View style={[styles.rightColumn, isNarrow && styles.stackedRightColumn]}>
-          <TouchableOpacity
-            style={styles.smallCard}
-            activeOpacity={0.9}
-            onPress={small1.onPress}
-          >
-            <Image source={small1.image} style={styles.image} />
-            <View style={styles.overlay} />
-            <Text style={styles.overlayText}>{small1.title}</Text>
-          </TouchableOpacity>
+        {hasSideCards && (
+          <View style={styles.rightColumn}>
+            <TouchableOpacity
+              style={styles.smallCard}
+              activeOpacity={0.9}
+              onPress={small1.onPress}
+            >
+              <Image source={small1.image} style={styles.image} />
+              <View style={styles.overlay} />
+              <Text style={styles.overlayText}>{small1.title}</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.smallCard}
-            activeOpacity={0.9}
-            onPress={small2.onPress}
-          >
-            <Image source={small2.image} style={styles.image} />
-            <View style={styles.overlay} />
-            <Text style={styles.overlayText}>{small2.title}</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={styles.smallCard}
+              activeOpacity={0.9}
+              onPress={small2.onPress}
+            >
+              <Image source={small2.image} style={styles.image} />
+              <View style={styles.overlay} />
+              <Text style={styles.overlayText}>{small2.title}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {!hasSideCards &&
+          data.slice(1).map(item => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.stackedBigCard}
+              activeOpacity={0.9}
+              onPress={item.onPress}
+            >
+              <Image source={item.image} style={styles.image} />
+              <View style={styles.overlay} />
+              <Text style={styles.overlayText}>{item.title}</Text>
+            </TouchableOpacity>
+          ))}
       </View>
     </View>
   );
@@ -119,8 +142,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
 
+  singleColumn: {
+    flexDirection: 'column',
+  },
+
   bigCard: {
     height: CARD_HEIGHT,
+    width: '100%',
     borderRadius: Radius.lg,
     overflow: 'hidden',
     marginRight: Spacing.md,
@@ -132,17 +160,22 @@ const styles = StyleSheet.create({
   },
 
   stackedBigCard: {
+    height: CARD_HEIGHT,
+    width: '100%',
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
     marginRight: 0,
     marginBottom: Spacing.md,
+    shadowColor: '#163326',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 2,
   },
 
   rightColumn: {
     flex: 1,
     justifyContent: 'space-between',
-  },
-
-  stackedRightColumn: {
-    gap: Spacing.sm,
   },
 
   smallCard: {
