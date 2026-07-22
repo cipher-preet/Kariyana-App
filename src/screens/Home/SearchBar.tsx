@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { CommonActions } from '@react-navigation/native';
 
 import { Colors, Spacing, Radius } from '../../styles';
 
@@ -22,18 +21,22 @@ const SearchBar: React.FC<Props> = ({
 
   const [q, setQ] = React.useState('');
 
+  const openSearch = () => {
+    const parent = navigation.getParent?.();
+
+    if (parent) {
+      parent.navigate('Home', { screen: 'SearchScreen' });
+      return;
+    }
+
+    navigation.navigate('SearchScreen');
+  };
+
   return (
     <View style={styles.wrapper}>
       <TouchableOpacity
         activeOpacity={0.9}
-        onPress={() => {
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: 'HomeMain' }, { name: 'SearchScreen' }],
-            }),
-          );
-        }}
+        onPress={openSearch}
       >
         <View style={styles.searchContainer}>
           <SearchIcon width={18} height={18} color={Colors.gray700} />

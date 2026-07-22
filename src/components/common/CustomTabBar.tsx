@@ -20,7 +20,7 @@ const getIcon = (routeName: string, focused: boolean) => {
   switch (routeName) {
     case 'Home':
       return <HomeIcon color={color} width={22} height={22} />;
-    case 'categories':
+    case 'Categories':
       return <CategoryIcon color={color} width={22} height={22} />;
     case 'Account':
       return <AccountIcon color={color} width={22} height={22} />;
@@ -32,12 +32,7 @@ const getIcon = (routeName: string, focused: boolean) => {
 };
 
 const getLabel = (routeName: string) => {
-  switch (routeName) {
-    case 'categories':
-      return 'Categories';
-    default:
-      return routeName;
-  }
+  return routeName;
 };
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
@@ -55,20 +50,32 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
 
   const totalItems = data?.data?.totalItems ?? 0;
 
-  const handlePress = (routeName: string, isFocused: boolean) => {
-    if (isFocused) return;
+  const handlePress = (routeName: string) => {
+    const event = navigation.emit({
+      type: 'tabPress',
+      target: state.routes.find(route => route.name === routeName)?.key,
+      canPreventDefault: true,
+    });
 
-    if (routeName === 'Account') {
-      navigation.navigate('Account', {
-        screen: 'AccountMain',
-      });
+    if (event.defaultPrevented) return;
+
+    if (routeName === 'Home') {
+      navigation.navigate('Home', { screen: 'HomeMain' });
       return;
     }
 
-    if (routeName === 'categories') {
-      navigation.navigate('categories', {
-        screen: 'categoryMain',
-      });
+    if (routeName === 'Categories') {
+      navigation.navigate('Categories', { screen: 'CategoriesMain' });
+      return;
+    }
+
+    if (routeName === 'Account') {
+      navigation.navigate('Account', { screen: 'AccountMain' });
+      return;
+    }
+
+    if (routeName === 'Cart') {
+      navigation.navigate('Cart', { screen: 'CartMain' });
       return;
     }
 
@@ -84,7 +91,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, navigation }) => {
           return (
             <Pressable
               key={route.key}
-              onPress={() => handlePress(route.name, isFocused)}
+              onPress={() => handlePress(route.name)}
               style={({ pressed }) => [
                 styles.tabButton,
                 pressed && styles.pressedTab,

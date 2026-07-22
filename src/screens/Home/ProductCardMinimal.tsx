@@ -54,8 +54,8 @@ const ProductCardMinimal: React.FC<Props> = ({ item, cardWidth }) => {
   const savings = getSavings(item);
 
   const handleNavigate = () => {
-    navigation.navigate('categories', {
-      screen: 'ProductDetailsNavigator',
+    navigation.navigate('Categories', {
+      screen: 'ProductDetails',
       params: {
         product: item,
       },

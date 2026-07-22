@@ -212,8 +212,8 @@ const HomeScreen = () => {
           onSelect={item => {
             setSelectedCat(item.id);
 
-            navigation.navigate('categories', {
-              screen: 'productgrid',
+            navigation.navigate('Categories', {
+              screen: 'ProductGrid',
               params: {
                 categoryId: item.id,
                 categoryName: item.title,
@@ -268,8 +268,8 @@ const HomeScreen = () => {
             <SeeAllSection
               title={`See all ${section.categoryName}`}
               onPress={() =>
-                navigation.navigate('categories', {
-                  screen: 'productgrid',
+                navigation.navigate('Categories', {
+                  screen: 'ProductGrid',
                   params: {
                     categoryId: section.categoryId,
                     categoryName: section.categoryName,

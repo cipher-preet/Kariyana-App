@@ -27,7 +27,7 @@ import { TruckIcon } from './CartIcons';
 
 type NavigationProp = NativeStackNavigationProp<
   CartStackParamList,
-  'categoryMain'
+  'CartMain'
 >;
 
 export interface UpdateCartQuantityRequest {
@@ -102,10 +102,23 @@ const CartScreen = () => {
   const subtotal = data?.data?.subtotal ?? 0;
   const totalItems = data?.data?.totalItems ?? 0;
 
+  const goToHome = () => {
+    navigation.getParent()?.navigate('Home', { screen: 'HomeMain' });
+  };
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    goToHome();
+  };
+
   return (
     <CartCheckoutWrapper
       title="Checkout"
-      onBackPress={() => navigation.goBack()}
+      onBackPress={handleBack}
     >
       <View style={styles.root}>
         <ScrollView
@@ -136,7 +149,7 @@ const CartScreen = () => {
 
               <TouchableOpacity
                 style={styles.emptyBtn}
-                onPress={() => navigation.goBack()}
+                onPress={goToHome}
               >
                 <Text style={styles.emptyBtnText}>Continue Shopping</Text>
               </TouchableOpacity>
@@ -227,7 +240,7 @@ const CartScreen = () => {
             ]}
             disabled={itemPresent === 0}
             onPress={() =>
-              navigation.navigate('addressScreen', {
+              navigation.navigate('AddressScreen', {
                 cartItems: items,
                 totalAmount: subtotal,
                 userId,

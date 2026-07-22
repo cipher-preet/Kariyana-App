@@ -8,13 +8,13 @@ import OrderSuccess from '../screens/PaymentScreens/OrderSuccess';
 import PaymentFailed from '../screens/PaymentScreens/PaymentFailed';
 
 export type CartStackParamList = {
-  categoryMain: undefined;
-  addressScreen: {
+  CartMain: undefined;
+  AddressScreen: {
     cartItems: any[];
     totalAmount: number;
     userId: string;
   };
-  paymentScreen: {
+  PaymentScreen: {
     userId: string;
     addressId: string;
     items: any[];
@@ -29,9 +29,9 @@ const Stack = createNativeStackNavigator<CartStackParamList>();
 
 const CartStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="categoryMain" component={CartScreen} />
-    <Stack.Screen name="addressScreen" component={AddressScreen} />
-    <Stack.Screen name="paymentScreen" component={PaymentScreen} />
+    <Stack.Screen name="CartMain" component={CartScreen} />
+    <Stack.Screen name="AddressScreen" component={AddressScreen} />
+    <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
 
     <Stack.Screen name="OrderProcessing" component={OrderProcessing} />
     <Stack.Screen name="OrderSuccess" component={OrderSuccess} />

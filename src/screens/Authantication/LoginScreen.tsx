@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
-  Alert,
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
@@ -21,26 +20,43 @@ import {
 } from '../../styles/responsiveStyles';
 import { useSendOtpMutation } from '../../ReduxToolKit/Api/authApi';
 import { getApiErrorMessage } from '../../utils/apiError';
+import AppAlert, {
+  AppAlertState,
+  createHiddenAlert,
+} from '../../components/common/AppAlert';
+import { SmsUserConsent } from '../../native/SmsUserConsent';
 
 const LoginScreen = ({ navigation }: any) => {
   const { phone, setPhone } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<AppAlertState>(createHiddenAlert());
   const [sendOtpRequest] = useSendOtpMutation();
   const isPhoneValid = phone.length === 10;
 
   const sendOtp = async () => {
     if (!isPhoneValid) {
-      Alert.alert('Invalid number', 'Please enter a valid 10-digit mobile number');
+      setAlert({
+        visible: true,
+        title: 'Invalid number',
+        message: 'Please enter a valid 10-digit mobile number.',
+        variant: 'warning',
+      });
       return;
     }
 
     try {
       setLoading(true);
+      await SmsUserConsent.startListening(null);
       await sendOtpRequest({ phone }).unwrap();
       navigation.navigate('OtpVerify');
     } catch (error) {
       console.log('OTP error:', error);
-      Alert.alert('OTP Failed', getApiErrorMessage(error, 'Try again later'));
+      setAlert({
+        visible: true,
+        title: 'OTP failed',
+        message: getApiErrorMessage(error, 'Try again later'),
+        variant: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -118,6 +134,11 @@ const LoginScreen = ({ navigation }: any) => {
           </Text>
         </View>
       </ScrollView>
+
+      <AppAlert
+        {...alert}
+        onClose={() => setAlert(createHiddenAlert())}
+      />
     </KeyboardAvoidingView>
   );
 };

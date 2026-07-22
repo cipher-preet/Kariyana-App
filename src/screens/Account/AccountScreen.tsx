@@ -60,7 +60,7 @@ const AccountScreen = () => {
       return;
     }
 
-    navigation.getParent()?.navigate('Home');
+    navigation.getParent()?.navigate('Home', { screen: 'HomeMain' });
   };
 
   return (

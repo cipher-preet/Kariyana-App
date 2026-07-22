@@ -8,12 +8,9 @@ const Stack = createNativeStackNavigator();
 
 const CategoriesStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="categoryMain" component={CategoriesScreen} />
-    <Stack.Screen name="productgrid" component={ProductByCategory} />
-    <Stack.Screen
-      name="ProductDetailsNavigator"
-      component={ProductDetailsScreen}
-    />
+    <Stack.Screen name="CategoriesMain" component={CategoriesScreen} />
+    <Stack.Screen name="ProductGrid" component={ProductByCategory} />
+    <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
   </Stack.Navigator>
 );
 

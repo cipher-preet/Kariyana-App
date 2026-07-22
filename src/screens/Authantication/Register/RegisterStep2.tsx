@@ -1,4 +1,4 @@
-import { Alert, PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import { launchCamera } from 'react-native-image-picker';
 
 import React, { useState } from 'react';
@@ -22,6 +22,10 @@ import {
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../../../ReduxToolKit/Rtk/store';
 import { updateDraft } from '../../../ReduxToolKit/Slices/registerDraftSlice';
+import AppAlert, {
+  AppAlertState,
+  createHiddenAlert,
+} from '../../../components/common/AppAlert';
 
 const SHOP_TYPES = [
   'Grocery',
@@ -41,6 +45,7 @@ const RegisterStep2 = ({ navigation }: any) => {
   const [shopType, setShopType] = useState<string | null>(null);
   const [shopImage, setShopImage] = useState<string | null>(null);
   const [shopName, setShopName] = useState<string | ''>('');
+  const [alert, setAlert] = useState<AppAlertState>(createHiddenAlert());
 
   const renderInput = (
     label: string,
@@ -84,10 +89,12 @@ const RegisterStep2 = ({ navigation }: any) => {
       );
 
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-        Alert.alert(
-          'Permission Required',
-          'Please allow camera access from app settings',
-        );
+        setAlert({
+          visible: true,
+          title: 'Permission required',
+          message: 'Please allow camera access from app settings.',
+          variant: 'warning',
+        });
         return;
       }
     }
@@ -104,6 +111,12 @@ const RegisterStep2 = ({ navigation }: any) => {
 
         if (response.errorCode) {
           console.log('Camera error:', response.errorMessage);
+          setAlert({
+            visible: true,
+            title: 'Camera unavailable',
+            message: response.errorMessage || 'Please try again in a moment.',
+            variant: 'error',
+          });
           return;
         }
 
@@ -222,6 +235,11 @@ const RegisterStep2 = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <AppAlert
+        {...alert}
+        onClose={() => setAlert(createHiddenAlert())}
+      />
     </KeyboardAvoidingView>
   );
 };

@@ -69,7 +69,7 @@ const WrapperContainer: React.FC<WrapperProps> = ({
       return;
     }
 
-    navigation.getParent()?.navigate('Home');
+    navigation.getParent()?.navigate('Home', { screen: 'HomeMain' });
   };
 
   return (

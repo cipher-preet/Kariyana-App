@@ -15,6 +15,11 @@ import { useNavigation } from '@react-navigation/native';
 import HorizontalProgress from './HorizontalProgress';
 import { useGetOrderDetailWithOrderIdQuery } from '../../ReduxToolKit/Api/accountPageApi';
 import { Colors, Radius, Shadows, Spacing } from '../../styles';
+import {
+  getOrderProgressStep,
+  getOrderStatusLabel,
+  normalizeOrderStatus,
+} from '../../utils/orderStatus';
 
 const PAGE_COLORS = {
   background: '#F6F8F2',
@@ -62,23 +67,17 @@ const OrderDetailsScreen = ({ route }: any) => {
 
   const order = data?.data;
 
-  const statusMap: any = {
-    Recieved: 0,
-    Confirmed: 0,
-    Dispatched: 1,
-    outForDelivery: 2,
-    Delivered: 3,
-    Cancelled: 1,
-  };
-
   const steps = [
     { title: 'Order Confirmed' },
-    { title: 'Dispatched' },
+    { title: 'Packed' },
     { title: 'Out for Delivery' },
     { title: 'Delivered' },
   ];
 
-  const currentStep = statusMap[order?.status] ?? 0;
+  const normalizedStatus = normalizeOrderStatus(
+    order?.orderStatus || order?.status,
+  );
+  const currentStep = getOrderProgressStep(normalizedStatus);
 
   if (isLoading) {
     return (
@@ -134,7 +133,9 @@ const OrderDetailsScreen = ({ route }: any) => {
           <View style={styles.statusTopRow}>
             <View>
               <Text style={styles.sectionEyebrow}>Status</Text>
-              <Text style={styles.statusTitle}>{order.status || 'Processing'}</Text>
+              <Text style={styles.statusTitle}>
+                {getOrderStatusLabel(normalizedStatus)}
+              </Text>
             </View>
             <View style={styles.statusBadge}>
               <Text style={styles.statusBadgeText}>{order.paymentStatus || 'Order'}</Text>

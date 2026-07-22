@@ -30,7 +30,7 @@ const CategoryGrid: React.FC<any> = ({ data }) => {
           style={[styles.card, { width: cardSize }]}
           activeOpacity={0.9}
           onPress={() =>
-            navigation.navigate('productgrid', {
+            navigation.navigate('ProductGrid', {
               categoryId: item._id,
               categoryName: item.name,
               type: 'Childcategory',

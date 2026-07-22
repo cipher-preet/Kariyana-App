@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Modal,
@@ -21,6 +20,10 @@ import {
   useGetUserDileveryAddressQuery,
 } from '../../ReduxToolKit/Api/PaymentApi';
 import { Colors, Radius, Shadows, Spacing } from '../../styles';
+import AppAlert, {
+  AppAlertState,
+  createHiddenAlert,
+} from '../../components/common/AppAlert';
 
 const ACTIVE_GREEN = '#0B6B3A';
 
@@ -82,6 +85,7 @@ const AddressScreen = ({ route, navigation }: any) => {
     null,
   );
   const [showModal, setShowModal] = useState(false);
+  const [alert, setAlert] = useState<AppAlertState>(createHiddenAlert());
 
   const [form, setForm] = useState({
     name: '',
@@ -120,7 +124,13 @@ const AddressScreen = ({ route, navigation }: any) => {
     const { name, phone, house, area, city, pincode, type } = form;
 
     if (!name || !phone || !house || !area || !city || !pincode) {
-      return Alert.alert('Fill all fields');
+      setAlert({
+        visible: true,
+        title: 'Fill all fields',
+        message: 'Please complete contact and address details before saving.',
+        variant: 'warning',
+      });
+      return;
     }
 
     try {
@@ -140,7 +150,12 @@ const AddressScreen = ({ route, navigation }: any) => {
       setShowModal(false);
       resetForm();
     } catch {
-      Alert.alert('Failed to add address');
+      setAlert({
+        visible: true,
+        title: 'Failed to add address',
+        message: 'Please check the details and try again.',
+        variant: 'error',
+      });
     }
   };
 
@@ -226,7 +241,7 @@ const AddressScreen = ({ route, navigation }: any) => {
               quantity: item.quantity,
             }));
 
-            navigation.navigate('paymentScreen', {
+            navigation.navigate('PaymentScreen', {
               userId,
               addressId: selected?.id,
               items: formattedItems,
@@ -341,6 +356,11 @@ const AddressScreen = ({ route, navigation }: any) => {
             </View>
           </KeyboardAvoidingView>
         </Modal>
+
+        <AppAlert
+          {...alert}
+          onClose={() => setAlert(createHiddenAlert())}
+        />
       </View>
     </CartCheckoutWrapper>
   );

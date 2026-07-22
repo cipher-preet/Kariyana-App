@@ -110,7 +110,7 @@ const MyOrdersScreen = () => {
       return;
     }
 
-    navigation.getParent()?.navigate('Account');
+    navigation.getParent()?.navigate('Account', { screen: 'AccountMain' });
   };
 
   return (

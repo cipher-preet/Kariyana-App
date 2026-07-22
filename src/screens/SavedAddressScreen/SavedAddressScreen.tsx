@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -23,6 +22,10 @@ import {
 } from '../../ReduxToolKit/Api/PaymentApi';
 import { useSelector } from 'react-redux';
 import { Colors, Radius, Shadows, Spacing } from '../../styles';
+import AppAlert, {
+  AppAlertState,
+  createHiddenAlert,
+} from '../../components/common/AppAlert';
 
 const ACTIVE_GREEN = '#0B6B3A';
 
@@ -96,6 +99,7 @@ const AddressScreen = ({ navigation }: any) => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [alert, setAlert] = useState<AppAlertState>(createHiddenAlert());
   const { data, isLoading, refetch } = useGetUserDileveryAddressQuery({
     userId: user_Id,
   });
@@ -170,10 +174,23 @@ const AddressScreen = ({ navigation }: any) => {
   const handleDelete = async (id: string) => {
     try {
       const res = await deleteDeliveryAddress({ id }).unwrap();
-      if (res) Alert.alert(res.data.message);
+      if (res) {
+        setAlert({
+          visible: true,
+          title: 'Address deleted',
+          message: res.data.message,
+          variant: 'success',
+        });
+      }
       refetch();
     } catch (error) {
       console.log('Delete Address Error:', error);
+      setAlert({
+        visible: true,
+        title: 'Delete failed',
+        message: 'Please try again after a moment.',
+        variant: 'error',
+      });
     }
   };
 
@@ -183,7 +200,15 @@ const AddressScreen = ({ navigation }: any) => {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.phone || !form.house) return;
+    if (!form.name || !form.phone || !form.house) {
+      setAlert({
+        visible: true,
+        title: 'Missing address details',
+        message: 'Please add name, phone number, and house details.',
+        variant: 'warning',
+      });
+      return;
+    }
 
     try {
       if (editingId) {
@@ -197,7 +222,14 @@ const AddressScreen = ({ navigation }: any) => {
           pincode: form.pincode,
           type: form.type,
         }).unwrap();
-        if (res) Alert.alert(res.data.message);
+        if (res) {
+          setAlert({
+            visible: true,
+            title: 'Address updated',
+            message: res.data.message,
+            variant: 'success',
+          });
+        }
       } else {
         const res = await addDeliveryAddress({
           userId: user_Id,
@@ -209,13 +241,26 @@ const AddressScreen = ({ navigation }: any) => {
           pincode: form.pincode,
           type: form.type,
         }).unwrap();
-        if (res) Alert.alert(res.data.message);
+        if (res) {
+          setAlert({
+            visible: true,
+            title: 'Address saved',
+            message: res.data.message,
+            variant: 'success',
+          });
+        }
       }
 
       await refetch();
       closeSheet();
     } catch (error) {
       console.log('Save Address Error:', error);
+      setAlert({
+        visible: true,
+        title: 'Save failed',
+        message: 'Please check the details and try again.',
+        variant: 'error',
+      });
     }
   };
 
@@ -382,6 +427,11 @@ const AddressScreen = ({ navigation }: any) => {
             </View>
           </KeyboardAvoidingView>
         </Modal>
+
+        <AppAlert
+          {...alert}
+          onClose={() => setAlert(createHiddenAlert())}
+        />
       </View>
     </CartCheckoutWrapper>
   );

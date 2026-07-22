@@ -4,7 +4,7 @@ export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     // baseUrl: 'https://python-microservice-hub.el.r.appspot.com/api/v1',
-    baseUrl: 'https://107a-223-178-212-196.ngrok-free.app/api/v1',
+    baseUrl: 'https://e4bb-223-178-211-241.ngrok-free.app/api/v1',
     credentials: 'include',
   }),
   tagTypes: ['Cart', 'Address', 'User', 'rating'],

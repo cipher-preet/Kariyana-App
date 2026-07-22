@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   LayoutAnimation,
   Platform,
@@ -20,6 +19,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { useShareAppFeedbackMutation } from '../../ReduxToolKit/Api/accountPageApi';
 import { Colors, Radius, Spacing } from '../../styles';
+import AppAlert, {
+  AppAlertState,
+  createHiddenAlert,
+} from '../../components/common/AppAlert';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -98,6 +101,7 @@ const ShareFeedBackScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
   const [images, setImages] = useState<any[]>([]);
+  const [alert, setAlert] = useState<AppAlertState>(createHiddenAlert());
 
   const [shareFeedback, { isLoading }] = useShareAppFeedbackMutation();
 
@@ -108,7 +112,12 @@ const ShareFeedBackScreen = () => {
 
   const handleSubmit = async () => {
     if (!canSubmit) {
-      Alert.alert('Incomplete feedback', 'Please add rating, category, and feedback.');
+      setAlert({
+        visible: true,
+        title: 'Incomplete feedback',
+        message: 'Please add rating, category, and feedback.',
+        variant: 'warning',
+      });
       return;
     }
 
@@ -133,10 +142,21 @@ const ShareFeedBackScreen = () => {
       setSelectedCategory(null);
       setFeedback('');
       setImages([]);
-      Alert.alert('Feedback submitted', res?.data?.message || 'Thank you for sharing your feedback.');
+      setAlert({
+        visible: true,
+        title: 'Feedback submitted',
+        message:
+          res?.data?.message || 'Thank you for sharing your feedback.',
+        variant: 'success',
+      });
     } catch (err) {
       console.log('Share Feedback Error:', err);
-      Alert.alert('Submission failed', 'Please try again after a moment.');
+      setAlert({
+        visible: true,
+        title: 'Submission failed',
+        message: 'Please try again after a moment.',
+        variant: 'error',
+      });
     }
   };
 
@@ -287,6 +307,11 @@ const ShareFeedBackScreen = () => {
           )}
         </TouchableOpacity>
       </View>
+
+      <AppAlert
+        {...alert}
+        onClose={() => setAlert(createHiddenAlert())}
+      />
     </View>
   );
 };

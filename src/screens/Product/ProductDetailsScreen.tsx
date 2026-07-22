@@ -34,8 +34,8 @@ const ProductDetailsScreen = () => {
   const route =
     useRoute<
       RouteProp<
-        { ProductDetailsNavigator: RouteParams },
-        'ProductDetailsNavigator'
+        { ProductDetails: RouteParams },
+        'ProductDetails'
       >
     >();
 

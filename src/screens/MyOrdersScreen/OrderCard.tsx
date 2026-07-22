@@ -6,13 +6,20 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
 import { useUserRatingProductsMutation } from '../../ReduxToolKit/Api/accountPageApi';
 import { Colors, Radius, Shadows, Spacing } from '../../styles';
+import AppAlert, {
+  AppAlertState,
+  createHiddenAlert,
+} from '../../components/common/AppAlert';
+import {
+  getOrderStatusLabel,
+  normalizeOrderStatus,
+} from '../../utils/orderStatus';
 
 type IconProps = {
   size?: number;
@@ -118,7 +125,7 @@ const STATUS_CONFIG: Record<
     backgroundColor: '#E9F8EE',
     Icon: CheckIcon,
   },
-  Cancelled: {
+  cancelled: {
     color: '#DC2626',
     backgroundColor: '#FFF2F0',
     Icon: CloseIcon,
@@ -132,10 +139,12 @@ const STATUS_CONFIG: Record<
 
 const OrderCard = ({ item }: any) => {
   const navigation = useNavigation<any>();
+  const normalizedStatus = normalizeOrderStatus(item?.orderStatus || item?.status);
 
   const [showReview, setShowReview] = useState(false);
   const [rating, setRating] = useState(item?.rating || 0);
   const [desc, setDesc] = useState(item?.review || '');
+  const [alert, setAlert] = useState<AppAlertState>(createHiddenAlert());
 
   const [addRating, { isLoading }] = useUserRatingProductsMutation();
 
@@ -151,13 +160,25 @@ const OrderCard = ({ item }: any) => {
 
       if (res) {
         item.status = 'Rated';
+        item.orderStatus = 'Rated';
         setShowReview(false);
         item.rating = rating;
         item.review = desc;
-        Alert.alert(res?.data?.data?.message || 'Review submitted');
+        setAlert({
+          visible: true,
+          title: 'Review submitted',
+          message: res?.data?.data?.message || 'Thanks for your feedback.',
+          variant: 'success',
+        });
       }
     } catch (error) {
       console.log('Rating Error:', error);
+      setAlert({
+        visible: true,
+        title: 'Review failed',
+        message: 'Please try submitting your review again.',
+        variant: 'error',
+      });
     }
   };
 
@@ -172,155 +193,150 @@ const OrderCard = ({ item }: any) => {
   const firstItem = item.items[0];
   const itemTotal = item.itemCount || item.items.length;
   const moreItems = Math.max(itemTotal - 1, 0);
-  const statusConfig = getStatusConfig(item.status);
+  const statusConfig = getStatusConfig(normalizedStatus);
   const StatusIcon = statusConfig.Icon;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.88}
-      style={styles.container}
-      onPress={handlePress}
-    >
-      <View style={styles.headerRow}>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: statusConfig.backgroundColor },
-          ]}
-        >
-          <StatusIcon size={14} color={statusConfig.color} />
-          <Text style={[styles.statusText, { color: statusConfig.color }]}>
-            {getStatusText(item.status)}
-          </Text>
-        </View>
-        <Text style={styles.orderId}>Order #{item.id?.slice(-6)}</Text>
-      </View>
-
-      <View style={styles.bodyRow}>
-        <View style={styles.imageBox}>
-          {firstItem.image ? (
-            <Image source={{ uri: firstItem.image }} style={styles.image} />
-          ) : (
-            <PackageIcon />
-          )}
-        </View>
-
-        <View style={styles.content}>
-          <Text numberOfLines={2} style={styles.title}>
-            {firstItem.title || firstItem.name || 'Order item'}
-          </Text>
-
-          <Text style={styles.meta}>
-            Rs{item.totalAmount}  |  {itemTotal} item{itemTotal > 1 ? 's' : ''}
-          </Text>
-
-          <Text style={styles.subMeta}>
-            {moreItems > 0 ? `+${moreItems} more items` : 'Single item'}
-          </Text>
-        </View>
-
-        <ChevronRightIcon />
-      </View>
-
-      {item?.status === 'Rated' && (
-        <View style={styles.noteBox}>
-          <Text style={styles.noteTitle}>Rated {item?.rating || 0}/5</Text>
-          {item?.review ? (
-            <Text numberOfLines={2} style={styles.noteText}>
-              {item.review}
+    <>
+      <TouchableOpacity
+        activeOpacity={0.88}
+        style={styles.container}
+        onPress={handlePress}
+      >
+        <View style={styles.headerRow}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: statusConfig.backgroundColor },
+            ]}
+          >
+            <StatusIcon size={14} color={statusConfig.color} />
+            <Text style={[styles.statusText, { color: statusConfig.color }]}>
+              {getOrderStatusLabel(normalizedStatus)}
             </Text>
-          ) : null}
+          </View>
+          <Text style={styles.orderId}>Order #{item.id?.slice(-6)}</Text>
         </View>
-      )}
 
-      {item.canReview && item?.status !== 'Rated' && (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={e => {
-            e.stopPropagation();
-            setShowReview(prev => !prev);
-          }}
-          style={styles.reviewToggle}
-        >
-          <EditIcon />
-          <Text style={styles.reviewToggleText}>
-            {showReview ? 'Cancel review' : 'Write review'}
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      {showReview && (
-        <View style={styles.reviewBox}>
-          <View style={styles.ratingRow}>
-            {[1, 2, 3, 4, 5].map(star => (
-              <TouchableOpacity
-                key={star}
-                activeOpacity={0.8}
-                onPress={() => setRating(star)}
-                style={[
-                  styles.ratingButton,
-                  star <= rating && styles.activeRatingButton,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.ratingButtonText,
-                    star <= rating && styles.activeRatingButtonText,
-                  ]}
-                >
-                  {star}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        <View style={styles.bodyRow}>
+          <View style={styles.imageBox}>
+            {firstItem.image ? (
+              <Image source={{ uri: firstItem.image }} style={styles.image} />
+            ) : (
+              <PackageIcon />
+            )}
           </View>
 
-          <TextInput
-            placeholder="Write your review"
-            placeholderTextColor={Colors.gray500}
-            value={desc}
-            onChangeText={setDesc}
-            multiline
-            style={styles.input}
-          />
+          <View style={styles.content}>
+            <Text numberOfLines={2} style={styles.title}>
+              {firstItem.title || firstItem.name || 'Order item'}
+            </Text>
 
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.submitBtn}
-            onPress={handleSubmitRating}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color={Colors.white} size="small" />
-            ) : (
-              <Text style={styles.submitText}>Submit</Text>
-            )}
-          </TouchableOpacity>
+            <Text style={styles.meta}>
+              Rs{item.totalAmount}  |  {itemTotal} item
+              {itemTotal > 1 ? 's' : ''}
+            </Text>
+
+            <Text style={styles.subMeta}>
+              {moreItems > 0 ? `+${moreItems} more items` : 'Single item'}
+            </Text>
+          </View>
+
+          <ChevronRightIcon />
         </View>
-      )}
-    </TouchableOpacity>
+
+        {normalizedStatus === 'Rated' && (
+          <View style={styles.noteBox}>
+            <Text style={styles.noteTitle}>Rated {item?.rating || 0}/5</Text>
+            {item?.review ? (
+              <Text numberOfLines={2} style={styles.noteText}>
+                {item.review}
+              </Text>
+            ) : null}
+          </View>
+        )}
+
+        {item.canReview && normalizedStatus !== 'Rated' && (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={e => {
+              e.stopPropagation();
+              setShowReview(prev => !prev);
+            }}
+            style={styles.reviewToggle}
+          >
+            <EditIcon />
+            <Text style={styles.reviewToggleText}>
+              {showReview ? 'Cancel review' : 'Write review'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {showReview && (
+          <View style={styles.reviewBox}>
+            <View style={styles.ratingRow}>
+              {[1, 2, 3, 4, 5].map(star => (
+                <TouchableOpacity
+                  key={star}
+                  activeOpacity={0.8}
+                  onPress={() => setRating(star)}
+                  style={[
+                    styles.ratingButton,
+                    star <= rating && styles.activeRatingButton,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.ratingButtonText,
+                      star <= rating && styles.activeRatingButtonText,
+                    ]}
+                  >
+                    {star}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TextInput
+              placeholder="Write your review"
+              placeholderTextColor={Colors.gray500}
+              value={desc}
+              onChangeText={setDesc}
+              multiline
+              style={styles.input}
+            />
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.submitBtn}
+              onPress={handleSubmitRating}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={Colors.white} size="small" />
+              ) : (
+                <Text style={styles.submitText}>Submit</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </TouchableOpacity>
+
+      <AppAlert
+        {...alert}
+        onClose={() => setAlert(createHiddenAlert())}
+      />
+    </>
   );
 };
 
 export default memo(OrderCard);
 
-const getStatusText = (status: string) => {
-  switch (status) {
-    case 'Delivered':
-      return 'Delivered';
-    case 'Refund completed':
-      return 'Refund completed';
-    case 'Cancelled':
-      return 'Cancelled';
-    case 'Rated':
-      return 'Rated';
-    default:
-      return status || 'Processing';
-  }
-};
-
 const getStatusConfig = (status: string) => {
+  const normalizedStatus = normalizeOrderStatus(status);
+
   return (
-    STATUS_CONFIG[status] || {
+    STATUS_CONFIG[normalizedStatus] || {
       color: '#5F6B7A',
       backgroundColor: '#F2F2F7',
       Icon: ClockIcon,

@@ -14,11 +14,13 @@ const renderCustomTabBar = (props: any) => <CustomTabBar {...props} />;
 const AppNavigator = () => {
   return (
     <Tab.Navigator
+      initialRouteName="Home"
+      backBehavior="history"
       screenOptions={{ headerShown: false }}
       tabBar={renderCustomTabBar}
     >
       <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="categories" component={CategoriesStack} />
+      <Tab.Screen name="Categories" component={CategoriesStack} />
       <Tab.Screen name="Account" component={AccountStack} />
       <Tab.Screen name="Cart" component={CartStack} />
     </Tab.Navigator>

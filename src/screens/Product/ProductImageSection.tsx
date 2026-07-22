@@ -51,7 +51,10 @@ const ProductImageSection: React.FC<ProductImageSectionProps> = ({
   const handleBack = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
+      return;
     }
+
+    navigation.getParent()?.navigate('Home', { screen: 'HomeMain' });
   };
 
   return (

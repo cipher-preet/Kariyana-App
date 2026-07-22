@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   View,
@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  Alert,
   StatusBar,
   ScrollView,
   ActivityIndicator,
@@ -28,6 +27,11 @@ import {
 } from '../../ReduxToolKit/Api/authApi';
 import { setUser } from '../../ReduxToolKit/Slices/authslice';
 import { getApiErrorMessage } from '../../utils/apiError';
+import AppAlert, {
+  AppAlertState,
+  createHiddenAlert,
+} from '../../components/common/AppAlert';
+import { SmsUserConsent } from '../../native/SmsUserConsent';
 
 const OTP_LENGTH = 6;
 
@@ -40,24 +44,34 @@ const OtpVerifyScreen = () => {
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<AppAlertState>(createHiddenAlert());
+  const [autoDetecting, setAutoDetecting] = useState(false);
 
   const inputRef = useRef<TextInput>(null);
+  const autoSubmittedOtpRef = useRef<string | null>(null);
 
   const { phone } = useAuth();
 
   //--------------------------------------------------------------------------------
-  const verifyOtp = async () => {
-    if (otp.length !== 6 || phone.length !== 10) {
-      Alert.alert('Invalid OTP');
+  const verifyOtp = useCallback(async (otpValue = otp) => {
+    if (otpValue.length !== 6 || phone.length !== 10) {
+      setAlert({
+        visible: true,
+        title: 'Invalid OTP',
+        message: 'Please enter the complete 6-digit OTP.',
+        variant: 'warning',
+      });
       return;
     }
 
     try {
       setLoading(true);
-      const res = await verifyOtpRequest({ phone, otp }).unwrap();
+      const res = await verifyOtpRequest({ phone, otp: otpValue }).unwrap();
 
       dispatch(setUser(res.data.userId));
       await AsyncStorage.setItem('userId', res.data.userId);
+      await SmsUserConsent.clearLastOtp();
+      await SmsUserConsent.stopListening();
 
       switch (res.data.nextScreen) {
         case 'APPROVED':
@@ -82,22 +96,82 @@ const OtpVerifyScreen = () => {
           navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
       }
     } catch (err: any) {
-      Alert.alert('Login failed', getApiErrorMessage(err, 'Try again'));
+      setAlert({
+        visible: true,
+        title: 'Login failed',
+        message: getApiErrorMessage(err, 'Try again'),
+        variant: 'error',
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch, navigation, otp, phone, verifyOtpRequest]);
+
+  const handleDetectedOtp = useCallback(
+    (detectedOtp?: string | null) => {
+      if (!detectedOtp || detectedOtp.length !== OTP_LENGTH) return;
+      if (autoSubmittedOtpRef.current === detectedOtp) return;
+
+      autoSubmittedOtpRef.current = detectedOtp;
+      setOtp(detectedOtp);
+      verifyOtp(detectedOtp);
+    },
+    [verifyOtp],
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    const subscription = SmsUserConsent.addOtpListener(payload => {
+      handleDetectedOtp(payload.otp);
+    });
+
+    const startOtpListener = async () => {
+      try {
+        setAutoDetecting(true);
+        const cached = await SmsUserConsent.getLastOtp();
+        if (mounted) {
+          handleDetectedOtp(cached.otp);
+        }
+
+        await SmsUserConsent.startListening(null);
+      } catch (error) {
+        console.log('SMS consent listener error:', error);
+      } finally {
+        if (mounted) {
+          setAutoDetecting(false);
+        }
+      }
+    };
+
+    startOtpListener();
+
+    return () => {
+      mounted = false;
+      subscription?.remove();
+      SmsUserConsent.stopListening().catch(() => {});
+    };
+  }, [handleDetectedOtp]);
 
   const resendOtp = async () => {
     try {
       setLoading(true);
+      autoSubmittedOtpRef.current = null;
+      await SmsUserConsent.clearLastOtp();
+      await SmsUserConsent.startListening(null);
       await sendOtpRequest({ phone }).unwrap();
-      Alert.alert('OTP resent');
+      setAlert({
+        visible: true,
+        title: 'OTP resent',
+        message: 'A fresh verification code has been sent.',
+        variant: 'success',
+      });
     } catch (error) {
-      Alert.alert(
-        'Failed to resend OTP',
-        getApiErrorMessage(error, 'Try again later'),
-      );
+      setAlert({
+        visible: true,
+        title: 'Failed to resend OTP',
+        message: getApiErrorMessage(error, 'Try again later'),
+        variant: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -172,6 +246,14 @@ const OtpVerifyScreen = () => {
             We sent a 6-digit code to +91 {phone || 'your mobile number'}.
           </Text>
 
+          {SmsUserConsent.isAvailable ? (
+            <Text style={styles.autoReadText}>
+              {autoDetecting
+                ? 'Listening for OTP message...'
+                : 'OTP will auto-fill after SMS permission.'}
+            </Text>
+          ) : null}
+
           <Pressable
             style={styles.otpRow}
             onPress={() => inputRef.current?.focus()}
@@ -198,7 +280,7 @@ const OtpVerifyScreen = () => {
               (otp.length !== OTP_LENGTH || loading) && styles.buttonDisabled,
             ]}
             activeOpacity={0.86}
-            onPress={verifyOtp}
+            onPress={() => verifyOtp()}
             disabled={loading}
           >
             {loading ? (
@@ -231,6 +313,11 @@ const OtpVerifyScreen = () => {
           </View>
         </View>
       </ScrollView>
+
+      <AppAlert
+        {...alert}
+        onClose={() => setAlert(createHiddenAlert())}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -384,8 +471,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.gray600,
     lineHeight: 21,
-    marginBottom: moderateScaleVertical(30),
+    marginBottom: moderateScaleVertical(10),
     maxWidth: '90%',
+  },
+
+  autoReadText: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: '#0F5A20',
+    fontWeight: '700',
+    marginBottom: moderateScaleVertical(20),
   },
 
   otpRow: {
